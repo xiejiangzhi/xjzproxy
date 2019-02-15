@@ -1,0 +1,12 @@
+
+h1 hello
+
+- history.each do |host, list|
+  strong = host
+  ul
+    - list.each do |req, res|
+      li 
+        span = req.request_method
+        span = " #{req.path}"
+        br
+        = req.query

@@ -1,24 +1,21 @@
-# frozen_string_literal: true
-
 require 'bundler/setup'
 Bundler.require(:default)
 
-# EvilProxy::HTTPProxyServer is a subclass of Webrick::HTTPProxyServer;
-#   it takes the same parameters.
-proxy = EvilProxy::MITMProxyServer.new Port: 8080
+require './proxy_service'
+require './show_service'
 
-proxy.before_request do |req|
-  # Do evil things
-  # Note that, different from Webrick::HTTPProxyServer,
-  #   `req.body` is writable.
+ps = ProxyService.new(8080)
+pst = Thread.new do
+  ps.proxy.start
 end
 
-proxy.before_response do |req, res|
-  # Here `res.body` is also writable.
-  puts '=' * 50
+ss = ShowService.new(8081, ps)
+sst = Thread.new do
+  ss.server.start
 end
 
-trap "INT"  do proxy.shutdown end
-trap "TERM" do proxy.shutdown end
+trap "INT"  do [ps.proxy, ss.server].each(&:shutdown) end
+trap "TERM" do [ps.proxy, ss.server].each(&:shutdown) end
 
-proxy.start
+[pst, sst].each(&:join)
+
