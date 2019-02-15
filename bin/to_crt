@@ -1,0 +1,3 @@
+#! /usr/bin/env bash
+
+openssl x509 -in ./certs/CA/cacert.pem -inform PEM -out proxy.crt
