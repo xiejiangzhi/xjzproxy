@@ -1,3 +1,8 @@
 /proxy.crt
 /certs
-/tmp
+/tmp/*
+!.keep
+
+config/*.pem
+
+*.swp

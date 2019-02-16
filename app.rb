@@ -1,21 +1,13 @@
-require 'bundler/setup'
-Bundler.require(:default)
+require './env'
 
-require './proxy_service'
-require './show_service'
+require 'yaml'
 
-ps = ProxyService.new(8080)
-pst = Thread.new do
-  ps.proxy.start
-end
+require './src/server'
+require './src/cert_gen'
 
-ss = ShowService.new(8081, ps)
-sst = Thread.new do
-  ss.server.start
-end
+$config = YAML.load_file(File.join($root, 'config/config.yml'))
+$cert_gen = CertGen.new
 
-trap "INT"  do [ps.proxy, ss.server].each(&:shutdown) end
-trap "TERM" do [ps.proxy, ss.server].each(&:shutdown) end
-
-[pst, sst].each(&:join)
+t = Server.new.start
+t.join
 
