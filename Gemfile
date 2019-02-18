@@ -1,10 +1,17 @@
 source 'https://rubygems.org'
 
-gem 'slim', '~> 4.0.1'
+# Basic
 gem 'puma', '~> 3.12.0'
 gem 'activesupport', '~> 5.2.2', require: 'active_support'
+gem 'rack', '~> 2.0.6'
+gem 'httparty', '~> 0.16.4'
 
-group *%w{development test} do
+# UI
+gem 'slim', '~> 4.0.1'
+
+# ==========
+
+group :development, :test do
   gem 'pry'
   gem 'rspec', '~> 3.8.0'
 end

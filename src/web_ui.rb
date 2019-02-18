@@ -1,12 +1,20 @@
 class WebUI
   attr_reader :env, :template_dir
 
-  def initialize(env)
-    @env = env
+  def initialize(app)
+    @app = app
     @template_dir = $config['template_dir'] || File.join($root, 'src/views')
   end
 
-  def process
+  def call(env)
+    if env['REQUEST_URI'] =~ %r{^/}
+      dup._call(env)
+    else
+      @app.call(env)
+    end
+  end
+
+  def _call(env)
     body = fetch_template('index').render(Struct.new(:history, :proxy).new([], []))
 
     [200, {}, [body]]
