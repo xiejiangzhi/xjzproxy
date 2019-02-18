@@ -2,6 +2,12 @@ require 'puma'
 require 'puma/configuration'
 require 'puma/server'
 
+class ProxyServer < Puma::Server
+  def normalize_env(env, client)
+    env[REQUEST_PATH] ||= '' if env[REQUEST_METHOD] == 'CONNECT'
+    super
+  end
+end
 
 class Server
   attr_reader :server, :events, :binder
@@ -9,7 +15,7 @@ class Server
   def initialize
     @events = Puma::Events.stdio
     @binder = Puma::Binder.new(events)
-    @server = Puma::Server.new app, events, options
+    @server = ProxyServer.new app, events, options
     @server_thread = nil
   end
 
@@ -31,7 +37,7 @@ class Server
     @conf ||= Puma::Configuration.new do |config|
       config.bind 'tcp://0.0.0.0:9898'
       config.bind "ssl://0.0.0.0:9899?key=#{$config['key_path']}&cert=#{$config['default_cert_path']}"
-      config.threads 1, 16
+      config.threads 1, 1
     end
   end
 
@@ -40,7 +46,10 @@ class Server
   end
 
   def on_request(env)
+    puts env.inspect
     [200, {}, ["hello world"]]
   end
 end
+
+
 

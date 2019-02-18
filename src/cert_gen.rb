@@ -10,8 +10,7 @@ class CertGen
     @pkey ||= if File.exists?(@key_path)
       OpenSSL::PKey::RSA.new File.read(@key_path)
     else
-      OpenSSL::PKey::RSA.new 2048
-      File.write(@key_path, pkey.to_pem)
+      OpenSSL::PKey::RSA.new(2048).tap { |key| File.write(@key_path, key.to_pem) }
     end
   end
 
