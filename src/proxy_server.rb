@@ -2,20 +2,20 @@ require 'puma'
 require 'puma/configuration'
 require 'puma/server'
 
-class ProxyServer < Puma::Server
+class PumaProxyServer < Puma::Server
   def normalize_env(env, client)
     env[REQUEST_PATH] ||= '' if env[REQUEST_METHOD] == 'CONNECT'
     super
   end
 end
 
-class Server
+class ProxyServer
   attr_reader :server, :events, :binder
 
   def initialize
     @events = Puma::Events.stdio
     @binder = Puma::Binder.new(events)
-    @server = ProxyServer.new app, events, options
+    @server = PumaProxyServer.new app, events, options
     @server_thread = nil
   end
 
@@ -47,9 +47,12 @@ class Server
 
   def on_request(env)
     puts env.inspect
-    [200, {}, ["hello world"]]
+
+    if env['REQUEST_URI'] =~ %r{^/}
+      WebUI.new(env).process
+    else
+      RequestProxy.new(env).process
+    end
   end
 end
-
-
 
