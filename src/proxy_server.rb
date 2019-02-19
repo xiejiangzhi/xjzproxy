@@ -35,6 +35,7 @@ class ProxyServer
   def app
     @app ||= Rack::Builder.app do
       use Rack::CommonLogger
+      # use Rack::Chunked
       # use RequestLogger
       use WebUI
 
