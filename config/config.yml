@@ -1,7 +1,6 @@
 ---
 root_ca_path: config/root_ca.pem
 key_path: config/key.pem
-default_cert_path: tmp/default_cert.pem
 proxy_timeout: 60 # seconds
 proxy_port: 9898
 max_threads: 32

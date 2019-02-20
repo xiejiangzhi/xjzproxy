@@ -2,7 +2,7 @@ require 'net/http'
 require 'fiber'
 
 class ProxyRequest
-  attr_reader :env, :request, :response
+  attr_reader :env, :request, :response, :ssl_server
 
   REQ_CLS_MAPPING = %w{
     get head options trace post put patch delete
@@ -18,45 +18,19 @@ class ProxyRequest
   }
   SHOULD_NOT_TRANSFER = %w{set-cookie proxy-connection}
 
-  def initialize(ssl_port:)
-    @ssl_port = ssl_port
-  end
-
   def call(env)
-    if env['REQUEST_METHOD'] == 'CONNECT'
-      [200, {}, ['TODO ssl']]
-    else
-      proxy_request(env)
-    end
-  end
-
-  def proxy_request(env)
     req_method = env['REQUEST_METHOD'].to_s.downcase
 
     case req_method
     when 'get', 'head', 'options', 'trace', 'post', 'put', 'patch', 'delete'
-      perform_request(req_method, env).tap { |res| $logger.debug((res[0..1]).inspect) }
+      HTTPRequest.new(req_method, env).to_response.tap do |res|
+        $logger.debug((res[0..1]).inspect)
+      end
     else
       $logger.error "Cannot proxy request: #{env.inspect}"
       return [500, {}, "Failed to #{req_method} #{env['REQUEST_URI']}"]
     end
   end
-
-  def perform_request(req_method, env)
-    $logger.debug("#{req_method} #{env['REQUEST_URI']}")
-    HTTPRequest.new(req_method, env).to_response
-  end
-
-  # def setup_upstream_proxy_authentication(req, res, header)
-  #   if upstream = proxy_uri(req, res)
-  #     if upstream.userinfo
-  #       header['proxy-authorization'] =
-  #         "Basic " + [upstream.userinfo].pack("m0")
-  #     end
-  #     return upstream
-  #   end
-  #   return FakeProxyURI
-  # end
 
   class HTTPRequest
     attr_reader :fib, :data

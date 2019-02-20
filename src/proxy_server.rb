@@ -8,6 +8,7 @@ class ProxyServer
     @binder = Puma::Binder.new(events)
     @server = MyPumaServer.new app, events, options
     @server_thread = nil
+    Puma::MiniSSL::Context.new
   end
 
   def start
@@ -23,23 +24,23 @@ class ProxyServer
   end
 
   def conf
-    cert = $cert_gen.issue_cert('default.dev')
-    File.write($config['default_cert_path'], cert.to_pem)
     @conf ||= Puma::Configuration.new do |config|
       config.bind "tcp://0.0.0.0:#{$config['proxy_port']}"
-      config.bind "ssl://0.0.0.0:0?key=#{$config['key_path']}&cert=#{$config['default_cert_path']}"
+      config.bind "ssl://0.0.0.0:0?cert=auto&key=auto"
       config.threads 1, $config['max_threads']
     end
   end
 
   def app
     @app ||= Rack::Builder.app do
-      # use Rack::CommonLogger
+      use RequestLogger
+
+      use SSLProxy
+
       use Rack::Chunked
-      # use RequestLogger
       use WebUI
 
-      run ProxyRequest.new(ssl_port: 9899)
+      run ProxyRequest.new
     end
   end
 end

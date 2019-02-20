@@ -1,4 +1,4 @@
-app_env = ENV['APP_ENV']
+app_env = ENV['APP_ENV'] || ENV['RACK_ENV']
 $app_env = case app_env
 when 'staging', 'development', 'test', 'production' then app_env
 when nil then 'production'
@@ -6,6 +6,7 @@ else
   puts "Invalid app env '#{app_env}'"
   'production'
 end
+ENV['RACK_ENV'] = $app_env
 
 require 'bundler/setup'
 Bundler.require(:default, $app_env)

@@ -3,5 +3,10 @@
 require './env'
 
 $logger.info "Start #{$app_env}"
-ProxyServer.new.start.join
+
+begin
+  ProxyServer.new.start.join
+rescue Interrupt
+  puts "\nBye!"
+end
 
