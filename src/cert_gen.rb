@@ -19,7 +19,7 @@ class CertGen
 
     @root_ca = OpenSSL::X509::Certificate.new(File.read(@ca_path)) if File.exists?(@ca_path)
     @root_ca ||= begin
-      cert = create_cert(pkey) do |c, ef|
+      cert = create_cert(pkey, hostname) do |c, ef|
         c.serial = 0
         c.issuer = c.subject # root CA's are 'self-signed'
 
@@ -38,7 +38,7 @@ class CertGen
   end
 
   def issue_cert(hostname)
-    create_cert(pkey) do |c, ef|
+    create_cert(pkey, hostname) do |c, ef|
       c.issuer = root_ca.subject # sign by root ca
       ef.subject_certificate = c
       ef.issuer_certificate = root_ca
@@ -52,11 +52,11 @@ class CertGen
 
   private
 
-  def create_cert(key, &other_config)
+  def create_cert(key, hostname, &other_config)
     OpenSSL::X509::Certificate.new.tap do |cert|
       cert.version = 2 # cf. RFC 5280 - to make it a "v3" certificate
       cert.serial = 1
-      cert.subject = OpenSSL::X509::Name.parse("/DC=org/DC=#{$app_name}/CN=#{$app_name} CA")
+      cert.subject = OpenSSL::X509::Name.parse("/CN=#{hostname}/O=#{$app_name}")
       cert.public_key = key.public_key
       cert.not_before = Time.now
       cert.not_after = Time.now + 1.year
