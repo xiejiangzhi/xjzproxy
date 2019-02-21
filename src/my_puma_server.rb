@@ -1,5 +1,6 @@
 require 'puma/server'
 require 'puma/minissl'
+require 'openssl'
 
 Puma::MiniSSL::Context.class_eval do
   def check; end
@@ -7,7 +8,17 @@ Puma::MiniSSL::Context.class_eval do
   def cert=(val); end
 end
 
+module SSLSocketHack
+  def read_nonblock(*args)
+    super
+  rescue OpenSSL::SSL::SSLErrorWaitReadable => e
+    $logger.debug 'Raise IO::EAGAINWaitReadable'
+    raise IO::EAGAINWaitReadable.new(e.message)
+  end
+end
+
 OpenSSL::SSL::SSLSocket.class_eval do
+  prepend SSLSocketHack
   alias peercert peer_cert
 end
 
