@@ -4,9 +4,15 @@ class RequestLogger
   end
 
   def call(env)
-    data = env.select { |k, v| k =~ /^HTTP_/ }
-    $logger.debug [env['REQUEST_URI'], env['HTTP_HOST']].join(' ')
-    $logger.debug data.sort.map { |kv| kv.join(': ') }.join("\n")
-    @app.call(env)
+    logs = [env['REQUEST_METHOD'], env['HTTP_HOST'], env['REQUEST_URI']]
+    data = env.select { |k, v| k =~ /^[A-Z\-_]+$/ }
+    data_log = data.sort.map { |kv| kv.join(': ') }.join("\n")
+    $logger.debug "======= Req ENV ======\n#{data_log}\n================="
+
+    @app.call(env).tap do |code, _header, _body|
+      logs << code
+    end
+  ensure
+    $logger.info logs.join(' ')
   end
 end

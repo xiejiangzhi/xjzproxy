@@ -23,6 +23,11 @@ class ProxyServer
     server.stop
   end
 
+  def get_ssl_port
+    _, ssl_socket = binder.listeners.find { |a, b| a =~ /^ssl/ }
+    @ssl_port ||= ssl_socket.local_address.ip_port
+  end
+
   def options
     @options ||= conf.options
   end
@@ -36,12 +41,14 @@ class ProxyServer
   end
 
   def app
+    proxy_server = self
     @app ||= Rack::Builder.app do
       use RequestLogger
 
-      use WebUI
+      use SSLProxy, cb_ssl_port: -> { proxy_server.get_ssl_port }
 
-      use SSLProxy
+      use CommonEnv
+      use WebUI
 
       use Rack::Chunked
       run ProxyRequest.new

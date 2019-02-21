@@ -7,11 +7,17 @@ class WebUI
   end
 
   def call(env)
-    if env['REQUEST_URI'] =~ %r{^/}
+    if web_ui_request?(env)
       dup._call(env)
     else
       @app.call(env)
     end
+  end
+
+  def web_ui_request?(env)
+    # TCPSocket is http direct connection
+    # OpenSSL::SSL::SSLServer is proxy https connection
+    env['puma.socket'].is_a?(TCPSocket) && env['REQUEST_URI'] =~ %r{^/}
   end
 
   def _call(env)

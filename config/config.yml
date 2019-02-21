@@ -4,3 +4,4 @@ key_path: config/key.pem
 proxy_timeout: 60  # seconds
 proxy_port: 9898
 max_threads: 32
+log_level: info

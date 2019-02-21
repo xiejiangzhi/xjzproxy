@@ -4,13 +4,21 @@ require 'openssl'
 class SSLProxy
   attr_reader :cert_gen
 
-  def initialize(app)
+  CRLF = "\r\n"
+
+  def initialize(app, cb_ssl_port: nil)
     @app = app
-    @http_proxy_host = "http://0.0.0.0:#{$config['proxy_port']}"
+    @cb_ssl_port = cb_ssl_port
+    @ssl_port = nil
   end
 
   def call(env)
     if env['REQUEST_METHOD'] == 'CONNECT'
+      @ssl_port ||= @cb_ssl_port.call
+      [
+        200, { 'connection' => 'close', 'content-length' => 0 },
+        SSLProxyBody.new(env, '127.0.0.1', @ssl_port)
+      ]
     else
       @app.call(env)
     end
@@ -18,57 +26,54 @@ class SSLProxy
 
   private
 
-  def connect_proxy
-    host, port = req.unparsed_uri.split(":", 2)
-    # Proxy authentication for upstream proxy server
-    if proxy = proxy_uri(req, res)
-      proxy_request_line = "CONNECT #{host}:#{port} HTTP/1.0"
-      if proxy.userinfo
-        credentials = "Basic " + [proxy.userinfo].pack("m0")
-      end
-      host, port = proxy.host, proxy.port
+  def process_connect(env, local_ssl_port)
+  end
+
+  class SSLProxyBody
+    attr_reader :server_socket, :env, :client_socket
+
+    def initialize(env, host, port)
+      @env = env
+      @server_socket = TCPSocket.new(host, port)
+      @client_socket = env['puma.socket']
     end
 
-    begin
-      @logger.debug("CONNECT: upstream proxy is `#{host}:#{port}'.")
-      os = TCPSocket.new(host, port)     # origin server
+    def each
+      socks_mapping = { server_socket => client_socket, client_socket => server_socket }
+      socks = socks_mapping.keys
 
-      if proxy
-        @logger.debug("CONNECT: sending a Request-Line")
-        os << proxy_request_line << CRLF
-        @logger.debug("CONNECT: > #{proxy_request_line}")
-        if credentials
-          @logger.debug("CONNECT: sending credentials")
-          os << "Proxy-Authorization: " << credentials << CRLF
-        end
-        os << CRLF
-        proxy_status_line = os.gets(LF)
-        @logger.debug("CONNECT: read Status-Line from the upstream server")
-        @logger.debug("CONNECT: < #{proxy_status_line}")
-        if %r{^HTTP/\d+\.\d+\s+200\s*} =~ proxy_status_line
-          while line = os.gets(LF)
-            break if /\A(#{CRLF}|#{LF})\z/om =~ line
+      loop do
+        break if socks.empty?
+        rs, _ = IO.select(socks, [], [], 60)
+        rs.each do |sock|
+          to = socks_mapping[sock]
+          unless copy_stream(sock, to)
+            socks.delete(sock)
+            $logger.debug("SSLProxy copy finished #{sock.inspect} to #{to.inspect}")
           end
-        else
-          raise HTTPStatus::BadGateway
         end
       end
-      @logger.debug("CONNECT #{host}:#{port}: succeeded")
-      res.status = HTTPStatus::RC_OK
-    rescue => ex
-      @logger.debug("CONNECT #{host}:#{port}: failed `#{ex.message}'")
-      res.set_error(ex)
-      raise HTTPStatus::EOFError
     ensure
-      if handler = @config[:ProxyContentHandler]
-        handler.call(req, res)
-      end
-      res.send_response(ua)
-      access_log(@config, req, res)
+      server_socket.close
+    end
 
-      # Should clear request-line not to send the response twice.
-      # see: HTTPServer#run
-      req.parse(NullReader) rescue nil
+    # Return false if eof
+    def copy_stream(from, to)
+      loop do
+        data = from.recv_nonblock(1024)
+        $logger.debug("SSLProxy copy #{data.length} bytes to #{to.inspect}")
+        if data && data != ''
+          to.write(data)
+        else
+          $logger.debug("SSLProxy #{from.inspect} eof")
+          to.close_write
+          break false
+        end
+      end
+    rescue IO::EAGAINWaitReadable, Errno::EINTR
+      true
+    ensure
+      to.flush
     end
   end
 end

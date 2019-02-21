@@ -28,7 +28,7 @@ class ProxyRequest
       end
     else
       $logger.error "Cannot proxy request: #{env.inspect}"
-      return [500, {}, "Failed to #{req_method} #{env['REQUEST_URI']}"]
+      return [500, {}, "Failed to #{req_method} #{env['xjz.url']}"]
     end
   end
 
@@ -37,15 +37,15 @@ class ProxyRequest
 
     def initialize(req_method, env)
       @env = env
-      headers = fetch_req_headers(env)
-      url = env['REQUEST_URI']
-      body = env['rack.input'].read
+      @url = env['xjz.url']
+      headers = fetch_req_headers(@env)
+      body = @env['rack.input'].read
       opts = { headers: headers, timeout: $config['proxy_timeout'], stream_body: true }
       opts[:body] = body if body.present?
 
       @data = []
       @fib = Fiber.new do
-        HTTPClient.send(req_method, url, opts) do |f|
+        HTTPClient.send(req_method, @url, opts) do |f|
           @data << f
           Fiber.yield
         end
@@ -63,7 +63,7 @@ class ProxyRequest
       while buf = data.shift do
         break unless buf.is_a?(HTTParty::FragmentWithResponse)
         res_buf = buf.to_s
-        $logger.debug("Send #{res_buf.size} bytes for #{@env['REQUEST_URI']}}")
+        $logger.debug("Send #{res_buf.size} bytes for #{@url}}")
         block.call(res_buf)
         data << fib.resume if fib.alive?
       end
