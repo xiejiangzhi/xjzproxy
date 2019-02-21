@@ -7,7 +7,13 @@ Puma::MiniSSL::Context.class_eval do
   def cert=(val); end
 end
 
+OpenSSL::SSL::SSLSocket.class_eval do
+  alias peercert peer_cert
+end
+
 Puma::MiniSSL::Server.class_eval do
+  @ssl_ctxs = {}
+
   def self.new(socket, ctx)
     $logger.info("SSL Port: #{socket.local_address.ip_port}")
     OpenSSL::SSL::SSLServer.new(socket, ssl_ctx)
@@ -27,15 +33,17 @@ Puma::MiniSSL::Server.class_eval do
 
   def self.ssl_cert_cb(args)
     _ssl_socket, server_name = args
-    $logger.info "Generate cert for #{server_name}"
     fetch_ssl_ctx_by_domain(server_name)
   end
 
   def self.fetch_ssl_ctx_by_domain(server_name, &block)
-    ctx = OpenSSL::SSL::SSLContext.new
-    ctx.add_certificate(cert_gen.issue_cert(server_name), cert_gen.pkey)
-    block.call(ctx) if block
-    ctx
+    @ssl_ctxs[server_name] ||= begin
+      $logger.info "Generate cert for #{server_name}"
+      ctx = OpenSSL::SSL::SSLContext.new
+      ctx.add_certificate(cert_gen.issue_cert(server_name), cert_gen.pkey)
+      block.call(ctx) if block
+      ctx
+    end
   end
 end
 

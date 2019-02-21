@@ -19,6 +19,10 @@ class ProxyServer
     @server_thread = server.run
   end
 
+  def stop
+    server.stop
+  end
+
   def options
     @options ||= conf.options
   end
@@ -35,11 +39,11 @@ class ProxyServer
     @app ||= Rack::Builder.app do
       use RequestLogger
 
+      use WebUI
+
       use SSLProxy
 
       use Rack::Chunked
-      use WebUI
-
       run ProxyRequest.new
     end
   end

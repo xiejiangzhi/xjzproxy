@@ -19,7 +19,7 @@ class CertGen
 
     @root_ca = OpenSSL::X509::Certificate.new(File.read(@ca_path)) if File.exists?(@ca_path)
     @root_ca ||= begin
-      cert = create_cert(pkey, hostname) do |c, ef|
+      cert = create_cert(pkey, 'localhost') do |c, ef|
         c.serial = 0
         c.issuer = c.subject # root CA's are 'self-signed'
 
