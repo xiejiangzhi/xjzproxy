@@ -7,6 +7,6 @@ max_threads: 32
 logger:
   app: info
   server: info
-  request: info
-  proxy: info
+  request: debug
+  proxy: debug
   ssl_proxy: info

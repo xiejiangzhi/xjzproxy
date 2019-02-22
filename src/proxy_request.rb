@@ -26,6 +26,8 @@ class ProxyRequest
       HTTPRequest.new(req_method, env).to_response.tap do |res|
         AppLogger[:proxy].debug "Response: #{(res[0..1]).inspect}" unless env['REQUEST_PATH'] == '/favicon.ico'
       end
+    when 'pri'
+      AppLogger[:proxy].error "Cannot proxy http2 request: #{env.inspect}"
     else
       AppLogger[:proxy].error "Cannot proxy request: #{env.inspect}"
       return [500, {}, "Failed to #{req_method} #{env['xjz.url']}"]
