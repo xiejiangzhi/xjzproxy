@@ -12,7 +12,7 @@ module SSLSocketHack
   def read_nonblock(*args)
     super
   rescue OpenSSL::SSL::SSLErrorWaitReadable => e
-    $logger.debug 'Raise IO::EAGAINWaitReadable'
+    AppLogger[:ssl_proxy].debug 'Raise IO::EAGAINWaitReadable'
     raise IO::EAGAINWaitReadable.new(e.message)
   end
 end
@@ -26,7 +26,7 @@ Puma::MiniSSL::Server.class_eval do
   @ssl_ctxs = {}
 
   def self.new(socket, ctx)
-    $logger.info("SSL Port: #{socket.local_address.ip_port}")
+    AppLogger[:ssl_proxy].info "SSL Port: #{socket.local_address.ip_port}"
     OpenSSL::SSL::SSLServer.new(socket, ssl_ctx)
   end
 
@@ -49,7 +49,7 @@ Puma::MiniSSL::Server.class_eval do
 
   def self.fetch_ssl_ctx_by_domain(server_name, &block)
     @ssl_ctxs[server_name] ||= begin
-      $logger.info "Generate cert for #{server_name}"
+      AppLogger[:ssl_proxy].info "Generate cert for #{server_name}"
       ctx = OpenSSL::SSL::SSLContext.new
       ctx.add_certificate(cert_gen.issue_cert(server_name), cert_gen.pkey)
       block.call(ctx) if block

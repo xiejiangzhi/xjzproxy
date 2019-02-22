@@ -2,7 +2,7 @@
 
 require './env'
 
-$logger.info "Start #{$app_env}"
+AppLogger[:app].info "Start #{$app_env}"
 
 ps = ProxyServer.new
 

@@ -24,49 +24,33 @@ class ProxyRequest
     case req_method
     when 'get', 'head', 'options', 'trace', 'post', 'put', 'patch', 'delete'
       HTTPRequest.new(req_method, env).to_response.tap do |res|
-        $logger.debug((res[0..1]).inspect)
+        AppLogger[:proxy].debug "Response: #{(res[0..1]).inspect}" unless env['REQUEST_PATH'] == '/favicon.ico'
       end
     else
-      $logger.error "Cannot proxy request: #{env.inspect}"
+      AppLogger[:proxy].error "Cannot proxy request: #{env.inspect}"
       return [500, {}, "Failed to #{req_method} #{env['xjz.url']}"]
     end
   end
 
   class HTTPRequest
-    attr_reader :fib, :data
+    attr_reader :res
 
     def initialize(req_method, env)
       @env = env
       @url = env['xjz.url']
       headers = fetch_req_headers(@env)
+      env['xjz.req_headers'] = headers
       body = @env['rack.input'].read
-      opts = { headers: headers, timeout: $config['proxy_timeout'], stream_body: true }
+      opts = { headers: headers, timeout: $config['proxy_timeout'] }
       opts[:body] = body if body.present?
 
-      @data = []
-      @fib = Fiber.new do
-        HTTPClient.send(req_method, @url, opts) do |f|
-          @data << f
-          Fiber.yield
-        end
-      end
+      AppLogger[:request].debug([req_method, @url, opts].inspect)
+      @res = HTTParty.send(req_method, @url, opts)
     end
 
     def to_response
-      fib.resume
-      f = data.first
-      headers = process_res_headers(f.http_response.header.to_hash)
-      [f.http_response.code, headers, self]
-    end
-
-    def each(&block)
-      while buf = data.shift do
-        break unless buf.is_a?(HTTParty::FragmentWithResponse)
-        res_buf = buf.to_s
-        $logger.debug("Send #{res_buf.size} bytes for #{@url}}")
-        block.call(res_buf)
-        data << fib.resume if fib.alive?
-      end
+      headers = process_res_headers(res.header.to_hash)
+      Rack::Response.new([res.body], res.code, headers).finish
     end
 
     def fetch_req_headers(env)

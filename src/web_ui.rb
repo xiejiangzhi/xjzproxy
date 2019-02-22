@@ -4,13 +4,17 @@ class WebUI
   def initialize(app)
     @app = app
     @template_dir = $config['template_dir'] || File.join($root, 'src/views')
+
+    @history = {}
   end
 
   def call(env)
     if web_ui_request?(env)
       dup._call(env)
     else
-      @app.call(env)
+      @app.call(env).tap do |code, headers, res|
+        (@history[env['SERVER_NAME']] ||= []) << [env, code, headers, res]
+      end
     end
   end
 
@@ -21,7 +25,7 @@ class WebUI
   end
 
   def _call(env)
-    body = fetch_template('index').render(Struct.new(:history, :proxy).new([], []))
+    body = fetch_template('index').render(Struct.new(:history).new(@history))
 
     [200, {}, [body]]
   end

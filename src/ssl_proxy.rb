@@ -32,6 +32,8 @@ class SSLProxy
   class SSLProxyBody
     attr_reader :server_socket, :env, :client_socket
 
+    BUFFER_SIZE = 4096
+
     def initialize(env, host, port)
       @env = env
       @server_socket = TCPSocket.new(host, port)
@@ -45,27 +47,29 @@ class SSLProxy
       loop do
         break if socks.empty?
         rs, _ = IO.select(socks, [], [], 60)
+        break unless rs
         rs.each do |sock|
           to = socks_mapping[sock]
           unless copy_stream(sock, to)
             socks.delete(sock)
-            $logger.debug("SSLProxy copy finished #{sock.inspect} to #{to.inspect}")
+            AppLogger[:ssl_proxy].debug "SSLProxy copy finished #{sock.inspect} to #{to.inspect}"
           end
         end
       end
     ensure
+      client_socket.close_write
       server_socket.close
     end
 
     # Return false if eof
     def copy_stream(from, to)
       loop do
-        data = from.recv_nonblock(1024)
-        $logger.debug("SSLProxy copy #{data.length} bytes to #{to.inspect}")
+        data = from.read_nonblock(BUFFER_SIZE)
+        AppLogger[:ssl_proxy].debug "SSLProxy copy #{data.length} bytes to #{to.inspect}"
         if data && data != ''
           to.write(data)
         else
-          $logger.debug("SSLProxy #{from.inspect} eof")
+          AppLogger[:ssl_proxy].debug "SSLProxy #{from.inspect} eof"
           to.close_write
           break false
         end

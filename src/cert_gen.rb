@@ -43,7 +43,7 @@ class CertGen
       ef.subject_certificate = c
       ef.issuer_certificate = root_ca
       c.add_extension(ef.create_extension("keyUsage", "digitalSignature,keyEncipherment", true))
-      c.add_extension(ef.create_extension("extendedKeyUsage", 'serverAuth', false))
+      c.add_extension(ef.create_extension("extendedKeyUsage", 'serverAuth,clientAuth', false))
       c.add_extension(ef.create_extension("subjectKeyIdentifier", "hash", false))
       c.add_extension(ef.create_extension("basicConstraints", "CA:false", false))
       c.add_extension(ef.create_extension("subjectAltName", "DNS: #{hostname}", false))

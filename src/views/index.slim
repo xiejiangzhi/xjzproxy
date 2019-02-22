@@ -4,9 +4,29 @@ h1 hello Web UI
 - history.each do |host, list|
   strong = host
   ul
-    - list.each do |req, res|
+    - list.each do |env, code, headers, res|
+      - req = env['xjz.request']
+      - req_headers = env['xjz.req_headers']
       li 
-        span = req.request_method
-        span = " #{req.path}"
+        pre
+          code
+            span = req.request_method
+            span = " #{req.url}"
+
+        strong Request Header
+
+        table
+          tbody
+            - req_headers.each do |k, v|
+              tr
+                td = k
+                td = v
         br
-        = req.query
+        strong Response Header
+        table
+          tbody
+            - headers.each do |k, v|
+              tr
+                td = k
+                td = v
+

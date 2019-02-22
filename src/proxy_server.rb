@@ -49,8 +49,6 @@ class ProxyServer
 
       use CommonEnv
       use WebUI
-
-      use Rack::Chunked
       run ProxyRequest.new
     end
   end
