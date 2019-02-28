@@ -32,7 +32,6 @@ class SSLProxy
   class SSLProxyBody
     attr_reader :server_socket, :env, :client_socket
 
-    BUFFER_SIZE = 4096
 
     def initialize(env, host, port)
       @env = env
@@ -42,42 +41,10 @@ class SSLProxy
 
     def each
       socks_mapping = { server_socket => client_socket, client_socket => server_socket }
-      socks = socks_mapping.keys
-
-      loop do
-        break if socks.empty?
-        rs, _ = IO.select(socks, [], [], 60)
-        break unless rs
-        rs.each do |sock|
-          to = socks_mapping[sock]
-          unless copy_stream(sock, to)
-            socks.delete(sock)
-            AppLogger[:ssl_proxy].debug "SSLProxy copy finished #{sock.inspect} to #{to.inspect}"
-          end
-        end
-      end
+      RequestHelper.forward_streams(socks_mapping)
     ensure
       client_socket.close_write
       server_socket.close
-    end
-
-    # Return false if eof
-    def copy_stream(from, to)
-      loop do
-        data = from.read_nonblock(BUFFER_SIZE)
-        AppLogger[:ssl_proxy].debug "SSLProxy copy #{data.length} bytes to #{to.inspect}"
-        if data && data != ''
-          to.write(data)
-        else
-          AppLogger[:ssl_proxy].debug "SSLProxy #{from.inspect} eof"
-          to.close_write
-          break false
-        end
-      end
-    rescue IO::EAGAINWaitReadable, Errno::EINTR
-      true
-    ensure
-      to.flush
     end
   end
 end

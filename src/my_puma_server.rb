@@ -52,7 +52,7 @@ Puma::MiniSSL::Server.class_eval do
       AppLogger[:ssl_proxy].info "Generate cert for #{server_name}"
       ctx = OpenSSL::SSL::SSLContext.new
       ctx.add_certificate(cert_gen.issue_cert(server_name), cert_gen.pkey)
-      server_protocols = %w{http/1.1}
+      server_protocols = %w{h2 http/1.1}
       # ctx.alpn_protocols = ["http/1.1", "spdy/2", "h2"]
       ctx.alpn_select_cb = lambda do |protocols|
         (server_protocols & protocols).first

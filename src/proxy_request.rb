@@ -23,53 +23,14 @@ class ProxyRequest
 
     case req_method
     when 'get', 'head', 'options', 'trace', 'post', 'put', 'patch', 'delete'
-      HTTPRequest.new(req_method, env).to_response.tap do |res|
+      HTTP1Response.new(req_method, env).to_response.tap do |res|
         AppLogger[:proxy].debug "Response: #{(res[0..1]).inspect}" unless env['REQUEST_PATH'] == '/favicon.ico'
       end
     when 'pri'
-      AppLogger[:proxy].error "Cannot proxy http2 request: #{env.inspect}"
+      HTTP2Response.new(env).to_response
     else
       AppLogger[:proxy].error "Cannot proxy request: #{env.inspect}"
       return [500, {}, "Failed to #{req_method} #{env['xjz.url']}"]
-    end
-  end
-
-  class HTTPRequest
-    attr_reader :res
-
-    def initialize(req_method, env)
-      @env = env
-      @url = env['xjz.url']
-      headers = fetch_req_headers(@env)
-      env['xjz.req_headers'] = headers
-      body = @env['rack.input'].read
-      opts = { headers: headers, timeout: $config['proxy_timeout'] }
-      opts[:body] = body if body.present?
-
-      AppLogger[:request].debug([req_method, @url, opts].inspect)
-      @res = HTTParty.send(req_method, @url, opts)
-    end
-
-    def to_response
-      headers = process_res_headers(res.header.to_hash)
-      Rack::Response.new([res.body], res.code, headers).finish
-    end
-
-    def fetch_req_headers(env)
-      env.each_with_object({}) do |kv, r|
-        k, v = kv
-        next unless k =~ /\AHTTP_\w+/
-        k = k[5..-1].downcase.tr('_', '-')
-        next if HOP_BY_HOP.include?(k) || SHOULD_NOT_TRANSFER.include?(k)
-        r[k] = v
-      end
-    end
-
-    def process_res_headers(headers)
-      # headers['proxy-connection'] = "close"
-      # headers['connection'] = "close"
-      headers.delete 'transfer-encoding' # Rack::Chunked will process transfer-encoding
-      headers
     end
   end
 end

@@ -10,3 +10,5 @@ logger:
   request: debug
   proxy: debug
   ssl_proxy: info
+  http2_proxy: debug
+  misc: info
