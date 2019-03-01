@@ -7,7 +7,7 @@ class HTTP1Response
     headers = RequestHelper.fetch_req_headers(@env)
     env['xjz.req_headers'] = headers
     body = @env['rack.input'].read
-    opts = { headers: headers, timeout: $config['proxy_timeout'] }
+    opts = { headers: headers, timeout: $config['proxy_timeout'], follow_redirects: false }
     opts[:body] = body if body.present?
 
     AppLogger[:request].debug([req_method, @url, opts].inspect)

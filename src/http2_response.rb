@@ -24,152 +24,127 @@ class HTTP2Response
     @env = env
     @user_conn = env['puma.socket']
     @resolver_server = init_h2_resolver
-    @remote_conn = nil
+    @remote_sock = nil
+    @remote_h2_conn = nil
     @proxy_client
   end
 
   def to_response
     @resolver_server << HTTP2_REQ_DATA
     RequestHelper.forward_streams(@user_conn => HTTP2Stream.new(@resolver_server))
-    AppLogger[:http2_proxy].debug("Finished")
+    @remote_sock.close if @remote_sock
+    AppLogger[:http2_proxy].debug("Finished #{env['HTTP_HOST']}")
     [200, { 'content-length' => 0 }, []]
   end
-
-
 
   def init_h2_resolver
     conn = HTTP2::Server.new
     user_conn = @user_conn
     conn.on(:frame) do |bytes|
       user_conn.write(bytes)
-      AppLogger[:http2_proxy].debug "end frame"
+      stream_name = RequestHelper.stream_inspect(env['user_conn'])
+      AppLogger[:http2_proxy].debug "Recv #{bytes.size} bytes from #{stream_name}"
     end
 
     conn.on(:stream) do |stream|
       header = []
       buffer = []
-      stream.on(:headers) do |h|
-        header.push(*h)
-        AppLogger[:http2_proxy].debug "request headers: #{h}"
-      end
 
-      stream.on(:data) do |d|
-        buffer << d
-        AppLogger[:http2_proxy].debug "request data: #{d}"
-      end
+      stream.on(:headers) { |h| header.push(*h) }
+      stream.on(:data) { |d| buffer << d }
 
       stream.on(:half_close) do
-        response = 'hello'
+        RequestHelper.import_h2_header_to_env(env, header)
+        AppLogger[:http2_proxy].debug("Request #{header} with data #{buffer.join.size} bytes")
+        host, port = env['HTTP_HOST'].split(':')
+        port ||= env['SERVER_PORT']
+        scheme_port = (env['H2_SCHEME'] == 'https') ? '443' : '80'
+        url_port = (port == scheme_port) ? '' : ":#{port}"
+        env['xjz.url'] = "https://#{host}#{url_port}#{env['REQUEST_PATH']}"
 
-        stream.headers({
-          ':status' => '200',
-          'content-length' => response.bytesize.to_s,
-          'content-type' => 'text/plain',
-        }, end_stream: false)
+        ssl_sock = fetch_remote_socket(host, port)
 
-        stream.data(response)
+        if ssl_sock.alpn_protocol == 'h2'
+          proxy_http2_stream(stream, header, buffer)
+        else
+          proxy_http1_stream(stream, buffer)
+        end
+
         AppLogger[:http2_proxy].debug "end_stream"
       end
     end
     conn
   end
 
-  def create_remote_conn
-    conn = HTTP2::Client.new
-    stream = conn.new_stream
-
-    conn.on(:frame) do |bytes|
-      # puts "Sending bytes: #{bytes.unpack("H*").first}"
-      sock.print bytes
-      sock.flush
-    end
-    conn.on(:frame_sent) do |frame|
-      AppLogger[:http2_proxy].debug "Sent frame: #{frame.inspect}"
-    end
-    conn.on(:frame_received) do |frame|
-      AppLogger[:http2_proxy].debug "Received frame: #{frame.inspect}"
-    end
-
-    conn.on(:promise) do |promise|
-      promise.on(:promise_headers) do |h|
-        AppLogger[:http2_proxy].debug "promise request headers: #{h}"
-      end
-
-      promise.on(:headers) do |h|
-        AppLogger[:http2_proxy].info "promise headers: #{h}"
-      end
-
-      promise.on(:data) do |d|
-        AppLogger[:http2_proxy].info "promise data chunk: <<#{d.size}>>"
-      end
-    end
-
-    conn.on(:altsvc) do |f|
-      AppLogger[:http2_proxy].info "received ALTSVC #{f}"
-    end
-
-    stream.on(:close) do
-      AppLogger[:http2_proxy].info 'stream closed'
-    end
-
-    stream.on(:half_close) do
-      AppLogger[:http2_proxy].info 'closing client-end of the stream'
-    end
-
-    stream.on(:headers) do |h|
-      AppLogger[:http2_proxy].info "response headers: #{h}"
-    end
-
-    stream.on(:data) do |d|
-      AppLogger[:http2_proxy].info "response data chunk: <<#{d}>>"
-    end
-
-    stream.on(:altsvc) do |f|
-      AppLogger[:http2_proxy].info "received ALTSVC #{f}"
-    end
-
-    conn
+  def fetch_remote_h2_conn
+    @remote_h2_conn = HTTP2::Client.new
   end
 
-  # def proxy_local_request(local_sock, server_sock)
-  #   RequestHelper.forward_streams(
-  #     local_sock => server_sock,
-  #     server_sock => local_sock
-  #   )
-  # ensure
-  #   local_sock.close rescue nil
-  #   server_sock.close rescue nil
-  # end
+  def fetch_remote_socket(host, port)
+    @remote_sock ||= begin
+      sock = TCPSocket.new(host, port)
+      ctx = OpenSSL::SSL::SSLContext.new
+      ctx.alpn_protocols = %w{h2 http/1.1}
+      ssl_sock = OpenSSL::SSL::SSLSocket.new(sock, ctx)
+      ssl_sock.hostname = host
+      ssl_sock.connect
+      ssl_sock
+    end
+  end
 
-  # def proxy_remote_request(env)
-  #   head = {
-  #     ':scheme' => uri.scheme,
-  #     ':method' => (options[:payload].nil? ? 'GET' : 'POST'),
-  #     ':authority' => [uri.host, uri.port].join(':'),
-  #     ':path' => uri.path,
-  #     'accept' => '*/*',
-  #   }
+  def proxy_http2_stream(stream, req_header, req_buffer)
+    AppLogger[:http2_proxy].debug "Connect #{env['HTTP_HOST']} with http2"
+    remote_h2_conn = fetch_remote_h2_conn
+    remote_stream = remote_h2_conn.new_stream
+    res_header = []
+    res_buffer = []
 
-  #   puts 'Sending HTTP 2.0 request'
-  #   if head[':method'] == 'GET'
-  #     stream.headers(head, end_stream: true)
-  #   else
-  #     stream.headers(head, end_stream: false)
-  #     stream.data(options[:payload])
-  #   end
+    remote_h2_conn.on(:frame) do |bytes|
+      @remote_sock << bytes
+    end
 
-  #   while !sock.closed? && !sock.eof?
-  #     data = sock.read_nonblock(1024)
-  #     # puts "Received bytes: #{data.unpack("H*").first}"
+    # conn.on(:promise) do |promise|
+    #   promise.on(:promise_headers) do |h|
+    #     AppLogger[:http2_proxy].debug "promise request headers: #{h}"
+    #   end
 
-  #     begin
-  #       conn << data
-  #     rescue StandardError => e
-  #       puts "#{e.class} exception: #{e.message} - closing socket."
-  #       e.backtrace.each { |l| puts "\t" + l }
-  #       sock.close
-  #     end
-  #   end
-  # end
+    #   promise.on(:headers) do |h|
+    #     AppLogger[:http2_proxy].info "promise headers: #{h}"
+    #   end
 
+    #   promise.on(:data) do |d|
+    #     AppLogger[:http2_proxy].info "promise data chunk: <<#{d.size}>>"
+    #   end
+    # end
+
+    remote_stream.on(:headers) { |h| res_header.push(*h) }
+    remote_stream.on(:data) { |d| res_buffer << d }
+
+    remote_stream.on(:close) do
+      body = res_buffer.join
+      AppLogger[:http2_proxy].debug "Response header #{res_header.inspect}"
+      stream.headers(res_header, end_stream: false)
+
+      AppLogger[:http2_proxy].debug "Response body #{body.size} bytes"
+      stream.data(body, end_stream: true)
+    end
+
+    if req_buffer.empty?
+      remote_stream.headers(req_header, end_stream: true)
+    else
+      remote_stream.headers(req_header, end_stream: false)
+      remote_stream.data(req_buffer.join, end_stream: true)
+    end
+
+    RequestHelper.forward_streams(@remote_sock => HTTP2Stream.new(remote_h2_conn))
+  end
+
+  def proxy_http1_stream(stream, req_buffer)
+    AppLogger[:http2_proxy].info "Connect #{env['HTTP_HOST']} with http/1.1"
+    req_method = env['REQUEST_METHOD'].downcase
+    header, body = RequestHelper.generate_h2_response(HTTP1Response.new(req_method, env).to_response)
+
+    stream.headers(header, end_stream: false)
+    stream.data(body, end_stream: true)
+  end
 end

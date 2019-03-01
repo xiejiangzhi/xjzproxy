@@ -26,9 +26,6 @@ class SSLProxy
 
   private
 
-  def process_connect(env, local_ssl_port)
-  end
-
   class SSLProxyBody
     attr_reader :server_socket, :env, :client_socket
 

@@ -3,6 +3,14 @@ module RequestHelper
 
   BUFFER_SIZE = 4096
 
+  # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+  # only for single transport-level connection, must not be retransmitted by proxies or cached
+  HOP_BY_HOP = %w{
+    connection keep-alive proxy-authenticate proxy-authorization
+    te trailers transfer-encoding upgrade
+  }
+  SHOULD_NOT_TRANSFER = %w{set-cookie proxy-connection}
+
   def process_res_headers(headers)
     # headers['proxy-connection'] = "close"
     # headers['connection'] = "close"
@@ -11,7 +19,7 @@ module RequestHelper
   end
 
   def fetch_req_headers(env)
-    env.each_with_object({}) do |kv, r|
+    env['xjz.header'] ||= env.each_with_object({}) do |kv, r|
       k, v = kv
       next unless k =~ /\AHTTP_\w+/
       k = k[5..-1].downcase.tr('_', '-')
@@ -74,5 +82,33 @@ module RequestHelper
     else
       stream.inspect
     end
+  end
+
+  def import_h2_header_to_env(env, header)
+    header.each_with_object({}) do |line, h2r|
+      k, v = line
+      k = k.tr('-', '_').upcase
+
+      if k =~ /^:/
+        env["H2_#{k[1..-1]}"] = v
+      else
+        env["HTTP_#{k}"] = v
+      end
+    end
+    env['HTTP_HOST'] ||= env['H2_AUTHORITY']
+    env['REQUEST_METHOD'] = env['H2_METHOD'] if env['H2_METHOD']
+    env['REQUEST_PATH'] = env['H2_PATH'] if env['H2_PATH']
+  end
+
+  def generate_h2_response(res)
+    code, header, body = res
+    body = body.is_a?(Rack::BodyProxy) ? body.body.join : body.join
+
+    header['content-length'] = body.bytesize.to_s
+    header.delete 'connection'
+    h2_header = header.to_a.map { |k, v| [k, v.is_a?(Array) ? v.join(',') : v] }
+    h2_header.unshift([':status', code.to_s])
+
+    [h2_header, body]
   end
 end
