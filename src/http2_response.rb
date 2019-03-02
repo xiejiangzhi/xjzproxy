@@ -42,7 +42,7 @@ class HTTP2Response
     user_conn = @user_conn
     conn.on(:frame) do |bytes|
       user_conn.write(bytes)
-      stream_name = RequestHelper.stream_inspect(env['user_conn'])
+      stream_name = RequestHelper.stream_inspect(user_conn)
       AppLogger[:http2_proxy].debug "Recv #{bytes.size} bytes from #{stream_name}"
     end
 
