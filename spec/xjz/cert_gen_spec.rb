@@ -1,4 +1,4 @@
-RSpec.describe Xjz::CertGen do
+RSpec.describe Xjz::CertManager do
   describe '#pkey' do
     before :each do
       FileUtils.rm_rf(File.join($root, $config['key_path']))
@@ -10,12 +10,12 @@ RSpec.describe Xjz::CertGen do
     end
 
     it 'should read key from file if key file is existed' do
-      cg1 = Xjz::CertGen.new
-      cg2 = Xjz::CertGen.new
+      cg1 = Xjz::CertManager.new
+      cg2 = Xjz::CertManager.new
       expect(cg1.pkey.to_pem).to eql(cg2.pkey.to_pem)
       key = OpenSSL::PKey::RSA.new(2048)
       File.write($config['key_path'], key.to_pem)
-      cg3 = Xjz::CertGen.new
+      cg3 = Xjz::CertManager.new
       expect(cg3.pkey.to_pem).to_not eql(cg2.pkey.to_pem)
       expect(cg3.pkey.to_pem).to eql(key.to_pem)
     end
@@ -61,7 +61,7 @@ RSpec.describe Xjz::CertGen do
       expect(ca.to_pem).to_not eql(old_pem)
       File.write($config['root_ca_path'], ca.to_pem)
 
-      new_ca = Xjz::CertGen.new.root_ca
+      new_ca = Xjz::CertManager.new.root_ca
       expect(new_ca.to_pem).to eql(ca.to_pem)
     end
   end
