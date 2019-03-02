@@ -1,5 +1,5 @@
 module Xjz
-  class HTTP1Reslover
+  class Reslover::HTTP1
     attr_reader :res
 
     def initialize(req)

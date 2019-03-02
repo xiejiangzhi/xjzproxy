@@ -2,7 +2,7 @@ require 'socket'
 require 'openssl'
 
 module Xjz
-  class SSLReslover
+  class Reslover::SSL
     CRLF = "\r\n"
 
     attr_reader :req

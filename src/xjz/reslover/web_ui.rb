@@ -1,5 +1,5 @@
 module Xjz
-  class WebUIReslover
+  class Reslover::WebUI
     attr_reader :req, :template_dir
 
     def initialize(req)

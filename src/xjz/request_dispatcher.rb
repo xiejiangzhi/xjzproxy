@@ -7,13 +7,13 @@ module Xjz
       req_method = req.http_method
 
       if req_method == 'connect'
-        SSLReslover.new(req).perform
+        Reslover::SSL.new(req).perform
       elsif web_ui_request?(req)
-        WebUIReslover.new(req).perform
+        Reslover::WebUI.new(req).perform
       elsif req_method == 'pri'
-        HTTP2Reslover.new(req).perform
+        Reslover::HTTP2.new(req).perform
       elsif VALID_REQUEST_METHODS.include?(req_method)
-        HTTP1Reslover.new(req).perform
+        Reslover::HTTP1.new(req).perform
       else
         raise "Cannot handle request #{req.inspect}"
       end

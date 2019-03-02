@@ -10,7 +10,6 @@ module Xjz
     RequestHelper
 
     RequestLogger
-
     Logger
 
     ProxyServer
@@ -21,12 +20,18 @@ module Xjz
     Response
 
     RequestDispatcher
-
-    SSLReslover
-    HTTP1Reslover
-    HTTP2Reslover
-    WebUIReslover
   }.each do |name|
     autoload name, "xjz/#{name.underscore}"
+  end
+
+  module Reslover
+    %w{
+      SSL
+      HTTP1
+      HTTP2
+      WebUI
+    }.each do |name|
+      autoload name, "xjz/reslover/#{name.underscore}"
+    end
   end
 end

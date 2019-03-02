@@ -1,5 +1,5 @@
 module Xjz
-  class HTTP2Reslover
+  class Reslover::HTTP2
     attr_reader :original_req, :conn
 
     HTTP2_REQ_DATA = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
@@ -119,7 +119,7 @@ module Xjz
 
     def proxy_http1_stream(stream, req)
       Logger[:http2_proxy].info "Connect #{req.host} with http/1.1"
-      res = HTTP1Reslover.new(req).response
+      res = Reslover::HTTP1.new(req).response
 
       stream.headers(res.h2_headers, end_stream: false)
       stream.data(res.body, end_stream: true)
