@@ -15,11 +15,11 @@ module Xjz
         rescue EOFError
           # eof, no data
         end
-        Logger[:misc].debug "Copy #{data.to_s.length} bytes to #{stream_inspect(dst)}"
+        Logger[:misc].debug { "Copy #{data.to_s.length} bytes to #{stream_inspect(dst)}" }
         if data && data != ''
           dst.write(data)
         else
-          Logger[:misc].debug "EOF #{stream_inspect(src)}"
+          Logger[:misc].debug { "EOF #{stream_inspect(src)}" }
           dst.close_write if auto_eof
           break false
         end
@@ -43,7 +43,7 @@ module Xjz
 
           unless nonblock_copy_stream(src, dst)
             streams.delete(src)
-            Logger[:misc].debug "Finished forward #{stream_inspect(src)} => #{stream_inspect(dst)}"
+            Logger[:misc].debug { "Finished forward #{stream_inspect(src)} => #{stream_inspect(dst)}" }
           end
         end
       end

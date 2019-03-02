@@ -6,6 +6,8 @@ module Xjz
       req = Request.new(env)
       req_method = req.http_method
 
+      Logger[:server].info { "#{req_method} #{req.host}:#{req.port}" }
+
       if req_method == 'connect'
         Reslover::SSL.new(req).perform
       elsif web_ui_request?(req)
