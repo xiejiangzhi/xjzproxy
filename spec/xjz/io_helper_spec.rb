@@ -1,4 +1,4 @@
-RSpec.describe Xjz::RequestHelper do
+RSpec.describe Xjz::IOHelper do
   describe '.nonblock_copy_stream' do
     let(:dst) { StringIO.new('') }
 

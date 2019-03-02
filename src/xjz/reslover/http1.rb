@@ -1,17 +1,12 @@
 module Xjz
   class Reslover::HTTP1
-    attr_reader :res
+    attr_reader :res, :req
 
     def initialize(req)
       @req = req
-      @url = req.url
-      body = req.body
-      opts = { headers: req.proxy_headers, timeout: $config['proxy_timeout'], follow_redirects: false }
-      opts[:body] = body if body.present?
-      req_method = req.http_method
+      @res = nil
 
-      Logger[:request].debug([req_method, @url, opts].inspect)
-      @res = HTTParty.send(req_method, @url, opts)
+      proxy_request
     end
 
     def response
@@ -20,6 +15,24 @@ module Xjz
 
     def perform
       response.to_rack_response
+    end
+
+    private
+
+    def proxy_request
+      url = req.url
+      body = req.body
+      opts = {
+        headers: req.proxy_headers,
+        timeout: $config['proxy_timeout'],
+        follow_redirects: false
+      }
+      opts[:body] = body if body.present?
+      req_method = req.http_method
+
+      tracker = Tracker.track_req(req)
+      @res = HTTParty.send(req_method, url, opts)
+      tracker.finish(response)
     end
   end
 end

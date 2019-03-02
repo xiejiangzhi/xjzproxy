@@ -75,6 +75,10 @@ RSpec.describe Xjz::Request do
     expect(req.port).to eql(80)
   end
 
+  it '#protocol should return protocol' do
+    expect(req.protocol).to eql('http/1.1')
+  end
+
   describe '.new_for_h2' do
     let(:h2_env) do
       {
@@ -134,6 +138,7 @@ RSpec.describe Xjz::Request do
         [":authority", "baidu.com"], ["user-agent", "curl/7.54.0"], ["accept", "*/*"]
       ])
       expect(req.body).to eql('hello world')
+      expect(req.protocol).to eql('http/2.0')
     end
   end
 end

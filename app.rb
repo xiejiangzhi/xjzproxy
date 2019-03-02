@@ -7,14 +7,14 @@ module Xjz
   %w{
     CertManager
 
-    RequestHelper
-
-    RequestLogger
+    IOHelper
     Logger
+    Tracker
 
     ProxyServer
     MyPumaServer
     WriterIO
+    ViewEntity
 
     Request
     Response

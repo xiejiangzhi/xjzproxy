@@ -31,7 +31,7 @@ module Xjz
 
       def each
         socks_mapping = { server_socket => user_socket, user_socket => server_socket }
-        RequestHelper.forward_streams(socks_mapping)
+        IOHelper.forward_streams(socks_mapping)
       ensure
         user_socket.close_write
         server_socket.close

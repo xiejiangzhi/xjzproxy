@@ -1,5 +1,5 @@
 module Xjz
-  module RequestHelper
+  module IOHelper
     extend self
 
     BUFFER_SIZE = 4096

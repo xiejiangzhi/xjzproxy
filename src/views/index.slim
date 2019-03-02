@@ -1,32 +1,38 @@
 
-h1 hello Web UI
+h1 XJZ Proxy
 
-- history.each do |host, list|
+- each_with_host do |host, list|
   strong = host
   ul
-    - list.each do |env, code, headers, res|
-      - req = env['xjz.request']
-      - req_headers = env['xjz.req_headers']
+    - list.each do |req_tracker|
+      - req = req_tracker.request
+      - res = req_tracker.response
+
       li 
         pre
           code
-            span = req.request_method
+            span = req.http_method
             span = " #{req.url}"
+            span = " #{req_tracker.action_list[0][1].first.strftime("%H:%M:%S")}"
 
         strong Request Header
 
         table
           tbody
-            - req_headers.each do |k, v|
+            - req.proxy_headers.each do |k, v|
               tr
                 td = k
                 td = v
-        br
-        strong Response Header
-        table
-          tbody
-            - headers.each do |k, v|
-              tr
-                td = k
-                td = v
+
+        - if res
+          br
+          strong Response Header
+          table
+            tbody
+              - res.raw_headers.each do |k, v|
+                tr
+                  td = k
+                  td = v
+
+          strong time cost: #{req_tracker.seconds * 1000} ms
 

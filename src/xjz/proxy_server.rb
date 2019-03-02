@@ -45,7 +45,6 @@ module Xjz
 
     def app
       @app ||= Rack::Builder.app do
-        use RequestLogger
         run RequestDispatcher.new
       end
     end

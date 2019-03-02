@@ -6,6 +6,11 @@ module Xjz
       @code = code
       @raw_headers = raw_headers
       @raw_body = raw_body
+      @http2 = if raw_headers.empty?
+        false
+      else
+        (raw_headers.is_a?(Hash) ? raw_headers.keys[0][0] : raw_headers[0][0][0]) == ':'
+      end
     end
 
     def h1_headers
@@ -32,6 +37,10 @@ module Xjz
       [code, h1_headers, [body].compact]
     end
 
+    def protocol
+      @http2 ? 'http/2.0' : (raw_headers['version'] || 'http/1.1').downcase
+    end
+
     private
 
     def format_res_headers
@@ -47,6 +56,7 @@ module Xjz
         when ':status'
           # http2 headers only
           @code = v.to_i
+          @http2 = true
           h2 << line
         when 'connection'
           # http1 headers only

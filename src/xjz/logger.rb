@@ -7,21 +7,50 @@ module Xjz
         @instance ||= self.new
       end
 
-      def [](name)
-        instance.get_logger(name)
+      def [](progname)
+        instance[progname]
       end
     end
 
-    def initialize
-      @loggers = {}
+    attr_reader :logger
+
+    def initialize(logdev = $stdout)
+      @logger = ::Logger.new(logdev, level: :debug)
+      @prog_loggers = {}
     end
 
-    def get_logger(name)
-      name = name.to_s
-      @loggers[name] ||= begin
+    def prog_logger(progname)
+      name = progname.to_s
+      @prog_loggers[name] ||= begin
         level = $config['logger'][name]
         raise "Undefined logger '#{name}'" unless level
-        ::Logger.new($stdout, level: level, progname: name)
+        ProgLogger.new(@logger, name, level)
+      end
+    end
+
+    def [](progname)
+      prog_logger(progname)
+    end
+
+    class ProgLogger
+      LEVELS = Hash[%w{debug info warn error fatal}.each_with_index.to_a]
+
+      attr_reader :logger, :progname, :level
+
+      def initialize(logger, progname, level)
+        @logger = logger
+        @progname = progname
+        @level = level
+        @level_index = LEVELS[level]
+      end
+
+      LEVELS.each do |name, index|
+        eval <<-RUBY, binding, __FILE__, __LINE__ + 1
+          def #{name}(msg = nil, &block)
+            return if LEVELS['#{name}'] < @level_index
+            logger.#{name}(@progname, &block)
+          end
+        RUBY
       end
     end
   end

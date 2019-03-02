@@ -15,7 +15,7 @@ module Xjz
 
     def perform
       @resolver_server << HTTP2_REQ_DATA
-      RequestHelper.forward_streams(@user_conn => WriterIO.new(@resolver_server))
+      IOHelper.forward_streams(@user_conn => WriterIO.new(@resolver_server))
       @remote_sock.close if @remote_sock
       Logger[:http2_proxy].debug("Finished #{original_req.host}")
       [200, { 'content-length' => 0 }, []]
@@ -26,7 +26,7 @@ module Xjz
       user_conn = @user_conn
       conn.on(:frame) do |bytes|
         user_conn.write(bytes)
-        stream_name = RequestHelper.stream_inspect(user_conn)
+        stream_name = IOHelper.stream_inspect(user_conn)
         Logger[:http2_proxy].debug "Recv #{bytes.size} bytes from #{stream_name}"
       end
 
@@ -76,6 +76,7 @@ module Xjz
       remote_stream = remote_h2_conn.new_stream
       res_header = []
       res_buffer = []
+      tracker = Tracker.track_req(req)
 
       remote_h2_conn.on(:frame) do |bytes|
         @remote_sock << bytes
@@ -101,6 +102,7 @@ module Xjz
       remote_stream.on(:close) do
         Logger[:http2_proxy].debug "Response header #{res_header.inspect}"
         res = Response.new(res_header, res_buffer)
+        tracker.finish(res)
         stream.headers(res.h2_headers, end_stream: false)
 
         Logger[:http2_proxy].debug "Response body #{res.body.bytesize} bytes"
@@ -114,7 +116,7 @@ module Xjz
         remote_stream.data(req.body, end_stream: true)
       end
 
-      RequestHelper.forward_streams(@remote_sock => WriterIO.new(remote_h2_conn))
+      IOHelper.forward_streams(@remote_sock => WriterIO.new(remote_h2_conn))
     end
 
     def proxy_http1_stream(stream, req)

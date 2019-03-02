@@ -64,6 +64,14 @@ module Xjz
       @body ||= @env['rack.input'].read
     end
 
+    def protocol
+      if env['xjz.h2_headers']
+        'http/2.0'
+      else
+        (env['HTTP_VERSION'] || env['SERVER_PROTOCOL']).downcase
+      end
+    end
+
     private
 
     def self.import_h2_headers_to_env!(env, headers)

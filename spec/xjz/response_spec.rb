@@ -31,6 +31,10 @@ RSpec.describe Xjz::Response do
     it '#to_rack_response should return rack response' do
       expect(res.to_rack_response).to eql([201, res.h1_headers, ['hello world']])
     end
+
+    it '#protocol should return true' do
+      expect(res.protocol).to eql('http/1.1')
+    end
   end
 
   describe 'From HTTP2' do
@@ -65,6 +69,10 @@ RSpec.describe Xjz::Response do
 
     it '#to_rack_response should return rack response' do
       expect(res.to_rack_response).to eql([222, res.h1_headers, ['hello world']])
+    end
+
+    it '#protocol should return false' do
+      expect(res.protocol).to eql('http/2.0')
     end
   end
 end

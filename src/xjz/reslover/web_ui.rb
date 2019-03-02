@@ -5,12 +5,10 @@ module Xjz
     def initialize(req)
       @req = req
       @template_dir = $config['template_dir'] || File.join($root, 'src/views')
-
-      @history = {}
     end
 
     def perform
-      body = fetch_template('index').render(Struct.new(:history).new(@history))
+      body = fetch_template('index').render(ViewEntity.new(Tracker.instance.history))
 
       [200, {}, [body]]
     end
