@@ -8,17 +8,17 @@ Puma::MiniSSL::Context.class_eval do
   def cert=(val); end
 end
 
-module SSLSocketHack
+module Xjz::SSLSocketHack
   def read_nonblock(*args)
     super
   rescue OpenSSL::SSL::SSLErrorWaitReadable => e
-    AppLogger[:ssl_proxy].debug 'Raise IO::EAGAINWaitReadable'
+    Xjz::Logger[:ssl_proxy].debug 'Raise IO::EAGAINWaitReadable'
     raise IO::EAGAINWaitReadable.new(e.message)
   end
 end
 
 OpenSSL::SSL::SSLSocket.class_eval do
-  prepend SSLSocketHack
+  prepend Xjz::SSLSocketHack
   alias peercert peer_cert
 end
 
@@ -26,7 +26,7 @@ Puma::MiniSSL::Server.class_eval do
   @ssl_ctxs = {}
 
   def self.new(socket, ctx)
-    AppLogger[:ssl_proxy].info "SSL Port: #{socket.local_address.ip_port}"
+    Xjz::Logger[:ssl_proxy].info "SSL Port: #{socket.local_address.ip_port}"
     OpenSSL::SSL::SSLServer.new(socket, ssl_ctx)
   end
 
@@ -39,7 +39,7 @@ Puma::MiniSSL::Server.class_eval do
   end
 
   def self.cert_gen
-    @cert_gen ||= CertGen.new
+    @cert_gen ||= Xjz::CertGen.new
   end
 
   def self.ssl_cert_cb(args)
@@ -49,7 +49,7 @@ Puma::MiniSSL::Server.class_eval do
 
   def self.fetch_ssl_ctx_by_domain(server_name, &block)
     @ssl_ctxs[server_name] ||= begin
-      AppLogger[:ssl_proxy].info "Generate cert for #{server_name}"
+      Xjz::Logger[:ssl_proxy].info "Generate cert for #{server_name}"
       ctx = OpenSSL::SSL::SSLContext.new
       ctx.add_certificate(cert_gen.issue_cert(server_name), cert_gen.pkey)
       server_protocols = %w{h2 http/1.1}
@@ -63,10 +63,9 @@ Puma::MiniSSL::Server.class_eval do
   end
 end
 
-class MyPumaServer < Puma::Server
+class Xjz::MyPumaServer < Puma::Server
   def normalize_env(env, client)
     env[REQUEST_PATH] ||= '' if env[REQUEST_METHOD] == 'CONNECT'
     super
   end
 end
-

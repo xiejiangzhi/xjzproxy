@@ -14,13 +14,13 @@ Bundler.require(:default, $app_env)
 require 'active_support/core_ext'
 require 'yaml'
 
-$app_name = 'HappyDev'
 $root = File.expand_path('../', __FILE__)
-
 $config = YAML.load_file(File.join($root, 'config/config.yml'))
 
-Dir[File.join($root, 'src/**/*.rb')].each do |path|
-  require path
-end
+$LOAD_PATH.unshift File.join($root, 'src')
 
-$cert_gen = CertGen.new
+# Dir[File.join($root, 'src/**/*.rb')].each do |path|
+#   require path
+# end
+
+# $cert_gen = CertGen.new

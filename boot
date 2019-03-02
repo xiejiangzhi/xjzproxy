@@ -1,10 +1,10 @@
 #! /usr/bin/env ruby
 
-require './env'
+require './app'
 
-AppLogger[:app].info "Start #{$app_env}"
+Xjz::Logger[:app].info "Start #{$app_env}"
 
-ps = ProxyServer.new
+ps = Xjz::ProxyServer.new
 
 begin
   ps.start.join
