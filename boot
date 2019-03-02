@@ -12,4 +12,3 @@ rescue Interrupt
   ps.stop
   puts "\nBye!"
 end
-

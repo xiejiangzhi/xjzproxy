@@ -6,19 +6,27 @@ module Xjz
 
   %w{
     CertManager
+
     RequestHelper
+
     RequestLogger
+
     Logger
-    SSLProxy
-    WebUI
+
     ProxyServer
-    ProxyRequest
     MyPumaServer
-    HTTP1Response
-    HTTP2Response
-    CommonEnv
+    WriterIO
+
+    Request
+    Response
+
+    RequestDispatcher
+
+    SSLReslover
+    HTTP1Reslover
+    HTTP2Reslover
+    WebUIReslover
   }.each do |name|
     autoload name, "xjz/#{name.underscore}"
   end
 end
-

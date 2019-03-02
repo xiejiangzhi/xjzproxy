@@ -4,31 +4,6 @@ module Xjz
 
     BUFFER_SIZE = 4096
 
-    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
-    # only for single transport-level connection, must not be retransmitted by proxies or cached
-    HOP_BY_HOP = %w{
-      connection keep-alive proxy-authenticate proxy-authorization
-      te trailers transfer-encoding upgrade
-    }
-    SHOULD_NOT_TRANSFER = %w{set-cookie proxy-connection}
-
-    def process_res_headers(headers)
-      # headers['proxy-connection'] = "close"
-      # headers['connection'] = "close"
-      headers.delete 'transfer-encoding' # Rack::Chunked will process transfer-encoding
-      headers
-    end
-
-    def fetch_req_headers(env)
-      env['xjz.header'] ||= env.each_with_object({}) do |kv, r|
-        k, v = kv
-        next unless k =~ /\AHTTP_\w+/
-        k = k[5..-1].downcase.tr('_', '-')
-        next if HOP_BY_HOP.include?(k) || SHOULD_NOT_TRANSFER.include?(k)
-        r[k] = v
-      end
-    end
-
     # Copy stream from src to dst
     # Return
     #   true: wait or EINTR
@@ -85,23 +60,6 @@ module Xjz
       else
         stream.inspect
       end
-    end
-
-    def import_h2_header_to_env(env, header)
-      env['xjz.h2_header'] = header
-      header.each_with_object({}) do |line, h2r|
-        k, v = line
-        k = k.tr('-', '_').upcase
-
-        if k =~ /^:/
-          env["H2_#{k[1..-1]}"] = v
-        else
-          env["HTTP_#{k}"] = v
-        end
-      end
-      env['HTTP_HOST'] ||= env['H2_AUTHORITY']
-      env['REQUEST_METHOD'] = env['H2_METHOD'] if env['H2_METHOD']
-      env['REQUEST_PATH'] = env['H2_PATH'] if env['H2_PATH']
     end
 
     def generate_h2_response(res)

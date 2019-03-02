@@ -18,6 +18,7 @@ module Xjz
       server.min_threads = options[:min_threads]
       server.max_threads = options[:max_threads]
       server.inherit_binder binder
+      $config['_ssl_proxy_port'] = get_ssl_port
       @server_thread = server.run
     end
 
@@ -43,15 +44,9 @@ module Xjz
     end
 
     def app
-      proxy_server = self
       @app ||= Rack::Builder.app do
         use RequestLogger
-
-        use SSLProxy, cb_ssl_port: -> { proxy_server.get_ssl_port }
-
-        use CommonEnv
-        use WebUI
-        run ProxyRequest.new
+        run RequestDispatcher.new
       end
     end
   end

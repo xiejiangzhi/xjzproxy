@@ -1,40 +1,23 @@
 module Xjz
-  class HTTP2Response
-    attr_reader :env, :conn
+  class HTTP2Reslover
+    attr_reader :original_req, :conn
 
     HTTP2_REQ_DATA = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
 
-    class HTTP2Stream
-      def initialize(connection)
-        @conn = connection
-      end
-
-      def write(data)
-        @conn.receive(data)
-      end
-
-      def close_write; end
-      def flush; end
-
-      def remote_address
-        nil
-      end
-    end
-
-    def initialize(env)
-      @env = env
-      @user_conn = env['puma.socket']
+    def initialize(req)
+      @original_req = req
+      @user_conn = req.user_socket
       @resolver_server = init_h2_resolver
       @remote_sock = nil
       @remote_h2_conn = nil
       @proxy_client
     end
 
-    def to_response
+    def perform
       @resolver_server << HTTP2_REQ_DATA
-      RequestHelper.forward_streams(@user_conn => HTTP2Stream.new(@resolver_server))
+      RequestHelper.forward_streams(@user_conn => WriterIO.new(@resolver_server))
       @remote_sock.close if @remote_sock
-      Logger[:http2_proxy].debug("Finished #{env['HTTP_HOST']}")
+      Logger[:http2_proxy].debug("Finished #{original_req.host}")
       [200, { 'content-length' => 0 }, []]
     end
 
@@ -55,20 +38,14 @@ module Xjz
         stream.on(:data) { |d| buffer << d }
 
         stream.on(:half_close) do
-          RequestHelper.import_h2_header_to_env(env, header)
           Logger[:http2_proxy].debug("Request #{header} with data #{buffer.join.size} bytes")
-          host, port = env['HTTP_HOST'].split(':')
-          port ||= env['SERVER_PORT']
-          scheme_port = (env['H2_SCHEME'] == 'https') ? '443' : '80'
-          url_port = (port == scheme_port) ? '' : ":#{port}"
-          env['xjz.url'] = "https://#{host}#{url_port}#{env['REQUEST_PATH']}"
-
-          ssl_sock = fetch_remote_socket(host, port)
+          req = Request.new_for_h2(original_req.env, header, buffer)
+          ssl_sock = fetch_remote_socket(req.host, req.port)
 
           if ssl_sock.alpn_protocol == 'h2'
-            proxy_http2_stream(stream, header, buffer)
+            proxy_http2_stream(stream, req)
           else
-            proxy_http1_stream(stream, buffer)
+            proxy_http1_stream(stream, req)
           end
 
           Logger[:http2_proxy].debug "end_stream"
@@ -93,8 +70,8 @@ module Xjz
       end
     end
 
-    def proxy_http2_stream(stream, req_header, req_buffer)
-      Logger[:http2_proxy].debug "Connect #{env['HTTP_HOST']} with http2"
+    def proxy_http2_stream(stream, req)
+      Logger[:http2_proxy].debug "Connect #{req.host} with http2"
       remote_h2_conn = fetch_remote_h2_conn
       remote_stream = remote_h2_conn.new_stream
       res_header = []
@@ -122,31 +99,30 @@ module Xjz
       remote_stream.on(:data) { |d| res_buffer << d }
 
       remote_stream.on(:close) do
-        body = res_buffer.join
         Logger[:http2_proxy].debug "Response header #{res_header.inspect}"
-        stream.headers(res_header, end_stream: false)
+        res = Response.new(res_header, res_buffer)
+        stream.headers(res.h2_headers, end_stream: false)
 
-        Logger[:http2_proxy].debug "Response body #{body.size} bytes"
-        stream.data(body, end_stream: true)
+        Logger[:http2_proxy].debug "Response body #{res.body.bytesize} bytes"
+        stream.data(res.body, end_stream: true)
       end
 
-      if req_buffer.empty?
-        remote_stream.headers(req_header, end_stream: true)
+      if req.body.empty?
+        remote_stream.headers(req.headers, end_stream: true)
       else
-        remote_stream.headers(req_header, end_stream: false)
-        remote_stream.data(req_buffer.join, end_stream: true)
+        remote_stream.headers(req.headers, end_stream: false)
+        remote_stream.data(req.body, end_stream: true)
       end
 
-      RequestHelper.forward_streams(@remote_sock => HTTP2Stream.new(remote_h2_conn))
+      RequestHelper.forward_streams(@remote_sock => WriterIO.new(remote_h2_conn))
     end
 
-    def proxy_http1_stream(stream, req_buffer)
-      Logger[:http2_proxy].info "Connect #{env['HTTP_HOST']} with http/1.1"
-      req_method = env['REQUEST_METHOD'].downcase
-      header, body = RequestHelper.generate_h2_response(HTTP1Response.new(req_method, env).to_response)
+    def proxy_http1_stream(stream, req)
+      Logger[:http2_proxy].info "Connect #{req.host} with http/1.1"
+      res = HTTP1Reslover.new(req).response
 
-      stream.headers(header, end_stream: false)
-      stream.data(body, end_stream: true)
+      stream.headers(res.h2_headers, end_stream: false)
+      stream.data(res.body, end_stream: true)
     end
   end
 end
