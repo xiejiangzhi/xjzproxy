@@ -15,7 +15,9 @@ require 'active_support/core_ext'
 require 'yaml'
 
 $root = File.expand_path('../', __FILE__)
-$config = YAML.load_file(File.join($root, 'config/config.yml'))
+
+config_path = ENV['CONFIG_PATH'] || File.join($root, 'config/config.yml')
+$config = YAML.load_file(config_path)
 
 $LOAD_PATH.unshift File.join($root, 'src')
 

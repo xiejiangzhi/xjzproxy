@@ -5,7 +5,7 @@ module Xjz
   extend ActiveSupport
 
   %w{
-    CertGen
+    CertManager
     RequestHelper
     RequestLogger
     Logger
@@ -20,6 +20,5 @@ module Xjz
   }.each do |name|
     autoload name, "xjz/#{name.underscore}"
   end
-
-  # $cert_gen = Xjz::CertGen.new
 end
+
