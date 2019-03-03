@@ -70,5 +70,22 @@ RSpec.describe Xjz::IOHelper do
       rw3.rewind
       expect(rw3.read).to eql('a')
     end
+
+    it 'should stop if stop_wait_cb return true' do
+      r1, w1 = IO.pipe
+      r2, w2 = IO.pipe
+      rw3 = StringIO.new
+      w1 << 'a'
+      Thread.new { sleep 0.1; w1 << 'b'; sleep 0.5; w1 << 'c' }
+
+      expect(subject.forward_streams(
+        { r1 => w2, r2 => rw3 },
+        stop_wait_cb: proc { |st| Time.now - st > 0.2 }
+      )).to eql(false)
+      expect(w2.closed?).to eql(false)
+      expect(rw3.closed_write?).to eql(false)
+      rw3.rewind
+      expect(rw3.read).to eql('ab')
+    end
   end
 end

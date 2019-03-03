@@ -4,34 +4,40 @@ module Xjz
   require File.expand_path('../env', __FILE__)
   extend ActiveSupport
 
-  %w{
-    CertManager
+  # init sub module
+  module Reslover; end
+  class ProxyClient; end
 
-    IOHelper
-    Logger
-    Tracker
+  Dir[File.join($root, 'src/xjz/**/*.rb')].each { |path| load path }
 
-    ProxyServer
-    MyPumaServer
-    WriterIO
-    ViewEntity
+  # %w{
+  #   CertManager
 
-    Request
-    Response
+  #   IOHelper
+  #   Logger
+  #   Tracker
 
-    RequestDispatcher
-  }.each do |name|
-    autoload name, "xjz/#{name.underscore}"
-  end
+  #   ProxyServer
+  #   MyPumaServer
+  #   WriterIO
+  #   ViewEntity
 
-  module Reslover
-    %w{
-      SSL
-      HTTP1
-      HTTP2
-      WebUI
-    }.each do |name|
-      autoload name, "xjz/reslover/#{name.underscore}"
-    end
-  end
+  #   Request
+  #   Response
+
+  #   RequestDispatcher
+  # }.each do |name|
+  #   autoload name, "xjz/#{name.underscore}"
+  # end
+
+  # module Reslover
+  #   %w{
+  #     SSL
+  #     HTTP1
+  #     HTTP2
+  #     WebUI
+  #   }.each do |name|
+  #     autoload name, "xjz/reslover/#{name.underscore}"
+  #   end
+  # end
 end

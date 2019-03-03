@@ -70,20 +70,9 @@ module Xjz
       h2.unshift([':status', code.to_s]) unless keys.include?(':status')
       body_size = body.bytesize.to_s
       [h1, h2].each do |h|
-        update_headers!(h, 'content-length', body_size)
+        HTTPHelper.update_headers!(h, 'content-length', body_size)
       end
       [@h1_headers = h1, @h2_headers = h2]
-    end
-
-    def update_headers!(headers, key, val)
-      r = headers.find { |k, v| k == key }
-      if r
-        r[1] = val
-      elsif key[0] == ':'
-        headers.unshift([key, val])
-      else
-        headers << [key, val]
-      end
     end
   end
 end

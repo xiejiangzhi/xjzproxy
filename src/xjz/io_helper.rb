@@ -30,13 +30,17 @@ module Xjz
       dst.flush unless auto_eof
     end
 
-    def forward_streams(streams_mapping, timeout: 60)
+    # streams_mapping:
+    #   read_stream => write_stream
+    # timeout: seconds
+    # stop_wait_cb: proc, stop check stream if return true
+    def forward_streams(streams_mapping, timeout: 60, stop_wait_cb: nil)
       streams = streams_mapping.keys
 
       loop do
         break if streams.empty?
-        rs, _ = IO.select(streams, [], [], timeout)
-        return false unless rs # timeout
+        rs = wait_readable(streams, timeout, stop_wait_cb)
+        return false unless rs # timeout or stop wait
 
         rs.each do |src|
           dst = streams_mapping[src]
@@ -72,6 +76,18 @@ module Xjz
       h2_header.unshift([':status', code.to_s])
 
       [h2_header, body]
+    end
+
+    private
+
+    def wait_readable(streams, timeout, stop_wait_cb = nil)
+      st = Time.now
+      loop do
+        return if stop_wait_cb && (stop_wait_cb.call(st) == true)
+        rs, _ = IO.select(streams, [], [], 0.1)
+        return rs if rs
+        return if (Time.now - st) >= timeout
+      end
     end
   end
 end

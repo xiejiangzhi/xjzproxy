@@ -22,4 +22,6 @@ group :development, :test do
   gem 'gem-licenses'
 
   gem 'rubocop', '~> 0.65.0'
+
+  gem 'webmock', '~> 3.5.1'
 end

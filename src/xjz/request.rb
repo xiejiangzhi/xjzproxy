@@ -55,8 +55,12 @@ module Xjz
     end
 
     def proxy_headers
-      @proxy_headers ||= headers.dup.delete_if do |k, v|
-        HOP_BY_HOP.include?(k) || SHOULD_NOT_TRANSFER.include?(k)
+      @proxy_headers ||= begin
+        h = headers.dup.delete_if do |k, v|
+          HOP_BY_HOP.include?(k) || SHOULD_NOT_TRANSFER.include?(k)
+        end
+        HTTPHelper.update_headers!(h, 'content-length', body.bytesize.to_s)
+        h
       end
     end
 

@@ -59,7 +59,8 @@ RSpec.describe Xjz::Request do
       ["version", "HTTP/1.1"],
       ["host", "baidu.com"],
       ["user-agent", "curl/7.54.0"],
-      ["accept", "*/*"]
+      ["accept", "*/*"],
+      ["content-length", '5'],
     ])
   end
 
@@ -135,7 +136,8 @@ RSpec.describe Xjz::Request do
       ])
       expect(req.proxy_headers).to eql([
         [":method", "GET"], [":path", "/?a=123"], [":scheme", "https"],
-        [":authority", "baidu.com"], ["user-agent", "curl/7.54.0"], ["accept", "*/*"]
+        [":authority", "baidu.com"], ["user-agent", "curl/7.54.0"], ["accept", "*/*"],
+        ['content-length', '11']
       ])
       expect(req.body).to eql('hello world')
       expect(req.protocol).to eql('http/2.0')

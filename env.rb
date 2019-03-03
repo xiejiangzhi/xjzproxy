@@ -21,8 +21,3 @@ $config = YAML.load_file(config_path)
 
 $LOAD_PATH.unshift File.join($root, 'src')
 
-# Dir[File.join($root, 'src/**/*.rb')].each do |path|
-#   require path
-# end
-
-# $cert_gen = CertGen.new
