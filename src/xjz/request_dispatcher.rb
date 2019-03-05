@@ -10,6 +10,15 @@ module Xjz
 
       if req_method == 'connect'
         Reslover::SSL.new(req).perform
+      elsif flag = req_upgrade_flag(req)
+        case flag
+        when 'h2c'
+          Reslover::HTTP2.new(req).perform
+        when 'websocket'
+          Reslover::Forward.new(req)
+        else
+          Reslover::Forward.new(req)
+        end
       elsif web_ui_request?(req)
         Reslover::WebUI.new(req).perform
       elsif req_method == 'pri'
@@ -21,8 +30,15 @@ module Xjz
       end
     end
 
+    private
+
     def web_ui_request?(req)
       req.user_socket.is_a?(TCPSocket) && req.env['REQUEST_URI'] =~ %r{^/}
+    end
+
+    def req_upgrade_flag(req)
+      v = req.get_header('upgrade').to_s.downcase
+      !v.empty? ? v : nil
     end
   end
 end

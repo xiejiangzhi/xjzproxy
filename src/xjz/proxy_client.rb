@@ -14,8 +14,17 @@ module Xjz
 
     def send_req(req)
       tracker = Tracker.track_req(req)
-      @client.send_req(req).tap do |res|
-        tracker.finish(res)
+      # TODO call hook before request
+      res = @client.send_req(req)
+      # TODO call hook after request
+      res
+    ensure
+      if tracker
+        if res
+          tracker.finish(res)
+        else
+          tracker.finish('error')
+        end
       end
     end
   end

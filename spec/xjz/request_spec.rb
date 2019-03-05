@@ -18,6 +18,7 @@ RSpec.describe Xjz::Request do
       "HTTP_USER_AGENT" => "curl/7.54.0",
       "HTTP_ACCEPT" => "*/*",
       "HTTP_PROXY_CONNECTION" => "Keep-Alive",
+      "HTTP_CONTENT_TYPE" => "text/plain; charset=utf-8",
       "SERVER_NAME" => "baidu.com",
       "SERVER_PORT" => "80",
       "REQUEST_PATH" => "/asdf",
@@ -50,7 +51,8 @@ RSpec.describe Xjz::Request do
       ["host", "baidu.com"],
       ["user-agent", "curl/7.54.0"],
       ["accept", "*/*"],
-      ["proxy-connection", "Keep-Alive"]
+      ["proxy-connection", "Keep-Alive"],
+      ["content-type", 'text/plain; charset=utf-8']
     ])
   end
 
@@ -60,7 +62,8 @@ RSpec.describe Xjz::Request do
       ["host", "baidu.com"],
       ["user-agent", "curl/7.54.0"],
       ["accept", "*/*"],
-      ["content-length", '5'],
+      ["content-type", 'text/plain; charset=utf-8'],
+      ["content-length", '5']
     ])
   end
 
@@ -78,6 +81,10 @@ RSpec.describe Xjz::Request do
 
   it '#protocol should return protocol' do
     expect(req.protocol).to eql('http/1.1')
+  end
+
+  it '#content_type should return content_type' do
+    expect(req.content_type).to eql('text/plain')
   end
 
   describe '.new_for_h2' do

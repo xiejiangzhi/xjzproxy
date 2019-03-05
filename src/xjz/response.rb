@@ -70,7 +70,7 @@ module Xjz
       h2.unshift([':status', code.to_s]) unless keys.include?(':status')
       body_size = body.bytesize.to_s
       [h1, h2].each do |h|
-        HTTPHelper.update_headers!(h, 'content-length', body_size)
+        HTTPHelper.set_header(h, 'content-length', body_size)
       end
       [@h1_headers = h1, @h2_headers = h2]
     end

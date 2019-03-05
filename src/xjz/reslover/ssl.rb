@@ -3,8 +3,6 @@ require 'openssl'
 
 module Xjz
   class Reslover::SSL
-    CRLF = "\r\n"
-
     attr_reader :req
 
     def initialize(req)
