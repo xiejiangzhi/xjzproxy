@@ -5,6 +5,7 @@ module Xjz
     def call(env)
       req = Request.new(env)
       req_method = req.http_method
+      binding.pry
 
       Logger[:server].info { "#{req_method} #{req.host}:#{req.port}" }
 

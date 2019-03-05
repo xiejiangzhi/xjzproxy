@@ -10,6 +10,8 @@ module Xjz
     end
 
     def perform
+      # TODO try to hack puma Client, direct get a new env.
+      # Send a new localhost request is a bad way
       [
         200, { 'connection' => 'close', 'content-length' => 0 },
         SSLProxyBody.new(req, '127.0.0.1', $config['_ssl_proxy_port'])
