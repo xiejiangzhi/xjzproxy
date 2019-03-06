@@ -20,4 +20,5 @@ WebMock.disable_net_connect!
 RSpec.configure do |config|
   config.include Support::TimeHelper
   config.include Support::NetworkHelper
+  config.include Support::DataHelper
 end

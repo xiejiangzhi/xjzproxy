@@ -87,6 +87,15 @@ RSpec.describe Xjz::Request do
     expect(req.content_type).to eql('text/plain')
   end
 
+  it '#upgrade_flag should return the flag content' do
+    req.headers << ['upgrade', 'h2c']
+    expect(req.upgrade_flag).to eql('h2c')
+  end
+
+  it '#scheme should return the http scheme' do
+    expect(req.scheme).to eql('http')
+  end
+
   describe '.new_for_h2' do
     let(:h2_env) do
       {

@@ -5,13 +5,12 @@ module Xjz
     def call(env)
       req = Request.new(env)
       req_method = req.http_method
-      binding.pry
 
       Logger[:server].info { "#{req_method} #{req.host}:#{req.port}" }
 
       if req_method == 'connect'
         Reslover::SSL.new(req).perform
-      elsif flag = req_upgrade_flag(req)
+      elsif flag = req.upgrade_flag
         case flag
         when 'h2c'
           Reslover::HTTP2.new(req).perform
@@ -35,11 +34,6 @@ module Xjz
 
     def web_ui_request?(req)
       req.user_socket.is_a?(TCPSocket) && req.env['REQUEST_URI'] =~ %r{^/}
-    end
-
-    def req_upgrade_flag(req)
-      v = req.get_header('upgrade').to_s.downcase
-      !v.empty? ? v : nil
     end
   end
 end

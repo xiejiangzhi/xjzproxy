@@ -11,14 +11,14 @@ RSpec.describe Xjz::Reslover::HTTP1 do
       "SERVER_PROTOCOL" => "HTTP/1.1",
       "SERVER_SOFTWARE" => "puma 3.12.0 Llamas in Pajamas",
       "GATEWAY_INTERFACE" => "CGI/1.2",
-      "REQUEST_METHOD" => "GET",
-      "REQUEST_URI" => "http://baidu.com/",
+      "REQUEST_METHOD" => "POST",
+      "REQUEST_URI" => "http://xjz.pw/",
       "HTTP_VERSION" => "HTTP/1.1",
-      "HTTP_HOST" => "baidu.com",
+      "HTTP_HOST" => "xjz.pw",
       "HTTP_USER_AGENT" => "curl/7.54.0",
       "HTTP_ACCEPT" => "*/*",
       "HTTP_PROXY_CONNECTION" => "Keep-Alive",
-      "SERVER_NAME" => "baidu.com",
+      "SERVER_NAME" => "xjz.pw",
       "SERVER_PORT" => "80",
       "REQUEST_PATH" => "/asdf",
       "PATH_INFO" => "/asdf",
@@ -34,9 +34,25 @@ RSpec.describe Xjz::Reslover::HTTP1 do
 
   let(:subject) { Xjz::Reslover::HTTP1.new(req) }
 
-  it '#response should response a response of this request' do
-    # res = subject.response
-    # expect(res).to be_a(Xjz::Response)
-    # expect(res.code).to eql(200)
+  before :each do
+    stub_request(:post, "http://xjz.pw/asdf?a=123").with(
+      body: "hello",
+      headers: {
+       'Accept' => '*/*', 'Content-Length' => '5',
+       'Host' => 'xjz.pw', 'User-Agent' => 'curl/7.54.0', 'Version' => 'HTTP/1.1'
+      }
+    ).to_return(status: 200, body: "world1234567", headers: new_http1_res_headers)
+  end
+
+  it '#response should return a response of this request' do
+    res = subject.response
+    expect(res).to be_a(Xjz::Response)
+    expect(res.code).to eql(200)
+    expect(res.body).to eql('world1234567')
+    expect(res.h1_headers).to eql(new_http1_res_headers)
+  end
+
+  it '#perform should return a rack response' do
+    expect(subject.perform).to eql([200, new_http1_res_headers, ['world1234567']])
   end
 end

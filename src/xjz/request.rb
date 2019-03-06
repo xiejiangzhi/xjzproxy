@@ -77,11 +77,22 @@ module Xjz
     end
 
     def content_type
-      rack_req.media_type || get_header('content-type').to_s.split(';').first
+      @content_type ||= rack_req.media_type || get_header('content-type').to_s.split(';').first
     end
 
     def get_header(name)
       HTTPHelper.get_header(headers, name.to_s)
+    end
+
+    def upgrade_flag
+      @upgrade_flag ||= begin
+        v = get_header('upgrade').to_s.downcase
+        !v.empty? ? v : nil
+      end
+    end
+
+    def scheme
+      rack_req.scheme
     end
 
     private

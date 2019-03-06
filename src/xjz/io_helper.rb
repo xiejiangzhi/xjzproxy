@@ -26,6 +26,8 @@ module Xjz
       end
     rescue IO::EAGAINWaitReadable, Errno::EINTR
       true
+    rescue Errno::ECONNRESET
+      false
     ensure
       dst.flush unless auto_eof
     end

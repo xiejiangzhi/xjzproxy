@@ -2,6 +2,11 @@ module Xjz
   class ProxyClient
     attr_reader :client
 
+    def self.h2_test(req)
+      res = HTTParty.get(req.url, headers: req.headers)
+      res.code == 101
+    end
+
     # protocols: http1, http2
     def initialize(protocol: 'http1')
       @client = case protocol
