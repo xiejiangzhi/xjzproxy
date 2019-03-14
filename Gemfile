@@ -9,6 +9,8 @@ gem 'httparty', '~> 0.16.4'
 gem 'http_parser.rb', '~> 0.6.0', require: 'http_parser'
 gem 'http-2', '~> 0.10.1', require: 'http/2'
 
+gem 'classy_hash', '~> 0.2.1'
+
 # UI
 gem 'slim', '~> 4.0.1'
 

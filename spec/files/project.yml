@@ -1,0 +1,89 @@
+types:
+  status:
+    items: [pending, confirmed, finished]
+  avatar:
+    items: "https://xxx.com/path/to/%{i}.png"
+
+partials:
+  user:
+    id: integer
+    nickname: string len 3 20
+    avatar: $t/avatar
+    $posts:
+      desc: a list of post
+      val: $p/post * 3
+
+  post:
+    id: integer
+    $title: a post title %{i}
+    body: text
+
+responses:
+  invalid_token:
+    http_code: 400
+    desc: 'xxx'
+    data:
+      code: 1
+      msg: Invalid token
+
+  show_user:
+    http_code: 200
+    desc: 'xxx'
+    data: $p/p1
+
+  show_post:
+    http_code: 200
+    desc: 'hello'
+    data:
+      id: integer
+      user: $p/user
+      status: $t/status
+
+  list_users:
+    http_code: 200
+    data:
+      $items:
+        desc: a array of user
+        val: $p/user
+      $total:
+        desc: val
+        type: integer
+
+apis:
+  - title: Get all users
+    desc: more desc of this API
+    method: GET
+    path: /api/v1/users
+    labels: ['auth']
+    query:
+      page: 1
+    response:
+      success:
+        - $r/list_users
+        - data:
+            items: $p/user * 2
+            total: integer
+        - http_code: 200
+          data:
+            $items:
+              desc: some desc
+              val: $p/user * 2
+            $total:
+              desc: some desc
+              val: integer
+
+      error:
+        - $r/invalid_page
+
+project:
+  scheme: https
+  host: xjz.pw
+
+plugins:
+  auth:
+    labels: ['auth']
+    query:
+      token: string
+    body:
+    error: $r/invalid_token
+

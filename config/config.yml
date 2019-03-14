@@ -12,3 +12,6 @@ logger:
   ssl_proxy: info
   http2_proxy: debug
   misc: info
+
+projects:
+  - ../xjzapidoc

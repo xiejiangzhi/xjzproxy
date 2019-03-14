@@ -9,6 +9,7 @@ GEM
     addressable (2.6.0)
       public_suffix (>= 2.0.2, < 4.0)
     ast (2.4.0)
+    classy_hash (0.2.1)
     coderay (1.1.2)
     concurrent-ruby (1.1.4)
     crack (0.4.3)
@@ -86,6 +87,7 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport (~> 5.2.2)
+  classy_hash (~> 0.2.1)
   gem-licenses
   http-2 (~> 0.10.1)
   http_parser.rb (~> 0.6.0)
