@@ -1,0 +1,12 @@
+---
+project:
+  scheme: https
+  host: xjz.pw
+
+plugins:
+  auth:
+    labels: ['auth']
+    query:
+      token: string
+    body:
+    error: $r/invalid_token

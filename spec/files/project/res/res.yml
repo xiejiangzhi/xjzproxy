@@ -1,0 +1,24 @@
+---
+responses:
+  show_user:
+    http_code: 200
+    desc: 'xxx'
+    data: $p/p1
+
+  show_post:
+    http_code: 200
+    desc: 'hello'
+    data:
+      id: integer
+      user: $p/user
+      status: $t/status
+
+  list_users:
+    http_code: 200
+    data:
+      $items:
+        desc: a array of user
+        val: $p/user
+      $total:
+        desc: val
+        type: integer

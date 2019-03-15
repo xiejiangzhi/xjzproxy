@@ -1,0 +1,6 @@
+---
+types:
+  status:
+    items: [pending, confirmed, finished]
+  avatar:
+    items: "https://xxx.com/path/to/%{i}.png"
