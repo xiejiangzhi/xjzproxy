@@ -12,11 +12,11 @@ module Xjz
     end
 
     def errors
-      ConfigParser.verify(raw_data)
+      Parser.verify(raw_data)
     end
 
     def data
-      @data ||= ConfigParser.parse(raw_data)
+      @data ||= Parser.parse(raw_data)
     end
 
     def raw_data

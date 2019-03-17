@@ -1,6 +1,0 @@
----
-partials:
-  post:
-    id: integer
-    $title: a post title %{i}
-    body: text

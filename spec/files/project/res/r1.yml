@@ -2,7 +2,7 @@
 responses:
   invalid_token:
     http_code: 400
-    desc: 'xxx'
+    desc: xxx
     data:
       code: 1
       msg: Invalid token

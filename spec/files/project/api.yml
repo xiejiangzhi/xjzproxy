@@ -1,26 +1,44 @@
 ---
 apis:
-  - title: Get all users
-    desc: more desc of this API
-    method: GET
-    path: /api/v1/users
-    labels: ['auth']
-    query:
-      page: 1
-    response:
-      success:
-        - $r/list_users
-        - data:
-            items: $p/user * 2
-            total: integer
-        - http_code: 200
-          data:
-            $items:
-              desc: some desc
-              val: $p/user * 2
-            $total:
-              desc: some desc
-              val: integer
-
-      error:
-        - $r/invalid_page
+- title: Get all users
+  desc: more desc of this API
+  method: GET
+  path: "/api/v1/users"
+  labels:
+  - auth
+  query:
+    page: 1
+    "./page.required": true
+    q: 123
+    status: "$t/integer"
+    "./status.required":
+      unless: q
+    "./status.rejected":
+      if: q
+  response:
+    success:
+    - ".r/list_users"
+    - http_code: 200
+      data:
+        items: ".p/user * 2"
+        total: ".t/integer"
+    - data:
+        items: ".p/user * 2"
+        "./items.desc": some desc
+        total: ".t/integer"
+        "./total.desc": some desc
+    error:
+    - ".r/invalid_token"
+- title: Get user
+  desc: show a user's info
+  method: GET
+  url: http://asdf.com
+  path: "/api/v1/users/:id"
+  labels:
+  - auth
+  query: 
+  response:
+    success:
+    - ".r/show_user"
+    error:
+    - ".r/invalid_token"

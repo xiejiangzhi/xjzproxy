@@ -1,0 +1,6 @@
+---
+partials:
+  post:
+    id: ".t/integer"
+    title: a post title
+    body: ".t/text"

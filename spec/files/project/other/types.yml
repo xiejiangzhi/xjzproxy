@@ -1,0 +1,11 @@
+---
+types:
+  status:
+    items:
+    - pending
+    - confirmed
+    - finished
+  avatar:
+    items:
+    - "/path/to/%{i}.png"
+    prefix: https://xxx.com

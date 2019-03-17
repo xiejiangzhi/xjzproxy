@@ -1,9 +1,0 @@
----
-partials:
-  user:
-    id: integer
-    nickname: string len 3 20
-    avatar: $t/avatar
-    $posts:
-      desc: a list of post
-      val: $p/post * 3

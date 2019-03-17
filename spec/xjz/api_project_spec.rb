@@ -16,20 +16,20 @@ RSpec.describe Xjz::ApiProject do
   end
 
   describe '#data' do
-    it 'should parse data by ConfigParser' do
+    it 'should parse data by Parser' do
       ap = Xjz::ApiProject.new(file_path)
       t = Time.now
-      expect(Xjz::ConfigParser).to receive(:parse).with(ap.raw_data).and_return(a: t)
+      expect(Xjz::ApiProject::Parser).to receive(:parse).with(ap.raw_data).and_return(a: t)
       expect(ap.data).to eql(a: t)
       expect(ap.data).to eql(a: t)
     end
   end
 
   describe '#errors' do
-    it 'should verify by ConfigParser' do
+    it 'should verify by Parser' do
       ap = Xjz::ApiProject.new(file_path)
       t = Time.now
-      expect(Xjz::ConfigParser).to receive(:verify).with(ap.raw_data).and_return([t])
+      expect(Xjz::ApiProject::Parser).to receive(:verify).with(ap.raw_data).and_return([t])
       expect(ap.errors).to eql([t])
     end
   end

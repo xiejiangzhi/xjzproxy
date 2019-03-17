@@ -1,0 +1,20 @@
+---
+responses:
+  show_user:
+    http_code: 200
+    desc: xxx
+    data: ".p/user"
+  show_post:
+    http_code: 200
+    desc: hello
+    data:
+      id: ".t/integer"
+      user: ".p/user"
+      status: ".t/status"
+  list_users:
+    http_code: 200
+    data:
+      items: ".p/user * 4"
+      "./items.desc": a array of user
+      total: ".t/integer"
+      "./total.desc": val
