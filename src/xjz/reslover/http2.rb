@@ -23,7 +23,7 @@ module Xjz
       resolver_server << HTTP2_REQ_DATA
       IOHelper.forward_streams(@user_conn => WriterIO.new(resolver_server))
       Logger[:http2_proxy].debug { "Finished #{original_req.host}" }
-      [200, { 'content-length' => 0 }, []]
+      [0, {}, []]
     ensure
       @remote_sock.close if @remote_sock
     end
@@ -103,10 +103,9 @@ module Xjz
         [':scheme', 'http'],
         [':method', req.http_method],
         [':authority', req.get_header('host')],
-        [':path', req.rack_req.path],
+        [':path', req.rack_req.fullpath],
         *req.proxy_headers
       ]
-
       resolver_server.upgrade(settings, req_headers, req.body)
     end
 

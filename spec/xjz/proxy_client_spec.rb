@@ -1,6 +1,6 @@
 RSpec.describe Xjz::ProxyClient do
   it 'should return true if support h2' do
-    req = Xjz::Request.new({
+    req = Xjz::Request.new(
       "SCRIPT_NAME" => "",
       "QUERY_STRING" => "a=123",
       "SERVER_PROTOCOL" => "HTTP/1.1",
@@ -20,7 +20,7 @@ RSpec.describe Xjz::ProxyClient do
       "rack.hijack" => 'puma.client',
       "rack.input" => StringIO.new('hello'),
       "rack.url_scheme" => "http",
-    })
+    )
     url = "http://xjz.pw/asdf?a=123"
     req_headers = Hash[req.headers]
 

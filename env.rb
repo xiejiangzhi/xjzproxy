@@ -20,4 +20,3 @@ config_path = ENV['CONFIG_PATH'] || File.join($root, 'config/config.yml')
 $config = YAML.load_file(config_path)
 
 $LOAD_PATH.unshift File.join($root, 'src')
-
