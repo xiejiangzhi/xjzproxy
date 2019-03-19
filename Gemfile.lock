@@ -1,11 +1,6 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (5.2.2)
-      concurrent-ruby (~> 1.0, >= 1.0.2)
-      i18n (>= 0.7, < 2)
-      minitest (~> 5.1)
-      tzinfo (~> 1.1)
     addressable (2.6.0)
       public_suffix (>= 2.0.2, < 4.0)
     ast (2.4.0)
@@ -31,7 +26,6 @@ GEM
     mime-types (3.2.2)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2018.0812)
-    minitest (5.11.3)
     multi_xml (0.6.0)
     parallel (1.14.0)
     parser (2.6.0.0)
@@ -74,10 +68,7 @@ GEM
       temple (>= 0.7.6, < 0.9)
       tilt (>= 2.0.6, < 2.1)
     temple (0.8.0)
-    thread_safe (0.3.6)
     tilt (2.0.9)
-    tzinfo (1.2.5)
-      thread_safe (~> 0.1)
     unicode-display_width (1.4.1)
     webmock (3.5.1)
       addressable (>= 2.3.6)
@@ -88,7 +79,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activesupport (~> 5.2.2)
   classy_hash (~> 0.2.1)
   faker (~> 1.9.3)
   gem-licenses

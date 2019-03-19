@@ -11,7 +11,7 @@ ENV['RACK_ENV'] = $app_env
 require 'bundler/setup'
 Bundler.require(:default, $app_env)
 
-require 'active_support/core_ext'
+# require 'active_support/core_ext'
 require 'yaml'
 
 $root = File.expand_path('../', __FILE__)

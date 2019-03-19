@@ -6,6 +6,19 @@ module Xjz
   # init sub module
   module Reslover; end
   class ProxyClient; end
-
-  Dir[File.join($root, 'src/xjz/**/*.rb')].sort.each { |path| load path }
 end
+
+files = Dir[File.join($root, 'src/xjz/**/*.rb')].sort
+orders = [
+  /xjz\/core_ext/
+]
+
+orders.each do |regexp|
+  files.delete_if do |path|
+    if path =~ regexp
+      load path
+      true
+    end
+  end
+end
+files.each { |path| load path }

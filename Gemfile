@@ -2,7 +2,6 @@ source 'https://rubygems.org'
 
 # Basic
 gem 'puma', '~> 3.12.0'
-gem 'activesupport', '~> 5.2.2', require: 'active_support'
 gem 'rack', '~> 2.0.6'
 
 gem 'httparty', '~> 0.16.4'
