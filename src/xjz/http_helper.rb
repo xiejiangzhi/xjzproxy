@@ -18,6 +18,16 @@ module Xjz
         key = key.to_s
         (headers.find { |k, v| k == key } || []).last
       end
+
+      def write_conn_info_to_env!(env, conn)
+        env['REMOTE_ADDR'] = conn.remote_address.ip_address
+        env['rack.hijack?'] = true
+        env['rack.hijack'] = proc { env['rack.hijack_io'] ||= conn }
+        env['rack.hijack_io'] = conn
+      end
+
+      def write_res_to_http1_conn(res, conn)
+      end
     end
   end
 end

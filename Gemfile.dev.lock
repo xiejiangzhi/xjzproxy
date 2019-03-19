@@ -42,7 +42,6 @@ GEM
       method_source (~> 0.9.0)
     psych (3.1.0)
     public_suffix (3.0.3)
-    puma (3.12.0)
     rack (2.0.6)
     rainbow (3.0.0)
     rake (12.3.2)
@@ -90,13 +89,13 @@ PLATFORMS
 DEPENDENCIES
   activesupport (~> 5.2.2)
   classy_hash (~> 0.2.1)
+  concurrent-ruby (~> 1.1.4)
   faker (~> 1.9.3)
   gem-licenses
   http-2 (~> 0.10.1)
   http_parser.rb (~> 0.6.0)
   httparty (~> 0.16.4)
   pry
-  puma (~> 3.12.0)
   rack (~> 2.0.6)
   rake
   rspec (~> 3.8.0)

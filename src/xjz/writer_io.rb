@@ -1,5 +1,6 @@
 module Xjz
   class WriterIO
+    # writer reuqire '<<' method
     def initialize(writer)
       @writer = writer
     end

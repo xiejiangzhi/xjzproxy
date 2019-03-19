@@ -22,7 +22,6 @@ GEM
     mime-types-data (3.2018.0812)
     minitest (5.11.3)
     multi_xml (0.6.0)
-    puma (3.12.0)
     rack (2.0.6)
     slim (4.0.1)
       temple (>= 0.7.6, < 0.9)
@@ -39,11 +38,11 @@ PLATFORMS
 DEPENDENCIES
   activesupport (~> 5.2.2)
   classy_hash (~> 0.2.1)
+  concurrent-ruby (~> 1.1.4)
   faker (~> 1.9.3)
   http-2 (~> 0.10.1)
   http_parser.rb (~> 0.6.0)
   httparty (~> 0.16.4)
-  puma (~> 3.12.0)
   rack (~> 2.0.6)
   slim (~> 4.0.1)
 

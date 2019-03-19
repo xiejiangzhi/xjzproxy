@@ -23,9 +23,9 @@ RSpec.describe Xjz::Logger do
     it 'should write log to logdev' do
       travel_to(time)
 
-      $config['logger']['app'] = 'debug'
-      $config['logger']['misc'] = 'info'
-      $config['logger']['server'] = 'warn'
+      $config['logger_level']['app'] = 'debug'
+      $config['logger_level']['misc'] = 'info'
+      $config['logger_level']['server'] = 'warn'
 
       subject[:app].debug { '1' }
       subject[:misc].debug { '2' }
@@ -54,5 +54,6 @@ RSpec.describe Xjz::Logger do
 
   it '[] should return a prog logger of instance' do
     expect(Xjz::Logger[:app]).to eql(Xjz::Logger.instance[:app])
+    expect(Xjz::Logger[:auto].progname).to eql("spec/xjz/logger_spec.rb:#{__LINE__}")
   end
 end

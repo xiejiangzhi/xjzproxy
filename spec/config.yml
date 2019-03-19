@@ -3,12 +3,6 @@ root_ca_path: tmp/root_ca.pem
 key_path: tmp/key.pem
 proxy_timeout: 1
 proxy_port: 59898
-max_threads: 32
-logger:
-  app: info
-  server: info
-  request: info
-  proxy: info
-  ssl_proxy: info
-  http2_proxy: info
-  misc: info
+max_threads: 8
+logger_level:
+  default: debug
