@@ -12,7 +12,7 @@ module Xjz::SSLSocketHack
   def read_nonblock(*args)
     super
   rescue OpenSSL::SSL::SSLErrorWaitReadable => e
-    Xjz::Logger[:ssl_proxy].debug { 'Raise IO::EAGAINWaitReadable' }
+    Xjz::Logger[:auto].debug { 'Raise IO::EAGAINWaitReadable' }
     raise IO::EAGAINWaitReadable.new(e.message)
   end
 end
@@ -26,7 +26,7 @@ Puma::MiniSSL::Server.class_eval do
   @ssl_ctxs = {}
 
   def self.new(socket, ctx)
-    Xjz::Logger[:ssl_proxy].info { "SSL Port: #{socket.local_address.ip_port}" }
+    Xjz::Logger[:auto].info { "SSL Port: #{socket.local_address.ip_port}" }
     OpenSSL::SSL::SSLServer.new(socket, ssl_ctx)
   end
 
@@ -49,7 +49,7 @@ Puma::MiniSSL::Server.class_eval do
 
   def self.fetch_ssl_ctx_by_domain(server_name, &block)
     @ssl_ctxs[server_name] ||= begin
-      Xjz::Logger[:ssl_proxy].info { "Generate cert for #{server_name}" }
+      Xjz::Logger[:auto].info { "Generate cert for #{server_name}" }
       ctx = OpenSSL::SSL::SSLContext.new
       ctx.add_certificate(cert_manager.issue_cert(server_name), cert_manager.pkey)
       server_protocols = %w{h2 http/1.1}

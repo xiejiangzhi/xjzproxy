@@ -1,6 +1,6 @@
 RSpec.describe Xjz::ProxyClient do
-  it 'should return true if support h2' do
-    req = Xjz::Request.new(
+  let(:req) do
+    Xjz::Request.new(
       "SCRIPT_NAME" => "",
       "QUERY_STRING" => "a=123",
       "SERVER_PROTOCOL" => "HTTP/1.1",
@@ -21,6 +21,11 @@ RSpec.describe Xjz::ProxyClient do
       "rack.input" => StringIO.new('hello'),
       "rack.url_scheme" => "http",
     )
+  end
+
+  let(:res) { Xjz::Response.new({}, [], 200) }
+
+  it 'should return true if support h2' do
     url = "http://xjz.pw/asdf?a=123"
     req_headers = Hash[req.headers]
 
@@ -36,14 +41,14 @@ RSpec.describe Xjz::ProxyClient do
   it 'should create client for http1' do
     c = Xjz::ProxyClient.new protocol: 'http1'
     expect(c.client).to be_a(Xjz::ProxyClient::HTTP1)
-    expect(c.client).to receive(:send_req).with('asdf')
-    c.send_req('asdf')
+    expect(c.client).to receive(:send_req).with(req).and_return(res)
+    c.send_req(req)
   end
 
   it 'should create client for http2' do
     c = Xjz::ProxyClient.new protocol: 'http2'
     expect(c.client).to be_a(Xjz::ProxyClient::HTTP2)
-    expect(c.client).to receive(:send_req).with('aaa')
-    c.send_req('aaa')
+    expect(c.client).to receive(:send_req).with(req).and_return(res)
+    c.send_req(req)
   end
 end

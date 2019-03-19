@@ -16,6 +16,8 @@ Dir[File.expand_path('../support/*.rb', __FILE__)].each do |path|
   load path
 end
 
+Xjz::Logger.instance.instance_eval { @logger = Logger.new('/dev/null', level: :debug) }
+
 WebMock.disable_net_connect!
 
 RSpec.configure do |config|

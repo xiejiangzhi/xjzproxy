@@ -104,6 +104,7 @@ RSpec.describe Xjz::Reslover::HTTP2 do
     expect(res.h2_headers).to eql([
       [":status", "200"], ["content-type", "text/plain"], ["content-length", "12"]
     ])
+    sleep 0.1
     expect(r).to eql([0, {}, []])
     t.kill
   end

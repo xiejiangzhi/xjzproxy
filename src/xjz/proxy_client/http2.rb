@@ -21,7 +21,6 @@ module Xjz
 
       stream.on(:close) do
         stop_wait = true
-        Logger[:http2_proxy].debug { "Response header #{res_header.inspect}" }
         res = Response.new(res_header, res_buffer)
       end
 
@@ -48,15 +47,15 @@ module Xjz
 
       # client.on(:promise) do |promise|
       #   promise.on(:promise_headers) do |h|
-      #     Logger[:http2_proxy].debug { "promise request headers: #{h}" }
+      #     Logger[:auto].debug { "promise request headers: #{h}" }
       #   end
 
       #   promise.on(:headers) do |h|
-      #     Logger[:http2_proxy].info { "promise headers: #{h}" }
+      #     Logger[:auto].info { "promise headers: #{h}" }
       #   end
 
       #   promise.on(:data) do |d|
-      #     Logger[:http2_proxy].info { "promise data chunk: <<#{d.size}>>" }
+      #     Logger[:auto].info { "promise data chunk: <<#{d.size}>>" }
       #   end
       # end
     end

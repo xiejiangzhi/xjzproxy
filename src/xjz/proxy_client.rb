@@ -18,9 +18,13 @@ module Xjz
     end
 
     def send_req(req)
+      Logger[:auto].info { "Start #{req.http_method} #{req.url.split('?').first}" }
       tracker = Tracker.track_req(req)
       # TODO call hook before request
       res = @client.send_req(req)
+      Logger[:auto].info do
+        "Done #{req.http_method} #{req.url.split('?').first} < #{res.code} #{res.body.bytesize}"
+      end
       # TODO call hook after request
       res
     ensure

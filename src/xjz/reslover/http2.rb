@@ -22,7 +22,7 @@ module Xjz
       upgrade_to_http2 if original_req.upgrade_flag
       resolver_server << HTTP2_REQ_DATA
       IOHelper.forward_streams(@user_conn => WriterIO.new(resolver_server))
-      Logger[:http2_proxy].debug { "Finished #{original_req.host}" }
+      Logger[:auto].debug { "Finished #{original_req.host}" }
       [0, {}, []]
     ensure
       @remote_sock.close if @remote_sock
@@ -36,7 +36,7 @@ module Xjz
       conn = HTTP2::Server.new
       conn.on(:frame) do |bytes|
         stream_name = IOHelper.stream_inspect(user_conn)
-        Logger[:http2_proxy].debug { "Send #{bytes.size} bytes to #{stream_name}" }
+        Logger[:auto].debug { "Send #{bytes.size} bytes to #{stream_name}" }
         user_conn.write(bytes)
       end
 
@@ -48,11 +48,11 @@ module Xjz
         stream.on(:data) { |d| buffer << d }
 
         stream.on(:half_close) do
-          Logger[:http2_proxy].debug { "Request #{header} with data #{buffer.join.size} bytes" }
+          # Logger[:http2_proxy].debug { "Request #{header} with data #{buffer.join.size} bytes" }
           req = Request.new_for_h2(original_req.env, header, buffer)
           @host ||= req.host
           @port ||= req.port
-          Logger[:server].info { "#{req.http_method} #{req.host}:#{req.port}" }
+          Logger[:auto].info { "#{req.http_method} #{req.host}:#{req.port}" }
 
           if remote_support_h2?
             proxy_http2_stream(stream, req)
@@ -60,7 +60,7 @@ module Xjz
             proxy_http1_stream(stream, req)
           end
 
-          Logger[:http2_proxy].debug { "end_stream" }
+          Logger[:auto].debug { "end_stream" }
         end
       end
       conn
@@ -116,7 +116,7 @@ module Xjz
     end
 
     def proxy_http1_stream(stream, req)
-      Logger[:http2_proxy].info { "Connect #{req.host} with http/1.1" }
+      Logger[:auto].info { "Connect #{req.host} with http/1.1" }
       res = proxy_client.send_req(req)
 
       stream.headers(res.h2_headers, end_stream: false)

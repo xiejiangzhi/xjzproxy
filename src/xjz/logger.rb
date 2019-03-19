@@ -7,7 +7,13 @@ module Xjz
         @instance ||= self.new
       end
 
-      def [](progname)
+      def [](progname = nil)
+        if progname == :auto
+          name = caller[0]
+          name = caller[0][($root.length + 1)..-1] if name[$root]
+          name = name[('src/xjz'.length + 1)..-1] if name[/^src\/xjz/]
+          progname = name.split(':', 3)[0..1].join(':')
+        end
         instance[progname]
       end
     end
@@ -22,9 +28,8 @@ module Xjz
     def prog_logger(progname)
       name = progname.to_s
       @prog_loggers[name] ||= begin
-        level = $config['logger'][name]
-        raise "Undefined logger '#{name}'" unless level
-        ProgLogger.new(@logger, name, level)
+        level = $config['logger_level'][name] || $config['logger_level']['default']
+        ProgLogger.new(@logger, name, level || 'info')
       end
     end
 

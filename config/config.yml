@@ -4,14 +4,8 @@ key_path: config/key.pem
 proxy_timeout: 60  # seconds
 proxy_port: 9898
 max_threads: 32
-logger:
-  app: info
-  server: info
-  request: debug
-  proxy: debug
-  ssl_proxy: info
-  http2_proxy: debug
-  misc: info
+logger_level:
+  default: info
 
 projects:
   - ../xjzapidoc
