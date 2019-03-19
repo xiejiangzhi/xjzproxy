@@ -119,7 +119,7 @@ RSpec.describe Xjz::ApiProject::Parser do
       expect(subject.parse(raw_data)['project']).to eql(
         'url' => 'https://xjz.pw',
         'desc' => 'desc',
-        "dir" => "/Users/xiejiangzhi/Code/xjzproxy/spec/files"
+        "dir" => File.join($root, "spec/files")
       )
     end
 

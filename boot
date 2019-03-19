@@ -2,7 +2,7 @@
 
 require './app'
 
-Xjz::Logger[:app].info "Start #{$app_env}"
+Xjz::Logger[:app].info { "Environment #{$app_env}" }
 
 ps = Xjz::ProxyServer.new
 

@@ -1,5 +1,6 @@
 ENV['APP_ENV'] = 'test'
 ENV['CONFIG_PATH'] = File.expand_path('../config.yml', __FILE__)
+ENV['BUNDLE_GEMFILE'] = File.expand_path('../../Gemfile', __FILE__)
 
 require 'webmock/rspec'
 require 'fileutils'

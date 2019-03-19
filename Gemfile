@@ -15,16 +15,3 @@ gem 'faker', "~> 1.9.3"
 # UI
 gem 'slim', '~> 4.0.1'
 
-# ==========
-
-group :development, :test do
-  gem 'pry'
-  gem 'rspec', '~> 3.8.0'
-
-  gem 'rake'
-  gem 'gem-licenses'
-
-  gem 'rubocop', '~> 0.65.0'
-
-  gem 'webmock', '~> 3.5.1'
-end

@@ -1,0 +1,3 @@
+#! /usr/bin/env bash
+
+BUNDLE_GEMFILE=Gemfile.dev bundle exec rspec

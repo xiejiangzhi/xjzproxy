@@ -1,10 +1,10 @@
 app_env = ENV['APP_ENV'] || ENV['RACK_ENV']
 $app_env = case app_env
-when 'staging', 'development', 'test', 'production' then app_env
-when nil then 'production'
+when 'stg', 'dev', 'test', 'prod' then app_env
+when nil then 'prod'
 else
   puts "Invalid app env '#{app_env}'"
-  'production'
+  'prod'
 end
 ENV['RACK_ENV'] = $app_env
 

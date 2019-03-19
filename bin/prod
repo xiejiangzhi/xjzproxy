@@ -1,4 +1,4 @@
 #! /usr/bin/env bash
 
-APP_ENV=production ./boot
+APP_ENV=prod ./boot
 
