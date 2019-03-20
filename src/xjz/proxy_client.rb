@@ -9,21 +9,24 @@ module Xjz
 
     # protocols: http1, http2
     def initialize(protocol: 'http1')
+      @protocol = protocol
       @client = case protocol
       when 'http1' then ProxyClient::HTTP1.new
       when 'http2' then ProxyClient::HTTP2.new
       else
         raise "Invalid proxy client protocol '#{protocol}'"
       end
+      Logger[:auto].debug { "New Proxy Client #{protocol}" }
     end
 
     def send_req(req)
-      Logger[:auto].info { "Start #{req.http_method} #{req.url.split('?').first}" }
+      Logger[:auto].info { " > #{req.http_method} #{req.url.split('?').first} #{@protocol}" }
       tracker = Tracker.track_req(req)
       # TODO call hook before request
       res = @client.send_req(req)
       Logger[:auto].info do
-        "Done #{req.http_method} #{req.url.split('?').first} < #{res.code} #{res.body.bytesize}"
+        suffix = res.conn_close? ? ' - close' : ''
+        " < #{res.code} #{res.body.bytesize} bytes #{suffix}"
       end
       # TODO call hook after request
       res

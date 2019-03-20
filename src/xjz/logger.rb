@@ -19,9 +19,23 @@ module Xjz
     end
 
     attr_reader :logger
+    LOG_FORMAT = "%-5s [%s #%s] %s -- %s\n"
+    KEYS = ('0'..'9').to_a + ('a'..'z').to_a + ('A'..'Z').to_a
+    KLEN = KEYS.length
+    COLOR_LOG_FORMAT = {
+      'DEBUG' => "\e[90m%-5s [%s #%s] %s -- %s\n\e[39m",
+      'INFO' => "%-5s [%s #%s] %s -- \e[90m%s\n\e[39m",
+      'WARN' => "\e[93m%-5s \e[39m[%s #%s] %s -- \e[90m%s\n\e[39m",
+      'ERROR' => "\e[31m%-5s \e[39m[%s #%s] \e[31m%s -- \e[90m%s\n\e[39m",
+    }
 
     def initialize(logdev = $stdout)
       @logger = ::Logger.new(logdev, level: :debug)
+      @logger.formatter = proc do |severity, datetime, progname, msg|
+        date = datetime.strftime("%Y-%m-%dT%H:%M:%S")
+        format = (logdev == $stdout ? COLOR_LOG_FORMAT[severity] : nil) || LOG_FORMAT
+        format % [severity, date, decode_int(Thread.current.object_id), msg, progname]
+      end
       @prog_loggers = {}
     end
 
@@ -35,6 +49,15 @@ module Xjz
 
     def [](progname)
       prog_logger(progname)
+    end
+
+    def decode_int(num)
+      str = []
+      while num > 0
+        str << KEYS[num % KLEN]
+        num = num / KLEN
+      end
+      str.reverse.join
     end
 
     class ProgLogger

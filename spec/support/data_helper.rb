@@ -21,11 +21,11 @@ module Support
       ]
     end
 
-    def new_http1_res_headers
+    def new_http1_res_headers(keep_alive: false)
       [
         ["content-type", "text/plain"],
         ["content-length", "12"],
-        ["connection", "close"]
+        ["connection", keep_alive ? 'keep-alive' : "close"]
       ]
     end
 

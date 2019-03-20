@@ -15,16 +15,14 @@ module Xjz
         rescue EOFError
           # eof, no data
         end
-        Logger[:auto].debug { "Copy #{data.to_s.bytesize} bytes to #{stream_inspect(dst)}" }
         if data && data != ''
           dst.write(data)
         else
-          Logger[:auto].debug { "EOF #{stream_inspect(src)}" }
           dst.close_write if auto_eof
           break false
         end
       end
-    rescue IO::EAGAINWaitReadable, Errno::EINTR
+    rescue IO::EAGAINWaitReadable, Errno::EINTR, OpenSSL::SSL::SSLErrorWaitReadable
       true
     rescue Errno::ECONNRESET
       false
@@ -36,22 +34,22 @@ module Xjz
     #   read_stream => write_stream
     # timeout: seconds
     # stop_wait_cb: proc, stop check stream if return true
-    def forward_streams(streams_mapping, timeout: 60, stop_wait_cb: nil)
+    def forward_streams(streams_mapping, timeout: $config['proxy_timeout'], stop_wait_cb: nil)
       streams = streams_mapping.keys
+      rs = streams
 
       loop do
-        break if streams.empty?
-        rs = wait_readable(streams, timeout, stop_wait_cb)
-        return false unless rs # timeout or stop wait
-
         rs.each do |src|
           dst = streams_mapping[src]
 
           unless nonblock_copy_stream(src, dst)
             streams.delete(src)
-            Logger[:auto].debug { "Finished forward #{stream_inspect(src)} => #{stream_inspect(dst)}" }
           end
         end
+
+        break if streams.empty?
+        rs = wait_readable(streams, timeout, stop_wait_cb)
+        return false unless rs # timeout or stop wait
       end
 
       true
@@ -85,10 +83,11 @@ module Xjz
     private
 
     def wait_readable(streams, timeout, stop_wait_cb = nil)
+      return if streams.empty?
       st = Time.now
       loop do
         return if stop_wait_cb && (stop_wait_cb.call(st) == true)
-        rs, _ = IO.select(streams, [], [], 1)
+        rs, _ = IO.select(streams, [], [], 0.1)
         return rs if rs
         return if (Time.now - st) >= timeout
       end

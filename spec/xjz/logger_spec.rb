@@ -38,14 +38,15 @@ RSpec.describe Xjz::Logger do
       subject[:app].fatal { '7' }
 
       logdev.rewind
-      pid = Process.pid
-      expect(logdev.read).to eql([
-        "D, [2019-01-01T10:10:10.000000 ##{pid}] DEBUG -- app: 1",
-        "I, [2019-01-01T10:10:10.000000 ##{pid}]  INFO -- misc: 3",
-        "W, [2019-01-01T10:10:10.000000 ##{pid}]  WARN -- server: 5",
-        "E, [2019-01-01T10:10:10.000000 ##{pid}] ERROR -- server: 6",
-        "F, [2019-01-01T10:10:10.000000 ##{pid}] FATAL -- app: 7",
-      ].join("\n") + "\n")
+      tid = subject.decode_int(Thread.current.object_id)
+      expect(logdev.read).to eql(<<~LOG
+        DEBUG [2019-01-01T10:10:10 ##{tid}] 1 -- app
+        INFO  [2019-01-01T10:10:10 ##{tid}] 3 -- misc
+        WARN  [2019-01-01T10:10:10 ##{tid}] 5 -- server
+        ERROR [2019-01-01T10:10:10 ##{tid}] 6 -- server
+        FATAL [2019-01-01T10:10:10 ##{tid}] 7 -- app
+      LOG
+      )
     end
   end
 

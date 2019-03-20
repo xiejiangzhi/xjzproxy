@@ -3,7 +3,10 @@ root_ca_path: config/root_ca.pem
 key_path: config/key.pem
 proxy_timeout: 60  # seconds
 proxy_port: 9898
-proxy_http2: false
+proxy_http2: true
+alpn_protocols:
+  - h2
+  - http/1.1
 max_threads: 32
 logger_level:
   default: debug

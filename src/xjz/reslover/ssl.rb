@@ -10,6 +10,7 @@ module Xjz
     end
 
     def perform
+      Logger[:auto].info { "Perform by SSL" }
       sock = req.user_socket
       HTTPHelper.write_res_to_conn(Response.new({ 'Content-Length' => '0' }, [], 200), sock)
 
@@ -48,11 +49,10 @@ module Xjz
         Logger[:auto].info { "Generate cert for #{server_name}" }
         ctx = OpenSSL::SSL::SSLContext.new
         ctx.add_certificate(cert_manager.issue_cert(server_name), cert_manager.pkey)
-        server_protocols = %w{http/1.1}
-        server_protocols << 'h2' if $config['proxy_http2']
-        # ctx.alpn_protocols = ["http/1.1", "spdy/2", "h2"]
+        server_protocols = $config['alpn_protocols'] || %w{h2 http/1.1}
         ctx.alpn_select_cb = lambda do |protocols|
-          (server_protocols & protocols).first
+          Logger[:auto].info { "Client protocols #{protocols} & Server protocols #{server_protocols}" }
+          (server_protocols & protocols).first || 'http/1.1'
         end
         block.call(ctx) if block
         ctx

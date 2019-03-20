@@ -15,7 +15,7 @@ RSpec.describe Xjz::Reslover::SSL do
       end
       reslover = Xjz::Reslover::SSL.new(req)
       t = Thread.new { reslover.perform }
-      sleep 0.1
+      IO.select([client])
       expect(client.read_nonblock(1024)).to eql("HTTP/1.1 200 OK\r\ncontent-length: 0\r\n\r\n")
       ssl_client.hostname = 'xjz.pw'
       ssl_client.connect

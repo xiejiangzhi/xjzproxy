@@ -15,6 +15,7 @@ module Xjz
       }
       opts[:body] = req.body if req.body.present?
 
+      Logger[:auto].debug { "Send http1 request" }
       res = @last_raw_res = @client.send(req.http_method, req.url, opts)
       Response.new(res.headers.to_hash, res.body, res.code)
     end

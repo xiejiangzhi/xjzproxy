@@ -30,6 +30,7 @@ module Xjz
         stream.headers(req.headers, end_stream: false)
         stream.data(req.body, end_stream: true)
       end
+      Logger[:auto].debug { "Sent http2 stream request" }
 
       IOHelper.forward_streams(
         { remote_sock => WriterIO.new(client) },
@@ -44,6 +45,14 @@ module Xjz
       client.on(:frame) do |bytes|
         remote_sock << bytes
       end
+
+      # client.on(:frame_sent) do |frame|
+      #   Logger[:auto].debug { "Sent #{frame.inspect}" }
+      # end
+
+      # client.on(:frame_received) do |frame|
+      #   Logger[:auto].debug { "Recv #{frame.inspect}" }
+      # end
 
       # client.on(:promise) do |promise|
       #   promise.on(:promise_headers) do |h|

@@ -18,10 +18,10 @@ module Xjz
     end
 
     def perform
+      Logger[:auto].debug { "Perform by HTTP2" }
       upgrade_to_http2 if original_req.upgrade_flag
       resolver_server << HTTP2_REQ_HEADER
       IOHelper.forward_streams(@user_conn => WriterIO.new(resolver_server))
-      Logger[:auto].debug { "Finished #{original_req.host}" }
     ensure
       @remote_sock.close if @remote_sock
     end
@@ -33,10 +33,12 @@ module Xjz
     def init_h2_resolver
       conn = HTTP2::Server.new
       conn.on(:frame) do |bytes|
-        stream_name = IOHelper.stream_inspect(user_conn)
-        Logger[:auto].debug { "Send #{bytes.size} bytes to #{stream_name}" }
         user_conn.write(bytes)
       end
+
+      # conn.on(:frame_sent) do |frame|
+      #   Logger[:auto].debug { "Sent #{frame.inspect}" }
+      # end
 
       conn.on(:stream) do |stream|
         header = []
@@ -46,19 +48,17 @@ module Xjz
         stream.on(:data) { |d| buffer << d }
 
         stream.on(:half_close) do
-          # Logger[:http2_proxy].debug { "Request #{header} with data #{buffer.join.size} bytes" }
+          Logger[:auto].debug { "Recv HTTP2 Request" }
           req = Request.new_for_h2(original_req.env, header, buffer)
           @host ||= req.host
           @port ||= req.port
-          Logger[:auto].info { "#{req.http_method} #{req.host}:#{req.port}" }
 
           if remote_support_h2?
             proxy_http2_stream(stream, req)
           else
             proxy_http1_stream(stream, req)
           end
-
-          Logger[:auto].debug { "end_stream" }
+          Logger[:auto].debug { "Finished HTTP2 Request" }
         end
       end
       conn
@@ -114,9 +114,7 @@ module Xjz
     end
 
     def proxy_http1_stream(stream, req)
-      Logger[:auto].info { "Connect #{req.host} with http/1.1" }
       res = proxy_client.send_req(req)
-
       stream.headers(res.h2_headers, end_stream: false)
       stream.data(res.body, end_stream: true)
     end

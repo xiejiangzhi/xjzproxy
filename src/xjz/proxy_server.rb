@@ -1,5 +1,4 @@
 require 'socket'
-require 'securerandom'
 
 module Xjz
   class ProxyServer
@@ -23,18 +22,20 @@ module Xjz
           begin
             conn = server_socket.accept
             thread_pool.post do
-              uuid = SecureRandom.uuid
-              Logger[:auto].info { "New connection #{uuid}" }
+              Logger[:auto].info { "New connection" }
               HTTPParser.parse_request(conn) { |env| app.call(env) }
+            rescue Exception => e
+              Logger[:auto].error { "#{e.message}: #{e.backtrace.join("\n")}" }
             ensure
-              Logger[:auto].info { "Close connection #{uuid}" }
+              Logger[:auto].info { "Close connection" }
               conn.close unless conn.closed?
             end
           rescue Exception => e
-            Logger[:auto].error { "#{e.message}: #{e.backtrace[0]}" }
+            Logger[:auto].error { "#{e.message}: #{e.backtrace.join("\n")}" }
           end
-        rescue Exception
-          # rescue logger error, ignore
+        rescue Exception => e
+          puts e.message
+          # rescue logger error and ignore it
         end
       end
     end

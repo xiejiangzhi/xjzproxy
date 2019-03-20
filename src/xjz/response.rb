@@ -11,6 +11,7 @@ module Xjz
       else
         (raw_headers.is_a?(Hash) ? raw_headers.keys[0][0] : raw_headers[0][0][0]) == ':'
       end
+      @conn_status = 'keep-alive'
     end
 
     def h1_headers
@@ -37,6 +38,10 @@ module Xjz
       [code, h1_headers, [body].compact]
     end
 
+    def conn_close?
+      @conn_status == 'close'
+    end
+
     def protocol
       @http2 ? 'http/2.0' : (raw_headers['version'] || 'http/1.1').downcase
     end
@@ -47,6 +52,7 @@ module Xjz
       h1, h2, keys = [], [], []
 
       raw_headers.each do |k, v|
+        k = k.downcase
         keys << k
         line = [k, v.is_a?(Array) ? v.join(', ') : v.to_s]
 
@@ -60,6 +66,7 @@ module Xjz
           h2 << line
         when 'connection'
           # http1 headers only
+          @conn_status = (v.is_a?(Array) ? v.first : v).downcase
           h1 << line
         else
           h1 << line

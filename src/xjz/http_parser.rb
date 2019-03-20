@@ -20,7 +20,6 @@ module Xjz
     def self.parse_request(conn, &block)
       IO.select([conn], nil, nil, 3)
       data = conn.read_nonblock(HTTP2_REQ_HEADER.bytesize)
-      Logger[:auto].debug { data.split(' ', 2).first }
 
       if data.upcase == HTTP2_REQ_HEADER
         env = HTTP2_ENV.dup
@@ -76,7 +75,7 @@ module Xjz
       if @env['REQUEST_METHOD'] == 'CONNECT'
         host, port = parser.request_url.split(':')
         @env['SERVER_NAME'] = host
-        @env['SERVER_PORT'] = (port || 443).to_s
+        @env['SERVER_PORT'] = port
         @env['PATH_INFO'] = ''
         @env['QUERY_STRING'] = ''
       else
@@ -84,7 +83,7 @@ module Xjz
         @env['PATH_INFO'] = uri.path
         @env['QUERY_STRING'] = uri.query || ''
         @env['SERVER_NAME'] = uri.host || @env['HTTP_HOST']
-        @env['SERVER_PORT'] = (uri.port || '80').to_s
+        @env['SERVER_PORT'] = uri.port
       end
     end
 

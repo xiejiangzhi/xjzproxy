@@ -34,7 +34,7 @@ RSpec.describe Xjz::Reslover::HTTP1 do
 
   let(:subject) { Xjz::Reslover::HTTP1.new(req) }
 
-  before :each do
+  it '#perform should write response' do
     stub_request(:post, "http://xjz.pw/asdf?a=123").with(
       body: "hello",
       headers: {
@@ -42,18 +42,51 @@ RSpec.describe Xjz::Reslover::HTTP1 do
        'Host' => 'xjz.pw', 'User-Agent' => 'curl/7.54.0', 'Version' => 'HTTP/1.1'
       }
     ).to_return(status: 200, body: "world1234567", headers: new_http1_res_headers)
-  end
-
-  it '#response should return a response of this request' do
-    res = subject.response
-    expect(res).to be_a(Xjz::Response)
-    expect(res.code).to eql(200)
-    expect(res.body).to eql('world1234567')
-    expect(res.h1_headers).to eql(new_http1_res_headers)
-  end
-
-  it '#perform should return a rack response' do
-    expect(Xjz::HTTPHelper).to receive(:write_res_to_conn).with(subject.response, req.user_socket)
+    expect(Xjz::HTTPHelper).to receive(:write_res_to_conn) do |r, s|
+      expect(r.code).to eql(200)
+      expect(r.body).to eql('world1234567')
+      expect(r.h1_headers).to eql(new_http1_res_headers)
+      expect(s).to eql(req.user_socket)
+    end
     subject.perform
+  end
+
+  it '#perform should support multiple req/res in one connection' do
+    res = [
+      [200, 'world1234567', new_http1_res_headers(keep_alive: true)],
+      [400, 'err', [['content-length', '3']] ]
+    ]
+    stub_request(:post, "http://xjz.pw/asdf?a=123").with(
+      body: "hello",
+      headers: {
+       'Accept' => '*/*', 'Content-Length' => '5',
+       'Host' => 'xjz.pw', 'User-Agent' => 'curl/7.54.0', 'Version' => 'HTTP/1.1'
+      }
+    ).to_return(status: res[0][0], body: res[0][1], headers: res[0][2])
+
+    stub_request(:get, "http://xjz.pw/index?t=11").with(
+      headers: { 'Host' => 'xjz.pw', 'X-A' => '123' }
+    ).to_return(status: res[1][0], body: res[1][1], headers: res[1][2])
+
+    addr = double('addr', ip_address: '1.2.3.4')
+    req.user_socket.define_singleton_method(:remote_address) { addr }
+
+    expect(Xjz::HTTPHelper).to receive(:write_res_to_conn).twice do |r, s|
+      code, body, headers = res.shift
+      expect(r.code).to eql(code)
+      expect(r.body).to eql(body)
+      expect(r.h1_headers).to eql(headers)
+      expect(s).to eql(req.user_socket)
+    end
+
+    req.user_socket << <<~REQ
+      GET /index?t=11 HTTP/1.1\r
+      Host: xjz.pw\r
+      X-A: 123\r
+      \r
+    REQ
+    req.user_socket.rewind
+    subject.perform
+    expect(res).to be_empty
   end
 end

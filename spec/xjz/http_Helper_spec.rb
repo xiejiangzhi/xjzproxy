@@ -34,8 +34,11 @@ RSpec.describe Xjz::HTTPHelper do
       conn = double('conn', remote_address: addr)
       env = {}
       Xjz::HTTPHelper.write_conn_info_to_env!(env, conn)
-      expect(env.keys).to eql(%w{REMOTE_ADDR rack.hijack? rack.hijack rack.hijack_io})
+      expect(env.keys).to eql(%w{
+        REMOTE_ADDR SERVER_PORT rack.hijack? rack.hijack rack.hijack_io
+      })
       expect(env['REMOTE_ADDR']).to eql('1.2.3.4')
+      expect(env['SERVER_PORT']).to eql('80')
       expect(env['rack.hijack?']).to eql(true)
       expect(env['rack.hijack_io']).to eql(conn)
       expect(env['rack.hijack'].call).to eql(conn)
@@ -47,8 +50,11 @@ RSpec.describe Xjz::HTTPHelper do
       allow(conn).to receive(:to_io).and_return(conn)
       env = {}
       Xjz::HTTPHelper.write_conn_info_to_env!(env, conn)
-      expect(env.keys).to eql(%w{REMOTE_ADDR rack.url_scheme rack.hijack? rack.hijack rack.hijack_io})
+      expect(env.keys).to eql(%w{
+        REMOTE_ADDR SERVER_PORT rack.url_scheme rack.hijack? rack.hijack rack.hijack_io
+      })
       expect(env['REMOTE_ADDR']).to eql('1.2.3.4')
+      expect(env['SERVER_PORT']).to eql('443')
       expect(env['rack.hijack?']).to eql(true)
       expect(env['rack.hijack_io']).to eql(conn)
       expect(env['rack.hijack'].call).to eql(conn)
@@ -69,8 +75,8 @@ RSpec.describe Xjz::HTTPHelper do
       expect(conn.read).to eql(
         <<~RES.strip
           HTTP/1.1 200 OK\r
-          Host: xjz.pw\r
-          Content-Type: text/plan\r
+          host: xjz.pw\r
+          content-type: text/plan\r
           content-length: 11\r
           \r
           hello world
@@ -88,8 +94,8 @@ RSpec.describe Xjz::HTTPHelper do
       expect(conn.read).to eql(
         <<~RES
           HTTP/1.1 200 OK\r
-          Host: xjz.pw\r
-          Content-Type: text/plan\r
+          host: xjz.pw\r
+          content-type: text/plan\r
           content-length: 0\r
           \r
         RES
