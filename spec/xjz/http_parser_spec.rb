@@ -156,5 +156,42 @@ RSpec.describe Xjz::HTTPParser do
         "rack.url_scheme" => "http"
       )
     end
+
+    it 'should call callback and give env for a h2 request' do
+      conn, w = IO.pipe
+      addr = double('addr', ip_address: '1.2.3.4')
+      conn.define_singleton_method(:remote_address) { addr }
+      w << <<~REQ
+        PRI * HTTP/2.0\r
+        \r
+        SM\r
+        \r
+        123456
+      REQ
+      r = nil
+      Xjz::HTTPParser.parse_request(conn) { |env| r = env }
+      expect(conn.read_nonblock(100)).to eql("123456\n")
+
+      expect(r.delete('rack.errors')).to be_a(StringIO)
+      expect(r.delete('rack.hijack')).to be_a(Proc)
+      expect(r.delete('rack.hijack_io')).to eql(conn)
+      expect(r.delete('rack.hijack?')).to eql(true)
+      expect(r.delete('rack.input')).to be_a(StringIO)
+      expect(r).to eql(
+        "GATEWAY_INTERFACE" => "CGI/1.2",
+        "PATH_INFO" => "*",
+        "QUERY_STRING" => '',
+        "REMOTE_ADDR" => '1.2.3.4',
+        "REQUEST_METHOD" => "PRI",
+        "REQUEST_URI" => "*",
+        "SCRIPT_NAME" => "",
+        "SERVER_NAME" => "",
+        "SERVER_PORT" => "443",
+        "SERVER_PROTOCOL" => "HTTP/2.0",
+        "rack.multiprocess" => false,
+        "rack.multithread" => true,
+        "rack.url_scheme" => "http"
+      )
+    end
   end
 end

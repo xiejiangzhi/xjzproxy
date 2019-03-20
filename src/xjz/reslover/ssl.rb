@@ -16,10 +16,10 @@ module Xjz
       ssl_sock = OpenSSL::SSL::SSLSocket.new(sock, self.class.ssl_ctx)
       ssl_sock.sync_close
       ssl_sock.accept
+      Logger[:auto].debug { "SSLSocket Accepted" }
 
       HTTPParser.parse_request(ssl_sock) do |env|
-        req = Request.new(env)
-        Reslover::HTTP1.new(req).perform
+        RequestDispatcher.new.call(env)
       end
     end
 
@@ -34,7 +34,7 @@ module Xjz
     end
 
     def self.cert_manager
-      @cert_manager ||= Xjz::CertManager.new
+      @cert_manager ||= CertManager.new
     end
 
     def self.ssl_cert_cb(args)
@@ -45,7 +45,7 @@ module Xjz
     def self.fetch_ssl_ctx_by_domain(server_name, &block)
       @ssl_ctxs ||= {}
       @ssl_ctxs[server_name] ||= begin
-        Xjz::Logger[:auto].info { "Generate cert for #{server_name}" }
+        Logger[:auto].info { "Generate cert for #{server_name}" }
         ctx = OpenSSL::SSL::SSLContext.new
         ctx.add_certificate(cert_manager.issue_cert(server_name), cert_manager.pkey)
         server_protocols = %w{h2 http/1.1}

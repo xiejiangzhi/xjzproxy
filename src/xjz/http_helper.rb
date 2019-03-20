@@ -43,6 +43,7 @@ module Xjz
         unless res.body.empty?
           conn << res.body
         end
+        conn.flush
       end
     end
   end

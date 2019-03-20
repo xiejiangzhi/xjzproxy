@@ -1,4 +1,5 @@
 require 'socket'
+require 'securerandom'
 
 module Xjz
   class ProxyServer
@@ -8,7 +9,7 @@ module Xjz
       @server_socket = TCPServer.new($config['proxy_port'])
       @thread_pool = Concurrent::ThreadPoolExecutor.new(
          min_threads: 2,
-         max_threads: $config['max_threads'],
+         max_threads: 4,
          max_queue: 512,
          fallback_policy: :discard
       )
@@ -22,8 +23,11 @@ module Xjz
           begin
             conn = server_socket.accept
             thread_pool.post do
+              uuid = SecureRandom.uuid
+              Logger[:auto].info { "New connection #{uuid}" }
               HTTPParser.parse_request(conn) { |env| app.call(env) }
             ensure
+              Logger[:auto].info { "Close connection #{uuid}" }
               conn.close unless conn.closed?
             end
           rescue Exception => e

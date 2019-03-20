@@ -2,7 +2,6 @@ module Xjz
   class Reslover::HTTP2
     attr_reader :original_req, :conn, :host, :port
 
-    HTTP2_REQ_DATA = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
     UPGRADE_RES = [
       'HTTP/1.1 101 Switching Protocols',
       'Connection: Upgrade',
@@ -20,7 +19,7 @@ module Xjz
 
     def perform
       upgrade_to_http2 if original_req.upgrade_flag
-      resolver_server << HTTP2_REQ_DATA
+      resolver_server << HTTP2_REQ_HEADER
       IOHelper.forward_streams(@user_conn => WriterIO.new(resolver_server))
       Logger[:auto].debug { "Finished #{original_req.host}" }
     ensure

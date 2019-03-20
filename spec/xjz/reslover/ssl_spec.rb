@@ -7,14 +7,12 @@ RSpec.describe Xjz::Reslover::SSL do
         'rack.hijack' => Proc.new { remote },
         'rack.hijack_io' => remote
       )
-      http1_reslover = double('h1', perform: true)
-      expect(Xjz::Reslover::HTTP1).to receive(:new) do |new_req|
+      expect_any_instance_of(Xjz::RequestDispatcher).to receive(:call) do |t, env|
+        new_req = Xjz::Request.new(env)
         expect(new_req.http_method).to eql('get')
         expect(new_req.url).to eql('https://xjz.pw/')
         expect(new_req.host).to eql('xjz.pw')
-        http1_reslover
       end
-      expect(http1_reslover).to receive(:perform)
       reslover = Xjz::Reslover::SSL.new(req)
       t = Thread.new { reslover.perform }
       sleep 0.1

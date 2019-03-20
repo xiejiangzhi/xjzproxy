@@ -2,18 +2,45 @@ module Xjz
   class HTTPParser
     attr_reader :parser
 
+    HTTP2_ENV = {
+      'REQUEST_METHOD' => 'PRI',
+      'SCRIPT_NAME' => '',
+      'REQUEST_URI' => '*',
+      'SERVER_PROTOCOL' => "HTTP/2.0",
+      'GATEWAY_INTERFACE' => 'CGI/1.2',
+      'SERVER_NAME' => '',
+      'SERVER_PORT' => '443',
+      'PATH_INFO' => '*',
+      'QUERY_STRING' => '',
+      'rack.multithread' => true,
+      'rack.multiprocess' => false,
+      'rack.url_scheme' => 'http'
+    }.freeze
+
     def self.parse_request(conn, &block)
-      parser = self.new
-      stop_copy = false
-      parser.on_finish do |env|
+      IO.select([conn], nil, nil, 3)
+      data = conn.read_nonblock(HTTP2_REQ_HEADER.bytesize)
+
+      if data.upcase == HTTP2_REQ_HEADER
+        env = HTTP2_ENV.dup
+        env['rack.input'] = StringIO.new
+        env['rack.errors'] = StringIO.new
         HTTPHelper.write_conn_info_to_env!(env, conn)
-        stop_copy = true
         block.call(env)
+      else
+        parser = self.new
+        stop_copy = false
+        parser.on_finish do |env|
+          HTTPHelper.write_conn_info_to_env!(env, conn)
+          stop_copy = true
+          block.call(env)
+        end
+        parser << data
+        IOHelper.forward_streams(
+          { conn => WriterIO.new(parser) },
+          stop_wait_cb: proc { stop_copy }
+        )
       end
-      IOHelper.forward_streams(
-        { conn => WriterIO.new(parser) },
-        stop_wait_cb: proc { stop_copy }
-      )
     end
 
     def initialize

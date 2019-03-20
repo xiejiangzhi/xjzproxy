@@ -68,4 +68,6 @@ module Xjz
   }
 
   LINE_END = "\r\n"
+
+  HTTP2_REQ_HEADER = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
 end
