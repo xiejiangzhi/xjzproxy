@@ -51,5 +51,12 @@ module Support
       )
       res
     end
+
+    def socket_pair
+      server = TCPServer.new(0)
+      client = TCPSocket.new(server.local_address.ip_address, server.local_address.ip_port)
+      remote = server.accept
+      [client, remote]
+    end
   end
 end

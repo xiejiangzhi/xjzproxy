@@ -13,7 +13,6 @@ module Xjz
         server_socket => user_socket,
         user_socket => server_socket
       )
-      [0, {}, []]
     ensure
       user_socket.close
       server_socket.close

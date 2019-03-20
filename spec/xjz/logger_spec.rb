@@ -14,7 +14,7 @@ RSpec.describe Xjz::Logger do
 
       expect(l.logger).to eql(subject.logger)
       expect(l.progname).to eql('misc')
-      expect(l.level).to eql('info')
+      expect(l.level).to eql('debug')
     end
   end
 
@@ -23,9 +23,11 @@ RSpec.describe Xjz::Logger do
     it 'should write log to logdev' do
       travel_to(time)
 
-      $config['logger_level']['app'] = 'debug'
-      $config['logger_level']['misc'] = 'info'
-      $config['logger_level']['server'] = 'warn'
+      allow($config['logger_level']).to receive('[]') do |name|
+        {
+          'app' => 'debug', 'misc' => 'info', 'server' => 'warn'
+        }[name]
+      end
 
       subject[:app].debug { '1' }
       subject[:misc].debug { '2' }

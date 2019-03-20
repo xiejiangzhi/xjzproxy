@@ -2,6 +2,20 @@ module Xjz
   class HTTPParser
     attr_reader :parser
 
+    def self.parse_request(conn, &block)
+      parser = self.new
+      stop_copy = false
+      parser.on_finish do |env|
+        HTTPHelper.write_conn_info_to_env!(env, conn)
+        stop_copy = true
+        block.call(env)
+      end
+      IOHelper.forward_streams(
+        { conn => WriterIO.new(parser) },
+        stop_wait_cb: proc { stop_copy }
+      )
+    end
+
     def initialize
       @parser = Http::Parser.new(self)
     end

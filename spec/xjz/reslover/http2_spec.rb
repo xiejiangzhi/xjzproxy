@@ -26,9 +26,9 @@ RSpec.describe Xjz::Reslover::HTTP2 do
       "REQUEST_PATH" => "/asdf",
       "PATH_INFO" => "/asdf",
       "REMOTE_ADDR" => "127.0.0.1",
-      "puma.socket" => user_socket,
       "rack.hijack?" => true,
-      "rack.hijack" => Proc.new { StringIO.new },
+      "rack.hijack" => Proc.new { user_socket },
+      "rack.hijack_io" => user_socket,
       "rack.input" => StringIO.new,
       "rack.url_scheme" => "http",
       "rack.after_reply" => []
@@ -60,9 +60,9 @@ RSpec.describe Xjz::Reslover::HTTP2 do
         "REQUEST_PATH" => "/asdf",
         "PATH_INFO" => "/asdf",
         "REMOTE_ADDR" => "127.0.0.1",
-        "puma.socket" => user_socket,
         "rack.hijack?" => true,
-        "rack.hijack" => 'puma.client',
+        "rack.hijack" => Proc.new { user_socket },
+        "rack.hijack_io" => user_socket,
         "rack.input" => StringIO.new('hello'),
         "rack.url_scheme" => "http",
         "rack.after_reply" => []
@@ -92,10 +92,9 @@ RSpec.describe Xjz::Reslover::HTTP2 do
       headers: req.headers + [['Content-Length', '5']]
     ).to_return(status: 200, body: "world1234567", headers: new_http1_res_headers)
     allow(subject).to receive(:remote_support_h2?).and_return(false)
-    r = nil
     t = Thread.new do
       user_socket.recv(24) # remove the request header
-      r = subject.perform
+      subject.perform
     end
     res = new_http2_req(req, browser)
     browser.close
@@ -104,8 +103,6 @@ RSpec.describe Xjz::Reslover::HTTP2 do
     expect(res.h2_headers).to eql([
       [":status", "200"], ["content-type", "text/plain"], ["content-length", "12"]
     ])
-    sleep 0.1
-    expect(r).to eql([0, {}, []])
     t.kill
   end
 
@@ -126,8 +123,7 @@ RSpec.describe Xjz::Reslover::HTTP2 do
       }
     ).to_return(status: 200, body: "hello", headers: { 'a' => '1' })
     allow(subject).to receive(:remote_support_h2?).and_return(false)
-    r = nil
-    t = Thread.new { r = subject.perform }
+    t = Thread.new { subject.perform }
     expect(browser.recv(71)).to \
       eql("HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: h2c\r\n\r\n")
     res = new_http2_req(req, browser, upgrade: true)
@@ -135,7 +131,6 @@ RSpec.describe Xjz::Reslover::HTTP2 do
     expect(res.body).to eql("hello")
     expect(res.code).to eql(200)
     expect(res.h2_headers).to eql([[":status", "200"], ['a', '1'], ["content-length", "5"]])
-    expect(r).to eql([0, {}, []])
     t.kill
   end
 end

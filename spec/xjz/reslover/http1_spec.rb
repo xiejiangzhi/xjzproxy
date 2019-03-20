@@ -23,9 +23,9 @@ RSpec.describe Xjz::Reslover::HTTP1 do
       "REQUEST_PATH" => "/asdf",
       "PATH_INFO" => "/asdf",
       "REMOTE_ADDR" => "127.0.0.1",
-      "puma.socket" => 'puma.user_socket',
       "rack.hijack?" => true,
-      "rack.hijack" => 'puma.client',
+      "rack.hijack" => Proc.new { StringIO.new },
+      "rack.hijack_io" => StringIO.new,
       "rack.input" => StringIO.new('hello'),
       "rack.url_scheme" => "http",
       "rack.after_reply" => []
@@ -53,6 +53,7 @@ RSpec.describe Xjz::Reslover::HTTP1 do
   end
 
   it '#perform should return a rack response' do
-    expect(subject.perform).to eql([200, new_http1_res_headers, ['world1234567']])
+    expect(Xjz::HTTPHelper).to receive(:write_res_to_conn).with(subject.response, req.user_socket)
+    subject.perform
   end
 end

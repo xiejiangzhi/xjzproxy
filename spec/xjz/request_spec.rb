@@ -24,9 +24,9 @@ RSpec.describe Xjz::Request do
       "REQUEST_PATH" => "/asdf",
       "PATH_INFO" => "/asdf",
       "REMOTE_ADDR" => "127.0.0.1",
-      "puma.socket" => 'puma.user_socket',
       "rack.hijack?" => true,
-      "rack.hijack" => 'puma.client',
+      "rack.hijack" => proc { 'user_socket' },
+      "rack.hijack_io" => 'user_socket',
       "rack.input" => StringIO.new('hello'),
       "rack.url_scheme" => "http",
       "rack.after_reply" => []
@@ -42,7 +42,7 @@ RSpec.describe Xjz::Request do
   end
 
   it '#user_socket should return request url' do
-    expect(req.user_socket).to eql('puma.user_socket')
+    expect(req.user_socket).to eql('user_socket')
   end
 
   it '#headers should return all headers' do
@@ -120,7 +120,8 @@ RSpec.describe Xjz::Request do
         "REMOTE_ADDR" => "127.0.0.1",
         "puma.socket" => 'puma.sock',
         "rack.hijack?" => true,
-        "rack.hijack" => 'hijack',
+        "rack.hijack" => proc { 'hijack socket' },
+        "rack.hijack_io" => 'hijack socket',
         "rack.input" => StringIO.new,
         "rack.url_scheme" => "https",
         "rack.after_reply" => []
@@ -144,7 +145,7 @@ RSpec.describe Xjz::Request do
       expect(req.host).to eql('baidu.com')
       expect(req.port).to eql(443)
       expect(req.url).to eql('https://baidu.com/?a=123')
-      expect(req.user_socket).to eql('puma.sock')
+      expect(req.user_socket).to eql('hijack socket')
       expect(req.headers).to eql([
         [":method", "GET"], [":path", "/?a=123"], [":scheme", "https"],
         [":authority", "baidu.com"], ["user-agent", "curl/7.54.0"], ["accept", "*/*"],

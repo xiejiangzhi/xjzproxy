@@ -5,6 +5,7 @@ module Xjz
     def initialize
       @ca_path = File.join($root, $config['root_ca_path'])
       @key_path = File.join($root, $config['key_path'])
+      @root_ca = nil
     end
 
     def pkey

@@ -10,7 +10,7 @@ RSpec.describe Xjz::HTTPHelper do
     end
   end
 
-  describe 'get_header' do
+  describe 'set_header' do
     let(:headers) { [[':method', 'a'], ['hehe', 123]] }
 
     it 'should update headers' do
@@ -25,6 +25,75 @@ RSpec.describe Xjz::HTTPHelper do
 
       Xjz::HTTPHelper.set_header(headers, ':status', '200')
       expect(headers).to eql([[':status', '200'], [':method', 'GET'], ['hehe', '321'], ['asdf', 'aaa']])
+    end
+  end
+
+  describe 'write_conn_info_to_env!' do
+    it 'should update env' do
+      addr = double('addr', ip_address: '1.2.3.4')
+      conn = double('conn', remote_address: addr)
+      env = {}
+      Xjz::HTTPHelper.write_conn_info_to_env!(env, conn)
+      expect(env.keys).to eql(%w{REMOTE_ADDR rack.hijack? rack.hijack rack.hijack_io})
+      expect(env['REMOTE_ADDR']).to eql('1.2.3.4')
+      expect(env['rack.hijack?']).to eql(true)
+      expect(env['rack.hijack_io']).to eql(conn)
+      expect(env['rack.hijack'].call).to eql(conn)
+    end
+
+    it 'should update env to https if conn is a sslsocket' do
+      addr = double('addr', ip_address: '1.2.3.4')
+      conn = double('conn', remote_address: addr, is_a?: true, to_io: nil)
+      allow(conn).to receive(:to_io).and_return(conn)
+      env = {}
+      Xjz::HTTPHelper.write_conn_info_to_env!(env, conn)
+      expect(env.keys).to eql(%w{REMOTE_ADDR rack.url_scheme rack.hijack? rack.hijack rack.hijack_io})
+      expect(env['REMOTE_ADDR']).to eql('1.2.3.4')
+      expect(env['rack.hijack?']).to eql(true)
+      expect(env['rack.hijack_io']).to eql(conn)
+      expect(env['rack.hijack'].call).to eql(conn)
+      expect(env['rack.url_scheme']).to eql('https')
+    end
+  end
+
+  describe 'write_res_to_conn!' do
+    it 'should send data to conn' do
+      conn = StringIO.new
+      res = Xjz::Response.new(
+        [['Host', 'xjz.pw'], ['Content-Type', 'text/plan']],
+        ['hello', ' world'],
+        200
+      )
+      Xjz::HTTPHelper.write_res_to_conn(res, conn)
+      conn.rewind
+      expect(conn.read).to eql(
+        <<~RES.strip
+          HTTP/1.1 200 OK\r
+          Host: xjz.pw\r
+          Content-Type: text/plan\r
+          content-length: 11\r
+          \r
+          hello world
+        RES
+      )
+    end
+
+    it 'should not send data to conn if body is empty' do
+      conn = StringIO.new
+      res = Xjz::Response.new(
+        [['Host', 'xjz.pw'], ['Content-Type', 'text/plan']], [], 200
+      )
+      Xjz::HTTPHelper.write_res_to_conn(res, conn)
+      conn.rewind
+      expect(conn.read).to eql(
+        <<~RES
+          HTTP/1.1 200 OK\r
+          Host: xjz.pw\r
+          Content-Type: text/plan\r
+          content-length: 0\r
+          \r
+        RES
+      )
     end
   end
 end

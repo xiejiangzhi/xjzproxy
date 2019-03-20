@@ -9,14 +9,7 @@ module Xjz
 
     def perform
       body = fetch_template('index').render(ViewEntity.new(Tracker.instance.history))
-
-      [200, {}, [body]]
-    end
-
-    def web_ui_request?(env)
-      # TCPSocket is http direct connection
-      # OpenSSL::SSL::SSLServer is proxy https connection
-      env['puma.socket'].is_a?(TCPSocket) && env['REQUEST_URI'] =~ %r{^/}
+      HTTPHelper.write_res_to_conn(Response.new({}, [body], 200), req.user_socket)
     end
 
     def fetch_template(name)

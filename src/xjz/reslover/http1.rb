@@ -12,7 +12,7 @@ module Xjz
     end
 
     def perform
-      response.to_rack_response
+      HTTPHelper.write_res_to_conn(response, req.user_socket)
     end
   end
 end

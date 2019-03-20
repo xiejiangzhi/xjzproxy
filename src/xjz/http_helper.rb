@@ -20,13 +20,29 @@ module Xjz
       end
 
       def write_conn_info_to_env!(env, conn)
-        env['REMOTE_ADDR'] = conn.remote_address.ip_address
+        if conn.is_a?(OpenSSL::SSL::SSLSocket)
+          env['REMOTE_ADDR'] = conn.to_io.remote_address.ip_address
+          env['rack.url_scheme'] = 'https'
+        else
+          env['REMOTE_ADDR'] = conn.remote_address.ip_address
+        end
         env['rack.hijack?'] = true
         env['rack.hijack'] = proc { env['rack.hijack_io'] ||= conn }
         env['rack.hijack_io'] = conn
       end
 
-      def write_res_to_http1_conn(res, conn)
+      def write_res_to_conn(res, conn)
+        status = res.code
+        headers = []
+        headers << ["HTTP/1.1", status, HTTP_STATUS_CODES[status] || 'CUSTOM'].join(' ')
+        res.h1_headers.each do |k, v|
+          headers << "#{k}: #{v}"
+        end
+        conn << (headers.join(LINE_END) + "\r\n\r\n")
+
+        unless res.body.empty?
+          conn << res.body
+        end
       end
     end
   end

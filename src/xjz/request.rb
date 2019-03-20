@@ -42,7 +42,7 @@ module Xjz
     end
 
     def user_socket
-      env['puma.socket']
+      env['rack.hijack_io'] || env['rack.hijack'].call
     end
 
     def headers

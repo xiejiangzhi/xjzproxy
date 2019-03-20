@@ -23,7 +23,6 @@ module Xjz
       resolver_server << HTTP2_REQ_DATA
       IOHelper.forward_streams(@user_conn => WriterIO.new(resolver_server))
       Logger[:auto].debug { "Finished #{original_req.host}" }
-      [0, {}, []]
     ensure
       @remote_sock.close if @remote_sock
     end

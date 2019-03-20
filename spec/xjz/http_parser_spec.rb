@@ -120,4 +120,41 @@ RSpec.describe Xjz::HTTPParser do
       "rack.multiprocess" => false
     )
   end
+
+  describe '.parse_request' do
+    it 'should parse conn' do
+      conn, w = IO.pipe
+      addr = double('addr', ip_address: '1.2.3.4')
+      conn.define_singleton_method(:remote_address) { addr }
+      w << <<~REQ
+        GET / HTTP/1.1
+        Host: xjz.pw
+
+      REQ
+      r = nil
+      Xjz::HTTPParser.parse_request(conn) { |env| r = env }
+
+      expect(r.delete('rack.errors')).to be_a(StringIO)
+      expect(r.delete('rack.hijack')).to be_a(Proc)
+      expect(r.delete('rack.hijack_io')).to eql(conn)
+      expect(r.delete('rack.hijack?')).to eql(true)
+      expect(r.delete('rack.input')).to be_a(StringIO)
+      expect(r).to eql(
+        "GATEWAY_INTERFACE" => "CGI/1.2",
+        "HTTP_HOST" => "xjz.pw",
+        "PATH_INFO" => "/",
+        "QUERY_STRING" => '',
+        "REMOTE_ADDR" => '1.2.3.4',
+        "REQUEST_METHOD" => "GET",
+        "REQUEST_URI" => "/",
+        "SCRIPT_NAME" => "",
+        "SERVER_NAME" => "xjz.pw",
+        "SERVER_PORT" => "80",
+        "SERVER_PROTOCOL" => "HTTP/1.1",
+        "rack.multiprocess" => false,
+        "rack.multithread" => true,
+        "rack.url_scheme" => "http"
+      )
+    end
+  end
 end
