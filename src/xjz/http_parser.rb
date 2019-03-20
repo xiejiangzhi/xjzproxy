@@ -20,6 +20,7 @@ module Xjz
     def self.parse_request(conn, &block)
       IO.select([conn], nil, nil, 3)
       data = conn.read_nonblock(HTTP2_REQ_HEADER.bytesize)
+      Logger[:auto].debug { data.split(' ', 2).first }
 
       if data.upcase == HTTP2_REQ_HEADER
         env = HTTP2_ENV.dup

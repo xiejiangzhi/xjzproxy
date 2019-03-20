@@ -15,7 +15,7 @@ module Xjz
         rescue EOFError
           # eof, no data
         end
-        Logger[:auto].debug { "Copy #{data.to_s.length} bytes to #{stream_inspect(dst)}" }
+        Logger[:auto].debug { "Copy #{data.to_s.bytesize} bytes to #{stream_inspect(dst)}" }
         if data && data != ''
           dst.write(data)
         else
@@ -63,6 +63,8 @@ module Xjz
         stream.to_io.remote_address.inspect
       when stream.respond_to?(:remote_address)
         stream.remote_address.inspect
+      when WriterIO
+        stream.writer.class
       else
         stream.inspect
       end
@@ -86,7 +88,7 @@ module Xjz
       st = Time.now
       loop do
         return if stop_wait_cb && (stop_wait_cb.call(st) == true)
-        rs, _ = IO.select(streams, [], [], 0.1)
+        rs, _ = IO.select(streams, [], [], 1)
         return rs if rs
         return if (Time.now - st) >= timeout
       end

@@ -1,5 +1,7 @@
 module Xjz
   class WriterIO
+    attr_reader :writer
+
     # writer reuqire '<<' method
     def initialize(writer)
       @writer = writer
