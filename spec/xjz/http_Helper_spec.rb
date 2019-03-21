@@ -1,12 +1,13 @@
 RSpec.describe Xjz::HTTPHelper do
   describe 'get_header' do
-    let(:headers) { [[':method', 'a'], ['hehe', 123]] }
+    let(:headers) { [[':method', 'a'], ['hehe', 123], ['Content-Type', 'text/plain']] }
 
     it 'should get return header' do
       expect(Xjz::HTTPHelper.get_header(headers, ':method')).to eql('a')
       expect(Xjz::HTTPHelper.get_header(headers, 'hehe')).to eql(123)
       expect(Xjz::HTTPHelper.get_header(headers, :hehe)).to eql(123)
       expect(Xjz::HTTPHelper.get_header(headers, :adsf)).to eql(nil)
+      expect(Xjz::HTTPHelper.get_header(headers, 'conTent-tYpe')).to eql('text/plain')
     end
   end
 

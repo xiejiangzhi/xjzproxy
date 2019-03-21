@@ -126,8 +126,13 @@ module Xjz
       r = env['apis']
       purl = env['project']['url']
       apis.each do |api|
-        key = [api['method'], (api['url'] || purl) + api['path']].join(' ')
-        r[key] = expand_hash(api, env)
+        m = api['method'].to_s.upcase
+        url = Regexp.new('\A' + (api['url'] || purl) + '\Z')
+        r[url] ||= {}
+        expand_api = expand_hash(api, env)
+        expand_api['.path_regexp'] = Regexp.new('\A' + expand_api['path'] + '(\.\w+)?\Z')
+        expand_api['method'] = m
+        (r[url][m] ||= []) << expand_api
       end
     end
 

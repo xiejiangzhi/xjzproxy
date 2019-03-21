@@ -74,7 +74,8 @@ module Xjz
         end
       end
 
-      h2.unshift([':status', code.to_s]) unless keys.include?(':status')
+      @code ||= 200
+      h2.unshift([':status', @code.to_s]) unless keys.include?(':status')
       body_size = body.bytesize.to_s
       [h1, h2].each do |h|
         HTTPHelper.set_header(h, 'content-length', body_size)

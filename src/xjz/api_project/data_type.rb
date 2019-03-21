@@ -3,10 +3,10 @@ module Xjz
     attr_reader :raw_data, :counter
 
     TYPES_MAPPING = {
-      integer: proc { rand(1, 9999999999) },
+      integer: proc { 1 + rand(9999999999) },
       float: proc { (rand * 999999).round(3) },
       string: proc { Faker::Alphanumeric.alpha(64) },
-      text: proc { Faker::Lorem.garagraph },
+      text: proc { Faker::Lorem.paragraph },
       boolean: proc { rand < 0.5 },
       date: proc { Time.at(Time.now.to_i + rand(2000000) - 1000000).to_date },
       datetime: proc { Time.at(Time.now.to_i + rand(2000000) - 1000000) },
@@ -20,11 +20,11 @@ module Xjz
       domain: proc { Faker::Internet.domain_name },
       url: proc { Faker::Internet.url },
       markdown: proc { Faker::Markdown.sandwich }
-    }
+    }.stringify_keys
 
     def self.default_types
       @default_types ||= TYPES_MAPPING.keys.each_with_object({}) do |name, r|
-        r[name.to_s] = new('type' => name)
+        r[name.to_s] = new('type' => name.to_s)
       end
     end
 
@@ -37,7 +37,7 @@ module Xjz
     def generate
       incr_counter
       if raw_data['type']
-        TYPES_MAPPING[raw_data['type']].call(i)
+        TYPES_MAPPING[raw_data['type']].call(@counter)
       elsif raw_data['script']
         gen_by_script
       else

@@ -34,12 +34,11 @@ module Xjz
       @logger.formatter = proc do |severity, datetime, progname, msg|
         date = datetime.strftime("%Y-%m-%dT%H:%M:%S")
         ts_diff, ts_cost = time_info
-        format = (logdev == $stdout ? COLOR_LOG_FORMAT[severity] : nil) || LOG_FORMAT
-        s = format % [
+        format = get_formatter(logdev, severity)
+        format % [
           severity, date, decode_int(Thread.current.object_id), msg,
           ts_diff, ts_cost, progname
         ]
-        s + "\e[39m"
       end
       @prog_loggers = {}
     end
@@ -71,6 +70,13 @@ module Xjz
       lt = (Thread.current[:last_log_time] || ct)
       Thread.current[:last_log_time] = ct
       [(ct - lt) * 1000, ct - ft]
+    end
+
+    def get_formatter(logdev, severity)
+      return LOG_FORMAT if logdev != $stdout
+      format = COLOR_LOG_FORMAT[severity]
+      return LOG_FORMAT unless format
+      format + "\e[39m"
     end
 
     class ProgLogger

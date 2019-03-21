@@ -53,6 +53,13 @@ RSpec.describe Xjz::Response do
       ])
     end
 
+    it '#h1_headers should return http1 response headers' do
+      res = Xjz::Response.new([], [], nil)
+      expect(res.code).to eql(200)
+      expect(res.body).to eql('')
+      expect(res.h1_headers).to eql([['content-length', '0']])
+    end
+
     it '#h2_headers should return http1 response headers' do
       expect(res.h2_headers).to eql([
         [':status', '222'], ['other', 'xxx, bb'], ['content-length', '11']

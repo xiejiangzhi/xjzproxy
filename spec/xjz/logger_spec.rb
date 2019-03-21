@@ -40,11 +40,11 @@ RSpec.describe Xjz::Logger do
       logdev.rewind
       tid = subject.decode_int(Thread.current.object_id)
       expect(logdev.read).to eql(<<~LOG
-        DEBUG [2019-01-01T10:10:10 ##{tid}] 1 -- app
-        INFO  [2019-01-01T10:10:10 ##{tid}] 3 -- misc
-        WARN  [2019-01-01T10:10:10 ##{tid}] 5 -- server
-        ERROR [2019-01-01T10:10:10 ##{tid}] 6 -- server
-        FATAL [2019-01-01T10:10:10 ##{tid}] 7 -- app
+        DEBUG [2019-01-01T10:10:10 ##{tid}] 1 -- 0.000 0.000 app
+        INFO  [2019-01-01T10:10:10 ##{tid}] 3 -- 0.000 0.000 misc
+        WARN  [2019-01-01T10:10:10 ##{tid}] 5 -- 0.000 0.000 server
+        ERROR [2019-01-01T10:10:10 ##{tid}] 6 -- 0.000 0.000 server
+        FATAL [2019-01-01T10:10:10 ##{tid}] 7 -- 0.000 0.000 app
       LOG
       )
     end

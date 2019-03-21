@@ -43,5 +43,13 @@ RSpec.describe Xjz::ApiProject::DataType do
 
       expect(subject.generate).to eql('a3a-3-b3b')
     end
+
+    it 'should generate for default types' do
+      subject = described_class.default_types['integer']
+      expect(subject.generate).to be_a(Integer)
+
+      subject = described_class.default_types['name']
+      expect(subject.generate).to be_a(String)
+    end
   end
 end

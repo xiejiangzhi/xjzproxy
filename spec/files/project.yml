@@ -2,6 +2,7 @@
 project:
   url: https://xjz.pw
   desc: desc
+  dir: <%= File.expand_path('../', __FILE__) %>
 
 types:
   status:
@@ -86,9 +87,9 @@ apis:
 
   - title: Get user
     desc: show a user's info
-    method: GET
+    method: get
     url: http://asdf.com
-    path: /api/v1/users/:id
+    path: /api/v1/users/\d+
     labels: ['auth']
     query:
     response:

@@ -1,10 +1,6 @@
 RSpec.describe Xjz::ApiProject::Parser do
   let(:file_path) { File.join($root, 'spec/files/project.yml') }
-  let(:raw_data) { YAML.load_file(file_path) }
-
-  before :each do
-    raw_data['project']['dir'] = File.expand_path('../', file_path)
-  end
+  let(:raw_data) { Xjz::ApiProject.new(file_path).raw_data }
 
   describe 'verify' do
     it 'should return nil if has no error' do
@@ -30,7 +26,6 @@ RSpec.describe Xjz::ApiProject::Parser do
       d['responses']['123'] = { b: 2 }
       d['plugins']['xxx'] = { b: 2 }
       expect(subject.verify(d)).to eql([
-
         { full_path: "Hash[\"responses\"][\"123\"][\"http_code\"]", message: "present" },
         { full_path: "Hash[\"responses\"][\"123\"][\"data\"]", message: "present" },
         { full_path: "Hash[\"plugins\"][\"xxx\"][\"filter\"]", message: "present" },
@@ -151,54 +146,64 @@ RSpec.describe Xjz::ApiProject::Parser do
     it 'should parse apis' do
       r = subject.parse(raw_data)
       expect(r['apis']).to eql(
-        "GET https://xjz.pw/api/v1/users" => {
-          "title" => "Get all users",
-          "desc" => "more desc of this API",
-          "method" => "GET",
-          "path" => "/api/v1/users",
-          "labels" => ['auth'],
-          "query" => {
-            "page" => 1,
-            "./page.required" => true,
-            "q" => 123,
-            "status" => "$t/integer",
-            "./status.required" => { "unless" => "q" },
-            "./status.rejected" => { "if" => "q" }
-          },
-          "response" => {
-            "success" => [
-              r['responses']['list_users'],
-              {
-                http_code: 200,
-                data: {
-                  items: [r['partials']['user']] * 2,
-                  total: r['types']['integer']
-                }
-              }.deep_stringify_keys,
-              {
-                data: {
-                  items: [r['partials']['user']] * 2,
-                  './items.desc' => 'some desc',
-                  total: r['types']['integer'],
-                  './total.desc' => 'some desc'
-                }
-              }.deep_stringify_keys
-            ],
-            "error" => [r['responses']['invalid_token']]
-          }
+        %r{\Ahttps://xjz.pw\Z} => {
+          'GET' => [
+            {
+              "title" => "Get all users",
+              "desc" => "more desc of this API",
+              "method" => "GET",
+              "path" => "/api/v1/users",
+              ".path_regexp" => %r{\A/api/v1/users(\.\w+)?\Z},
+              "labels" => ['auth'],
+              "query" => {
+                "page" => 1,
+                "./page.required" => true,
+                "q" => 123,
+                "status" => "$t/integer",
+                "./status.required" => { "unless" => "q" },
+                "./status.rejected" => { "if" => "q" }
+              },
+              "response" => {
+                "success" => [
+                  r['responses']['list_users'],
+                  {
+                    http_code: 200,
+                    data: {
+                      items: [r['partials']['user']] * 2,
+                      total: r['types']['integer']
+                    }
+                  }.deep_stringify_keys,
+                  {
+                    data: {
+                      items: [r['partials']['user']] * 2,
+                      './items.desc' => 'some desc',
+                      total: r['types']['integer'],
+                      './total.desc' => 'some desc'
+                    }
+                  }.deep_stringify_keys
+                ],
+                "error" => [r['responses']['invalid_token']]
+              }
+            }
+          ],
         },
-        "GET http://asdf.com/api/v1/users/:id" => {
-          "title" => "Get user",
-          "desc" => "show a user's info",
-          "method" => "GET",
-          "url" => 'http://asdf.com',
-          "path" => "/api/v1/users/:id",
-          "labels" => ['auth'],
-          "query" => nil,
-          "response" => {
-            "success" => [r['responses']['show_user']],
-            "error" => [r['responses']['invalid_token']]
-          }
+        %r{\Ahttp://asdf.com\Z} => {
+          'GET' => [
+            {
+              "title" => "Get user",
+              "desc" => "show a user's info",
+              "method" => "GET",
+              "url" => 'http://asdf.com',
+              "path" => '/api/v1/users/\d+',
+              ".path_regexp" => %r{\A/api/v1/users/\d+(\.\w+)?\Z},
+              "labels" => ['auth'],
+              "query" => nil,
+              "response" => {
+                "success" => [r['responses']['show_user']],
+                "error" => [r['responses']['invalid_token']]
+              }
+            }
+          ]
         }
       )
     end

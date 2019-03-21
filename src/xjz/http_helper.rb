@@ -15,8 +15,8 @@ module Xjz
       end
 
       def get_header(headers, key)
-        key = key.to_s
-        (headers.find { |k, v| k == key } || []).last
+        key = key.to_s.downcase
+        (headers.find { |k, v| k.downcase == key } || []).last
       end
 
       def write_conn_info_to_env!(env, conn)

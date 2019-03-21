@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 gem 'activesupport', '~> 5.2.2', require: 'active_support'
 gem 'rack', '~> 2.0.6'
 gem 'concurrent-ruby', '~> 1.1.4'
+gem 'builder', '~> 3.2.3'
 
 gem 'httparty', '~> 0.16.4'
 gem 'http_parser.rb', '~> 0.6.0', require: 'http_parser'
@@ -14,4 +15,3 @@ gem 'faker', "~> 1.9.3"
 
 # UI
 gem 'slim', '~> 4.0.1'
-
