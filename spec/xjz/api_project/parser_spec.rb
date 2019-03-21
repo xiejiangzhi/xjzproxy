@@ -55,8 +55,13 @@ RSpec.describe Xjz::ApiProject::Parser do
       r = subject.parse(raw_data)
       partials = r['partials']
       types = r['types']
+      expect(partials['simple_user']).to eql(
+        "id" => types['integer'],
+        "avatar" => types['avatar'],
+        "nickname" => types['string'],
+      )
       expect(partials['user']).to eql(
-        "./posts.desc" => "a list of post",
+        ".posts.desc" => "a list of post",
         "avatar" => types['avatar'],
         "id" => types['integer'],
         "nickname" => types['string'],
@@ -64,7 +69,8 @@ RSpec.describe Xjz::ApiProject::Parser do
           "body" => types['text'],
           "id" => types['integer'],
           "title" => "a post title"
-        }] * 3)
+        }] * 3
+      )
       expect(partials['post']).to eql(
         'id' => types['integer'],
         'body' => types['text'],
@@ -101,10 +107,10 @@ RSpec.describe Xjz::ApiProject::Parser do
         "list_users" => {
           "http_code" => 200,
           "data" => {
-            "items" => [pts['user']] * 4,
-            "./items.desc" => "a array of user",
+            "items" => [pts['user']] * 2,
+            ".items.desc" => "a array of user",
             "total" => types['integer'],
-            "./total.desc" => "val"
+            ".total.desc" => "val"
           }
         }
       )
@@ -131,7 +137,7 @@ RSpec.describe Xjz::ApiProject::Parser do
           },
           "headers" => nil,
           "params" => {
-            "./token.required" => true,
+            ".token.required" => true,
             "token" => r['types']['string']
           },
           "query" => nil
@@ -157,11 +163,11 @@ RSpec.describe Xjz::ApiProject::Parser do
               "labels" => ['auth'],
               "query" => {
                 "page" => 1,
-                "./page.required" => true,
+                ".page.required" => true,
                 "q" => 123,
                 "status" => "$t/integer",
-                "./status.required" => { "unless" => "q" },
-                "./status.rejected" => { "if" => "q" }
+                ".status.required" => { "unless" => "q" },
+                ".status.rejected" => { "if" => "q" }
               },
               "response" => {
                 "success" => [
@@ -176,9 +182,9 @@ RSpec.describe Xjz::ApiProject::Parser do
                   {
                     data: {
                       items: [r['partials']['user']] * 2,
-                      './items.desc' => 'some desc',
+                      '.items.desc' => 'some desc',
                       total: r['types']['integer'],
-                      './total.desc' => 'some desc'
+                      '.total.desc' => 'some desc'
                     }
                   }.deep_stringify_keys
                 ],

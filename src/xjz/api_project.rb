@@ -21,7 +21,7 @@ module Xjz
     end
 
     def errors
-      Parser.verify(raw_data)
+      Parser.verify(raw_data, repo_path)
     end
 
     def data
@@ -31,9 +31,9 @@ module Xjz
     def raw_data
       @raw_data ||= begin
         if File.directory?(repo_path)
-          load_dir(repo_path)
+          load_dir(repo_path).tap { |d| (d['project'] || {})['dir'] ||= repo_path }
         else
-          load_file(repo_path)
+          load_file(repo_path).tap { |d| (d['project'] || {})['dir'] ||= File.dirname(repo_path) }
         end
       end
     end

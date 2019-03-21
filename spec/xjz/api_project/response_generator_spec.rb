@@ -25,7 +25,8 @@ RSpec.describe Xjz::ApiProject::ResponseGenerator do
           data: {
             id: default_types['integer'],
             name: default_types['name'],
-            other: 123
+            other: 123,
+            '.other' => 'desc'
           }
         }.deep_stringify_keys)
         expect(r).to be_a(Xjz::Response)

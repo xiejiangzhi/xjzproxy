@@ -11,5 +11,7 @@ max_threads: 32
 logger_level:
   default: debug
 
+# .api_projects will auto generate by projects
 projects:
-  - ../xjzapidoc
+  - ../xjzapidoc/example1.yml
+  - ../xjzapidoc/example2

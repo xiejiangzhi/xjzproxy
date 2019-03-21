@@ -23,10 +23,11 @@ module Xjz
     KEYS = ('0'..'9').to_a + ('a'..'z').to_a + ('A'..'Z').to_a
     KLEN = KEYS.length
     COLOR_LOG_FORMAT = {
-      'DEBUG' => "\e[90m%-5s [%s #%s] %s -- %.3fms %.3fs %s\n",
-      'INFO' => "%-5s [%s #%s] %s -- \e[90m%.3fms %.3fs %s\n",
-      'WARN' => "\e[93m%-5s \e[39m[%s #%s] %s -- \e[90m%.3fms %.3fs %s\n",
-      'ERROR' => "\e[31m%-5s \e[39m[%s #%s] \e[31m%s -- \e[90m%.3fms %.3fs %s\n",
+      'DEBUG' => "\e[90m%-5s [%s #%s] %s -- %.3fms %.3fs %s\e[39m\n",
+      'INFO' => "\e[39m%-5s [%s #%s] %s -- \e[90m%.3fms %.3fs %s\e[39m\n",
+      'WARN' => "\e[93m%-5s \e[39m[%s #%s] %s -- \e[90m%.3fms %.3fs %s\e[39m\n",
+      'ERROR' => "\e[31m%-5s \e[39m[%s #%s] \e[31m%s -- \e[90m%.3fms %.3fs %s\e[39m\n",
+      'FATAL' => "\e[31m%-5s \e[39m[%s #%s] \e[31m%s -- \e[90m%.3fms %.3fs %s\e[39m\n"
     }
 
     def initialize(logdev = $stdout)
@@ -74,9 +75,7 @@ module Xjz
 
     def get_formatter(logdev, severity)
       return LOG_FORMAT if logdev != $stdout
-      format = COLOR_LOG_FORMAT[severity]
-      return LOG_FORMAT unless format
-      format + "\e[39m"
+      COLOR_LOG_FORMAT[severity] || COLOR_LOG_FORMAT['INFO']
     end
 
     class ProgLogger

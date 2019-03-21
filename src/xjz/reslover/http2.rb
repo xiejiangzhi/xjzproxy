@@ -33,7 +33,7 @@ module Xjz
     def init_h2_resolver
       conn = HTTP2::Server.new
       conn.on(:frame) do |bytes|
-        user_conn.write(bytes)
+        user_conn << bytes unless user_conn.closed?
       end
 
       # conn.on(:frame_sent) do |frame|

@@ -9,3 +9,5 @@ alpn_protocols:
   - http/1.1
 logger_level:
   default: debug
+projects:
+  - ./spec/files/project.yml
