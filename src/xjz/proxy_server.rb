@@ -28,6 +28,7 @@ module Xjz
               Logger[:auto].error { "#{e.message}: #{e.backtrace.join("\n")}" }
             ensure
               Logger[:auto].info { "Close connection" }
+              Logger[:auto].reset_ts
               conn.close unless conn.closed?
             end
           rescue Exception => e

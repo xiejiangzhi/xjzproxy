@@ -19,22 +19,27 @@ module Xjz
     end
 
     attr_reader :logger
-    LOG_FORMAT = "%-5s [%s #%s] %s -- %s\n"
+    LOG_FORMAT = "%-5s [%s #%s] %s -- %.3f %.3f %s\n"
     KEYS = ('0'..'9').to_a + ('a'..'z').to_a + ('A'..'Z').to_a
     KLEN = KEYS.length
     COLOR_LOG_FORMAT = {
-      'DEBUG' => "\e[90m%-5s [%s #%s] %s -- %s\n\e[39m",
-      'INFO' => "%-5s [%s #%s] %s -- \e[90m%s\n\e[39m",
-      'WARN' => "\e[93m%-5s \e[39m[%s #%s] %s -- \e[90m%s\n\e[39m",
-      'ERROR' => "\e[31m%-5s \e[39m[%s #%s] \e[31m%s -- \e[90m%s\n\e[39m",
+      'DEBUG' => "\e[90m%-5s [%s #%s] %s -- %.3fms %.3fs %s\n",
+      'INFO' => "%-5s [%s #%s] %s -- \e[90m%.3fms %.3fs %s\n",
+      'WARN' => "\e[93m%-5s \e[39m[%s #%s] %s -- \e[90m%.3fms %.3fs %s\n",
+      'ERROR' => "\e[31m%-5s \e[39m[%s #%s] \e[31m%s -- \e[90m%.3fms %.3fs %s\n",
     }
 
     def initialize(logdev = $stdout)
       @logger = ::Logger.new(logdev, level: :debug)
       @logger.formatter = proc do |severity, datetime, progname, msg|
         date = datetime.strftime("%Y-%m-%dT%H:%M:%S")
+        ts_diff, ts_cost = time_info
         format = (logdev == $stdout ? COLOR_LOG_FORMAT[severity] : nil) || LOG_FORMAT
-        format % [severity, date, decode_int(Thread.current.object_id), msg, progname]
+        s = format % [
+          severity, date, decode_int(Thread.current.object_id), msg,
+          ts_diff, ts_cost, progname
+        ]
+        s + "\e[39m"
       end
       @prog_loggers = {}
     end
@@ -60,6 +65,14 @@ module Xjz
       str.reverse.join
     end
 
+    def time_info
+      ct = Time.now
+      ft = (Thread.current[:first_log_time] ||= ct)
+      lt = (Thread.current[:last_log_time] || ct)
+      Thread.current[:last_log_time] = ct
+      [(ct - lt) * 1000, ct - ft]
+    end
+
     class ProgLogger
       LEVELS = Hash[%w{debug info warn error fatal}.each_with_index.to_a]
 
@@ -70,6 +83,11 @@ module Xjz
         @progname = progname
         @level = level
         @level_index = LEVELS[level]
+      end
+
+      def reset_ts
+        Thread.current[:first_log_time] = nil
+        Thread.current[:last_log_time] = nil
       end
 
       LEVELS.each do |name, index|
