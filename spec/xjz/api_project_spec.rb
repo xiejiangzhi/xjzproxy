@@ -15,7 +15,7 @@ RSpec.describe Xjz::ApiProject do
       r = ap.hack_req(Xjz::Request.new(
         'HTTP_HOST' => 'xjz.pw',
         'rack.url_scheme' => 'https',
-        'PATH_INFO' => '/api/v4/users',
+        'PATH_INFO' => '/api/v1/users',
         'REQUEST_METHOD' => 'GET'
       ))
       expect(r).to be_a(Xjz::Response)
@@ -42,6 +42,16 @@ RSpec.describe Xjz::ApiProject do
         "total" => 123
       )
       expect(r.h1_headers).to eql([["content-type", "application/json"], ["content-length", "479"]])
+    end
+
+    it 'should return nil for a invalid req' do
+      r = ap.hack_req(Xjz::Request.new(
+        'HTTP_HOST' => 'xjz.pw',
+        'rack.url_scheme' => 'https',
+        'PATH_INFO' => '/api/v4/uers',
+        'REQUEST_METHOD' => 'GET'
+      ))
+      expect(r).to be_nil
     end
   end
 

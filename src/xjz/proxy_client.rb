@@ -26,7 +26,7 @@ module Xjz
       res = hack_req(req) || @client.send_req(req)
       Logger[:auto].info do
         suffix = res.conn_close? ? ' - close' : ''
-        " < #{res.code} #{res.body.bytesize} bytes #{suffix}"
+        " < #{res.code} #{res.body.to_s.bytesize} bytes #{suffix}"
       end
       # TODO call hook after request
       res

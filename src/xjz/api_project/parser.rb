@@ -81,6 +81,7 @@ module Xjz
       ) do |key, r|
         val = raw_data[key]
         r[key] ||= {}
+        next unless val
         send("parse_#{key}", val, r)
       end
     end

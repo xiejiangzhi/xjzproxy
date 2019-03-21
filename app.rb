@@ -16,6 +16,7 @@ $config['.api_projects'] = $config['projects'].map do |p|
     Xjz::Logger[:auto].error { "Failed to load project '#{p}'\n#{errs.join("\n")}" }
     nil
   else
+    ap.data # try to parse
     ap
   end
 rescue => e

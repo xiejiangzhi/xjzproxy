@@ -213,5 +213,17 @@ RSpec.describe Xjz::ApiProject::Parser do
         }
       )
     end
+
+    it 'should skip if data is nil' do
+      r = subject.parse({})
+      expect(r).to eql(
+        'apis' => {},
+        "partials" => {},
+        "plugins" => {},
+        "project" => {},
+        "responses" => {},
+        "types" => Xjz::ApiProject::DataType.default_types
+      )
+    end
   end
 end
