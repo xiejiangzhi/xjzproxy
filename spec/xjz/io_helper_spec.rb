@@ -87,5 +87,18 @@ RSpec.describe Xjz::IOHelper do
       rw3.rewind
       expect(rw3.read).to eql('ab')
     end
+
+    it 'should forward stream and not wait' do
+      r1, w1 = IO.pipe
+      r2, w2 = IO.pipe
+      rw3 = StringIO.new
+      w1 << 'some data' << ' 1' << ' 2'
+
+      expect(subject.forward_streams(r1 => w2, r2 => rw3)).to eql(true)
+      expect(w2.closed?).to eql(true)
+      expect(rw3.closed_write?).to eql(true)
+      rw3.rewind
+      expect(rw3.read).to eql('some data more data end data')
+    end
   end
 end

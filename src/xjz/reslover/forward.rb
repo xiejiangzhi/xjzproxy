@@ -2,7 +2,7 @@ module Xjz
   class Reslover::Forward
     attr_reader :req
 
-    def intialize(req)
+    def initialize(req)
       @req = req
     end
 
