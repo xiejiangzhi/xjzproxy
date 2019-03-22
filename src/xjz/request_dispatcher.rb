@@ -6,7 +6,9 @@ module Xjz
       req = Request.new(env)
       req_method = req.http_method
 
-      Logger[:auto].debug { "#{req_method} #{req.host}:#{req.port}" }
+      Logger[:auto].debug do
+        "#{req_method} #{req.host}:#{req.port} - #{req.headers.map { |kv| kv.join(': ') }.join(', ')}"
+      end
 
       if req_method == 'connect'
         Reslover::SSL.new(req).perform
@@ -15,9 +17,9 @@ module Xjz
         when 'h2c'
           Reslover::HTTP2.new(req).perform
         when 'websocket'
-          Reslover::Forward.new(req)
+          Reslover::Forward.new(req).perform
         else
-          Reslover::Forward.new(req)
+          Reslover::Forward.new(req).perform
         end
       elsif web_ui_request?(req)
         Reslover::WebUI.new(req).perform

@@ -16,9 +16,10 @@ module Xjz
           # eof, no data
         end
         if data && data != ''
+          Logger[:auot].debug { "#{data.bytesize} bytes > #{stream_inspect(dst)}" }
           dst.write(data)
         else
-          dst.close_write if auto_eof
+          dst.close_write if auto_eof && dst.respond_to?(:close_write)
           break false
         end
       end
@@ -58,9 +59,11 @@ module Xjz
     def stream_inspect(stream)
       case stream
       when OpenSSL::SSL::SSLSocket
-        stream.to_io.remote_address.inspect
+        ad = stream.to_io.remote_address
+        [ad.ip_address, ad.ip_port].join(':')
       when stream.respond_to?(:remote_address)
-        stream.remote_address.inspect
+        ad = stream.remote_address
+        [ad.ip_address, ad.ip_port].join(':')
       when WriterIO
         stream.writer.class
       else

@@ -24,8 +24,12 @@ RSpec.describe Xjz::Response do
       expect(res.code).to eql(201)
     end
 
-    it '#body should response body' do
+    it '#body should return body' do
       expect(res.body).to eql('hello world')
+    end
+
+    it '#body should convert nil to empty string' do
+      expect(Xjz::Response.new({}, nil).body).to eql('')
     end
 
     it '#to_rack_response should return rack response' do
@@ -80,6 +84,28 @@ RSpec.describe Xjz::Response do
 
     it '#protocol should return false' do
       expect(res.protocol).to eql('http/2.0')
+    end
+  end
+
+  describe '#to_s' do
+    let(:res) do
+      Xjz::Response.new({
+        'connection' => 'close',
+        'transfer-encoding' => 'chunked',
+        'other' => ['xxx', 'bb']
+      }, ['hello', ' world'], 201)
+    end
+
+    it 'should return string of response' do
+      expect(res.to_s).to eql(<<~RES.strip
+        HTTP/1.1 201 Created\r
+        connection: close\r
+        other: xxx, bb\r
+        content-length: 11\r
+        \r
+        hello world
+      RES
+      )
     end
   end
 end

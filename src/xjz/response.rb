@@ -28,7 +28,6 @@ module Xjz
 
     def body
       @body ||= case raw_body
-      when nil then nil
       when Array then raw_body.join
       else raw_body.to_s
       end
@@ -44,6 +43,15 @@ module Xjz
 
     def protocol
       @http2 ? 'http/2.0' : (raw_headers['version'] || 'http/1.1').downcase
+    end
+
+    # http/1.1
+    def to_s
+      str = "HTTP/1.1 #{code} #{HTTP_STATUS_CODES[code] || 'CUSTOM'}\r\n"
+      h1_headers.each do |k, v|
+        str << "#{k}: #{v}\r\n"
+      end
+      str << LINE_END << body
     end
 
     private

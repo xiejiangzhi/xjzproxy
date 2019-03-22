@@ -1,13 +1,15 @@
 module Xjz
   class Request
     attr_reader :env
+    attr_accessor :forward_conn_attrs
 
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
     # only for single transport-level connection, must not be retransmitted by proxies or cached
     HOP_BY_HOP = %w{
-      connection keep-alive proxy-authenticate proxy-authorization
-      te trailers transfer-encoding upgrade
+      proxy-authenticate proxy-authorization
+      te trailers transfer-encoding
     }
+    CONN_ATTRS = %w{connection keep-alive upgrade}
     SHOULD_NOT_TRANSFER = %w{set-cookie proxy-connection}
 
     def self.new_for_h2(env, headers, buffer)
@@ -61,15 +63,20 @@ module Xjz
     def proxy_headers
       @proxy_headers ||= begin
         h = headers.dup.delete_if do |k, v|
-          HOP_BY_HOP.include?(k) || SHOULD_NOT_TRANSFER.include?(k)
+          HOP_BY_HOP.include?(k) || SHOULD_NOT_TRANSFER.include?(k) ||
+            (!forward_conn_attrs && CONN_ATTRS.include?(k))
         end
         HTTPHelper.set_header(h, 'content-length', body.bytesize.to_s)
         h
       end
     end
 
+    def h1_proxy_headers
+      @h1_proxy_headers ||= proxy_headers.reject { |k, v| k[0] == ':' }
+    end
+
     def body
-      @body ||= @env['rack.input'].read
+      @body ||= @env['rack.input'].read.to_s
     end
 
     def protocol
@@ -97,6 +104,14 @@ module Xjz
 
     def scheme
       rack_req.scheme
+    end
+
+    def to_s
+      str = "#{http_method.upcase} #{rack_req.fullpath} HTTP/1.1\r\n"
+      h1_proxy_headers.each do |k, v|
+        str << "#{k}: #{v}\r\n"
+      end
+      str << LINE_END << body
     end
 
     private

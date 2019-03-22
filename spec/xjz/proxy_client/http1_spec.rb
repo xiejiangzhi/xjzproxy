@@ -53,5 +53,27 @@ RSpec.describe Xjz::ProxyClient::HTTP1 do
       expect(res.h1_headers).to eql(res_headers.to_a)
       expect(res.body).to eql('world')
     end
+
+    it 'should remove h2 headers when send request' do
+      res_headers = { 'content-type' => 'text/plain', 'content-length' => '5', 'asdf' => '123' }
+      stub_request(:get, "http://baidu.com/asdf?a=123").with(
+        body: "hello",
+        headers: {
+          'Accept' => '*/*', 'Host' => 'baidu.com',
+          'User-Agent' => 'curl/7.54.0', 'Version' => 'HTTP/1.1'
+        }
+      ).to_return(
+        status: 234,
+        body: "world",
+        headers: res_headers
+      )
+      req.proxy_headers.unshift [':method', 'get']
+
+      res = subject.send_req(req)
+      expect(res).to be_a(Xjz::Response)
+      expect(res.code).to eql(234)
+      expect(res.h1_headers).to eql(res_headers.to_a)
+      expect(res.body).to eql('world')
+    end
   end
 end

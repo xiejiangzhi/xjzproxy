@@ -35,17 +35,7 @@ module Xjz
 
       def write_res_to_conn(res, conn)
         return if conn.closed?
-        status = res.code
-        headers = []
-        headers << ["HTTP/1.1", status, HTTP_STATUS_CODES[status] || 'CUSTOM'].join(' ')
-        res.h1_headers.each do |k, v|
-          headers << "#{k}: #{v}"
-        end
-        conn << (headers.join(LINE_END) + "\r\n\r\n")
-
-        unless res.body.empty?
-          conn << res.body
-        end
+        conn << res.to_s
         if res.conn_close?
           conn.close
         else

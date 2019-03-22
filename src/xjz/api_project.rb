@@ -8,6 +8,9 @@ module Xjz
       @repo_path = repo_path
     end
 
+    def match_host
+    end
+
     # Return nil if don't hijack
     # Return a response if hijack req
     def hack_req(req)

@@ -89,7 +89,7 @@ RSpec.describe Xjz::Reslover::HTTP2 do
     subject = Xjz::Reslover::HTTP2.new(req)
     stub_request(:post, "https://xjz.pw/asdf?a=123").with(
       body: "hello",
-      headers: req.headers + [['Content-Length', '5']]
+      headers: req.h1_proxy_headers + [['Content-Length', '5']]
     ).to_return(status: 200, body: "world1234567", headers: new_http1_res_headers)
     allow(subject).to receive(:remote_support_h2?).and_return(false)
     t = Thread.new do
@@ -110,10 +110,6 @@ RSpec.describe Xjz::Reslover::HTTP2 do
     subject = Xjz::Reslover::HTTP2.new(h2_upgrade_req)
     stub_request(:get, "http://xjz.pw/asdf?a=123").with(
       headers: {
-        ':authority' => 'xjz.pw',
-        ':method' => 'get',
-        ':path' => '/asdf?a=123',
-        ':scheme' => 'http',
         'Accept' => '*/*',
         'Content-Length' => '0',
         'Host' => 'xjz.pw',

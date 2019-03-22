@@ -34,6 +34,20 @@ RSpec.describe Xjz::IOHelper do
       dst.rewind
       expect(dst.read).to eql('hello world')
     end
+
+    it 'should not auto close if undefined close_write' do
+      rd, wr = IO.pipe
+      wr << 'hello '
+      wr << ''
+      wr << 'world'
+      wr.close
+      om = dst.method(:respond_to?)
+      allow(dst).to receive(:respond_to?) { |n| n.to_s == 'close_write' ? false : om.call(n) }
+      expect(subject.nonblock_copy_stream(rd, dst)).to eql(false)
+      expect(dst.closed_write?).to eql(false)
+      dst.rewind
+      expect(dst.read).to eql('hello world')
+    end
   end
 
   describe '.forward_stream' do
@@ -93,12 +107,15 @@ RSpec.describe Xjz::IOHelper do
       r2, w2 = IO.pipe
       rw3 = StringIO.new
       w1 << 'some data' << ' 1' << ' 2'
+      w1.close
 
+      t = Time.now
       expect(subject.forward_streams(r1 => w2, r2 => rw3)).to eql(true)
+      expect(Time.now - t).to be < 0.01
       expect(w2.closed?).to eql(true)
       expect(rw3.closed_write?).to eql(true)
       rw3.rewind
-      expect(rw3.read).to eql('some data more data end data')
+      expect(rw3.read).to eql('some data 1 2')
     end
   end
 end

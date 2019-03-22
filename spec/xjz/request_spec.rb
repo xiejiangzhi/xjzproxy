@@ -13,12 +13,12 @@ RSpec.describe Xjz::Request do
       "GATEWAY_INTERFACE" => "CGI/1.2",
       "REQUEST_METHOD" => "GET",
       "REQUEST_URI" => "http://baidu.com/",
-      "HTTP_VERSION" => "HTTP/1.1",
       "HTTP_HOST" => "baidu.com",
       "HTTP_USER_AGENT" => "curl/7.54.0",
       "HTTP_ACCEPT" => "*/*",
       "HTTP_PROXY_CONNECTION" => "Keep-Alive",
       "HTTP_CONTENT_TYPE" => "text/plain; charset=utf-8",
+      "HTTP_CONNECTION" => "keep-alive",
       "SERVER_NAME" => "baidu.com",
       "SERVER_PORT" => "80",
       "REQUEST_PATH" => "/asdf",
@@ -47,18 +47,50 @@ RSpec.describe Xjz::Request do
 
   it '#headers should return all headers' do
     expect(req.headers).to eql([
-      ["version", "HTTP/1.1"],
       ["host", "baidu.com"],
       ["user-agent", "curl/7.54.0"],
       ["accept", "*/*"],
       ["proxy-connection", "Keep-Alive"],
-      ["content-type", 'text/plain; charset=utf-8']
+      ["content-type", 'text/plain; charset=utf-8'],
+      ["connection", 'keep-alive']
     ])
   end
 
-  it '#proxy_headers should remove invalid headers' do
+  describe '#proxy_headers' do
+    it 'should remove invalid headers' do
+      expect(req.proxy_headers).to eql([
+        ["host", "baidu.com"],
+        ["user-agent", "curl/7.54.0"],
+        ["accept", "*/*"],
+        ["content-type", 'text/plain; charset=utf-8'],
+        ["content-length", '5']
+      ])
+    end
+
+    it 'should keep connection attrs if forward_conn_attrs is true' do
+      req.forward_conn_attrs = true
+      expect(req.proxy_headers).to eql([
+        ["host", "baidu.com"],
+        ["user-agent", "curl/7.54.0"],
+        ["accept", "*/*"],
+        ["content-type", 'text/plain; charset=utf-8'],
+        ["connection", "keep-alive"],
+        ["content-length", '5']
+      ])
+    end
+  end
+
+  it '#h1_proxy_headers should remove h2 headers' do
+    req.proxy_headers.unshift [':a', '123']
     expect(req.proxy_headers).to eql([
-      ["version", "HTTP/1.1"],
+      [':a', '123'],
+      ["host", "baidu.com"],
+      ["user-agent", "curl/7.54.0"],
+      ["accept", "*/*"],
+      ["content-type", 'text/plain; charset=utf-8'],
+      ["content-length", '5']
+    ])
+    expect(req.h1_proxy_headers).to eql([
       ["host", "baidu.com"],
       ["user-agent", "curl/7.54.0"],
       ["accept", "*/*"],
@@ -112,7 +144,6 @@ RSpec.describe Xjz::Request do
         "HTTPS" => "https",
         "REQUEST_METHOD" => "PRI",
         "REQUEST_URI" => "*",
-        "HTTP_VERSION" => "HTTP/2.0",
         "SERVER_NAME" => "localhost",
         "SERVER_PORT" => "443",
         "REQUEST_PATH" => "*",
@@ -158,6 +189,22 @@ RSpec.describe Xjz::Request do
       ])
       expect(req.body).to eql('hello world')
       expect(req.protocol).to eql('http/2.0')
+    end
+  end
+
+  describe 'to_s' do
+    it 'should return string of request' do
+      expect(req.to_s).to eql(<<~REQ.strip
+        GET /asdf?a=123 HTTP/1.1\r
+        host: baidu.com\r
+        user-agent: curl/7.54.0\r
+        accept: */*\r
+        content-type: text/plain; charset=utf-8\r
+        content-length: 5\r
+        \r
+        hello
+      REQ
+      )
     end
   end
 end
