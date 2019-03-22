@@ -13,4 +13,5 @@ XjzProxy
 * open/close api
 * verify + renderer gem for api project
 * GUI: GTK3
+* make better forward_streams. Fiber(better)/Thread
 
