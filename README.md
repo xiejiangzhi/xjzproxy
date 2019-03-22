@@ -9,7 +9,8 @@ XjzProxy
 
 ## TODOs
 
-* hijack request by api doc
-* more testing
-* GUI: GTK3 + Webkit2-GTK
+* host whitelist/blanklist
+* open/close api
+* verify + renderer gem for api project
+* GUI: GTK3
 
