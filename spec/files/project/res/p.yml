@@ -1,8 +1,6 @@
 ---
 partials:
-  user:
+  simple_user:
     id: ".t/integer"
     nickname: ".t/string"
     avatar: ".t/avatar"
-    posts: ".p/post * 3"
-    "./posts.desc": a list of post

@@ -2,7 +2,6 @@
 project:
   url: https://xjz.pw
   desc: desc
-  dir: <%= File.expand_path('../', __FILE__) %>
 
 types:
   status:
@@ -12,12 +11,15 @@ types:
     prefix: https://xxx.com
 
 partials:
-  user:
+  simple_user:
     id: .t/integer
     nickname: .t/string
     avatar: .t/avatar
+
+  user:
+    .*: .p/simple_user
     posts: .p/post * 3
-    ./posts.desc: a list of post
+    .posts.desc: a list of post
 
   post:
     id: .t/integer
@@ -48,10 +50,10 @@ responses:
   list_users:
     http_code: 200
     data:
-      items: .p/user * 4
-      ./items.desc: a array of user
+      items: .p/user * 2
+      .items.desc: a array of user
       total: .t/integer
-      ./total.desc: val
+      .total.desc: val
 
 apis:
   - title: Get all users
@@ -61,12 +63,12 @@ apis:
     labels: ['auth']
     query:
       page: 1
-      ./page.required: true
+      .page.required: true
       q: 123
       status: $t/integer
-      ./status.required:
+      .status.required:
         unless: q
-      ./status.rejected:
+      .status.rejected:
         if: q
 
     response:
@@ -78,9 +80,9 @@ apis:
             total: .t/integer
         - data:
             items: .p/user * 2
-            ./items.desc: some desc
+            .items.desc: some desc
             total: .t/integer
-            ./total.desc: some desc
+            .total.desc: some desc
 
       error:
         - .r/invalid_token
@@ -112,7 +114,7 @@ plugins:
     body:
     params:
       token: .t/string
-      ./token.required: true
+      .token.required: true
     headers:
 
   other:

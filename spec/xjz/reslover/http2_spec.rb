@@ -94,7 +94,7 @@ RSpec.describe Xjz::Reslover::HTTP2 do
     allow(subject).to receive(:remote_support_h2?).and_return(false)
     t = Thread.new do
       user_socket.recv(24) # remove the request header
-      subject.perform
+      subject.perform rescue Errno::EPIPE
     end
     res = new_http2_req(req, browser)
     browser.close
@@ -123,7 +123,7 @@ RSpec.describe Xjz::Reslover::HTTP2 do
       }
     ).to_return(status: 200, body: "hello", headers: { 'a' => '1' })
     allow(subject).to receive(:remote_support_h2?).and_return(false)
-    t = Thread.new { subject.perform }
+    t = Thread.new { subject.perform rescue Errno::EPIPE }
     expect(browser.recv(71)).to \
       eql("HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: h2c\r\n\r\n")
     res = new_http2_req(req, browser, upgrade: true)

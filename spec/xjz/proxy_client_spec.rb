@@ -25,6 +25,10 @@ RSpec.describe Xjz::ProxyClient do
 
   let(:res) { Xjz::Response.new({}, [], 200) }
 
+  after :each do
+    $config['.api_projects'] = []
+  end
+
   it 'should return true if support h2' do
     url = "http://xjz.pw/asdf?a=123"
     req_headers = Hash[req.headers]
@@ -50,5 +54,19 @@ RSpec.describe Xjz::ProxyClient do
     expect(c.client).to be_a(Xjz::ProxyClient::HTTP2)
     expect(c.client).to receive(:send_req).with(req).and_return(res)
     c.send_req(req)
+  end
+
+  it 'should use ApiProject response if hack_req return a response' do
+    c = Xjz::ProxyClient.new protocol: 'http1'
+    ap = Xjz::ApiProject.new('repopath')
+    $config['.api_projects'] = [ap]
+    allow(ap).to receive(:hack_req).and_return(nil)
+
+    allow(c.client).to receive(:send_req).with(req).and_return(res)
+    expect(c.send_req(req)).to eql(res)
+
+    res2 = Xjz::Response.new({}, ['asdf'], 201)
+    allow(ap).to receive(:hack_req).and_return(res2)
+    expect(c.send_req(req)).to eql(res2)
   end
 end

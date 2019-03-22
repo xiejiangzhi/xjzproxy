@@ -23,10 +23,10 @@ module Xjz
       Logger[:auto].info { " > #{req.http_method} #{req.url.split('?').first} #{@protocol}" }
       tracker = Tracker.track_req(req)
       # TODO call hook before request
-      res = @client.send_req(req)
+      res = hack_req(req) || @client.send_req(req)
       Logger[:auto].info do
         suffix = res.conn_close? ? ' - close' : ''
-        " < #{res.code} #{res.body.bytesize} bytes #{suffix}"
+        " < #{res.code} #{res.body.to_s.bytesize} bytes #{suffix}"
       end
       # TODO call hook after request
       res
@@ -38,6 +38,15 @@ module Xjz
           tracker.finish('error')
         end
       end
+    end
+
+    def hack_req(req)
+      $config['.api_projects'].each do |ap|
+        res = ap.hack_req(req)
+        return res if res
+      end
+
+      nil
     end
   end
 end

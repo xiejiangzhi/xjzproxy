@@ -14,7 +14,7 @@ responses:
   list_users:
     http_code: 200
     data:
-      items: ".p/user * 4"
-      "./items.desc": a array of user
+      items: ".p/user * 2"
+      ".items.desc": a array of user
       total: ".t/integer"
-      "./total.desc": val
+      ".total.desc": val

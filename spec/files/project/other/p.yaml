@@ -1,5 +1,9 @@
 ---
 partials:
+  user:
+    ".*": ".p/simple_user"
+    posts: ".p/post * 3"
+    ".posts.desc": a list of post
   post:
     id: ".t/integer"
     title: a post title

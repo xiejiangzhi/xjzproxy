@@ -67,6 +67,9 @@ module Xjz
     # .f/: read file
     REF_PREFIX = /^\.(t|p|r|f)\/.+/
 
+    COMMENT_PREFIX = '.'
+    EXPAND_HASH_FLAG = '.*'
+
     class ValidKey
       def initialize(key); @key = key.to_s; end
       def inspect; @key; end
@@ -78,23 +81,25 @@ module Xjz
       ) do |key, r|
         val = raw_data[key]
         r[key] ||= {}
+        next unless val
         send("parse_#{key}", val, r)
       end
     end
 
-    def verify(raw_data)
+    def verify(raw_data, path = 'Hash')
       errors = valid_hash(raw_data, RAW_DATA_SCHEMA)
       [
         ['responses', RESPONSE_SCHEMA],
         ['plugins', PLUGIN_SCHEMA],
         ['types', TYPE_SCHEMA],
       ].each do |name, schema|
+        next unless raw_data[name]
         raw_data[name].each do |key, val|
-          errors.push(*valid_hash(val, schema, %Q{Hash["#{name}"]["#{key}"]}))
+          errors.push(*valid_hash(val, schema, %Q{#{path}["#{name}"]["#{key}"]}))
         end
       end
-      raw_data['apis'].each_with_index do |val, i|
-        errors.push(*valid_hash(val, API_SCHEMA, %Q{Hash["apis"][#{i}]}))
+      (raw_data['apis'] || []).each_with_index do |val, i|
+        errors.push(*valid_hash(val, API_SCHEMA, %Q{#{path}["apis"][#{i}]}))
       end
       errors.empty? ? nil : errors
     end
@@ -156,21 +161,25 @@ module Xjz
     #
     # key:
     #   val: .t/integer
-    #   ./val.desc: desc
+    #   .val.desc: desc
     #
     # key:
-    #   ./val.desc: desc
+    #   .val.desc: desc
     #   val:
     #     s1: 123
-    #     ./s1.desc: xxx
+    #     .s1.desc: xxx
     #     bb: xxx
+    #
+    # key:
+    #   a: 1
+    #   .*: .p/xxx # merge(.p/xxx)
+    #   b: 2
     #
     def expand_hash(data, env)
       data.each_with_object({}) do |kv, r|
         k, v = kv
-        if k =~ /^\.\w+/
-          # .name.desc: ext data
-          r[k] = v
+        if k == EXPAND_HASH_FLAG
+          r.merge!(expand_var(v, env))
         else
           r[k] = case v
           when Hash then expand_hash(v, env)

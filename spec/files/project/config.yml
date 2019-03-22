@@ -2,7 +2,6 @@
 project:
   url: https://xjz.pw
   desc: desc
-  dir: "<%= File.expand_path('../', __FILE__) %>"
 plugins:
   auth:
     filter:
@@ -18,7 +17,7 @@ plugins:
     body: 
     params:
       token: ".t/string"
-      "./token.required": true
+      ".token.required": true
     headers: 
   other:
     filter:

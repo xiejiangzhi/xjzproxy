@@ -31,7 +31,7 @@ module Xjz
       when Hash
         conf.each_with_object({}) do |kv, r|
           k, v = kv
-          next if k[0..1] == './'
+          next if k[0] == '.'
           r[k] = render_body(v, depth - 1)
         end
       when Array

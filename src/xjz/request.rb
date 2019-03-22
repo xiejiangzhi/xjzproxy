@@ -37,6 +37,10 @@ module Xjz
       @url ||= rack_req.url
     end
 
+    def path
+      @path ||= rack_req.path
+    end
+
     def rack_req
       @rack_req ||= Rack::Request.new(env)
     end

@@ -25,17 +25,17 @@ module Xjz
               Logger[:auto].info { "New connection" }
               HTTPParser.parse_request(conn) { |env| app.call(env) }
             rescue Exception => e
-              Logger[:auto].error { "#{e.message}: #{e.backtrace.join("\n")}" }
+              Logger[:auto].error { e.log_inspect }
             ensure
               Logger[:auto].info { "Close connection" }
               Logger[:auto].reset_ts
               conn.close unless conn.closed?
             end
           rescue Exception => e
-            Logger[:auto].error { "#{e.message}: #{e.backtrace.join("\n")}" }
+            Logger[:auto].error { e.log_inspect }
           end
         rescue Exception => e
-          puts e.message
+          puts e.log_inspect
           # rescue logger error and ignore it
         end
       end
