@@ -16,4 +16,5 @@ XjzProxy
 * build portable ruby
 * update request/response before process
 * make better forward_streams. Fiber(better)/Thread
+* protect code
 
