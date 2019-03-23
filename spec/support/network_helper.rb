@@ -52,10 +52,11 @@ module Support
       res
     end
 
-    def socket_pair
+    def new_socket_pair
       server = TCPServer.new(0)
       client = TCPSocket.new(server.local_address.ip_address, server.local_address.ip_port)
       remote = server.accept
+      (@sockets ||= []) << [server, client, remote]
       [client, remote]
     end
   end

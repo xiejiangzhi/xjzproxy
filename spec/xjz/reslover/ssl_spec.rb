@@ -1,7 +1,7 @@
 RSpec.describe Xjz::Reslover::SSL do
   describe 'perform' do
     it 'should wrap socket with ssl and call http1 reslover' do
-      client, remote = socket_pair
+      client, remote = new_socket_pair
       ssl_client = OpenSSL::SSL::SSLSocket.new(client)
       req = Xjz::Request.new(
         'rack.hijack' => Proc.new { remote },

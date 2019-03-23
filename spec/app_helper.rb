@@ -24,4 +24,12 @@ RSpec.configure do |config|
   config.include Support::TimeHelper
   config.include Support::NetworkHelper
   config.include Support::DataHelper
+
+  config.after(:each) do
+    (@sockets ||= []).each do |server, client, remote|
+      remote.close rescue nil
+      client.close rescue nil
+      server.shutdown rescue nil
+    end
+  end
 end

@@ -1,4 +1,7 @@
 RSpec.describe Xjz::Reslover::HTTP1 do
+  let(:rw_io) { new_socket_pair }
+  let(:user_socket) { rw_io.first }
+  let(:client_socket) { rw_io.last }
   let(:req) do
     Xjz::Request.new(
       "rack.version" => [1, 3],
@@ -24,8 +27,8 @@ RSpec.describe Xjz::Reslover::HTTP1 do
       "PATH_INFO" => "/asdf",
       "REMOTE_ADDR" => "127.0.0.1",
       "rack.hijack?" => true,
-      "rack.hijack" => Proc.new { StringIO.new },
-      "rack.hijack_io" => StringIO.new,
+      "rack.hijack" => Proc.new { user_socket },
+      "rack.hijack_io" => user_socket,
       "rack.input" => StringIO.new('hello'),
       "rack.url_scheme" => "http",
       "rack.after_reply" => []
@@ -68,8 +71,8 @@ RSpec.describe Xjz::Reslover::HTTP1 do
       headers: { 'Host' => 'xjz.pw', 'X-A' => '123' }
     ).to_return(status: res[1][0], body: res[1][1], headers: res[1][2])
 
-    addr = double('addr', ip_address: '1.2.3.4')
-    req.user_socket.define_singleton_method(:remote_address) { addr }
+    # addr = double('addr', ip_address: '1.2.3.4')
+    # req.user_socket.define_singleton_method(:remote_address) { addr }
 
     expect(Xjz::HTTPHelper).to receive(:write_res_to_conn).twice do |r, s|
       code, body, headers = res.shift
@@ -79,13 +82,12 @@ RSpec.describe Xjz::Reslover::HTTP1 do
       expect(s).to eql(req.user_socket)
     end
 
-    req.user_socket << <<~REQ
+    client_socket << <<~REQ
       GET /index?t=11 HTTP/1.1\r
       Host: xjz.pw\r
       X-A: 123\r
       \r
     REQ
-    req.user_socket.rewind
     subject.perform
     expect(res).to be_empty
   end

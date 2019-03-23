@@ -4,59 +4,91 @@ module Xjz
 
     BUFFER_SIZE = 4096
 
-    # Copy stream from src to dst
+    # read stream
     # Return
-    #   true: wait or EINTR
-    #   false: eof
-    def nonblock_copy_stream(src, dst, auto_eof: true)
-      loop do
-        data = begin
-          src.read_nonblock(BUFFER_SIZE) # raise and return true if no data able to read
-        rescue EOFError
-          # eof, no data
-        end
-        if data && data != ''
-          Logger[:auot].debug { "#{data.bytesize} bytes > #{stream_inspect(dst)}" }
-          dst.write(data)
-        else
-          dst.close_write if auto_eof && dst.respond_to?(:close_write)
-          break false
-        end
+    #   true: ok, wait or EINTR. wait next
+    #   false: stop, eof. End of this socket
+    def read_nonblock(src, &recv_block)
+      data = src.read_nonblock(BUFFER_SIZE)
+      unless data.empty?
+        Logger[:auto].debug { "#{data.bytesize} bytes < #{io_inspect(src)}" }
+        recv_block.call(data)
+        true
+      else
+        false
       end
     rescue IO::EAGAINWaitReadable, Errno::EINTR, OpenSSL::SSL::SSLErrorWaitReadable
       true
-    rescue Errno::ECONNRESET
+    rescue Errno::ECONNRESET, EOFError
       false
-    ensure
-      dst.flush unless auto_eof
     end
 
-    # streams_mapping:
-    #   read_stream => write_stream
-    # timeout: seconds
-    # stop_wait_cb: proc, stop check stream if return true
+    def write_nonblock(dst, data)
+      bytes = dst.write_nonblock(data)
+      Logger[:auto].debug { "#{data.bytesize} bytes > #{io_inspect(dst)}" }
+      data.slice!(0, bytes)
+    rescue IO::WaitWritable, Errno::EINTR, OpenSSL::SSL::SSLErrorWaitWritable
+      # ignore
+    end
+
+    def close_writer(ws_data_end)
+    end
+
+    # Params
+    #   streams_mapping:
+    #     read_stream => write_stream
+    #   timeout: seconds
+    #   stop_wait_cb: proc, stop check stream if return true
+    # Return:
+    #   true: completed
+    #   false: timeout, or
+    #
     def forward_streams(streams_mapping, timeout: $config['proxy_timeout'], stop_wait_cb: nil)
-      streams = streams_mapping.keys
-      rs = streams
+      readers = streams_mapping.keys
+      writers = []
+      rs = readers
+      ws = []
+      buffers = {}
+      ws_data_end = {}
 
       loop do
         rs.each do |src|
           dst = streams_mapping[src]
-
-          unless nonblock_copy_stream(src, dst)
-            streams.delete(src)
+          buffers[dst] ||= ''
+          next if read_nonblock(src) { |data| writers << dst; buffers[dst] << data }
+          # src eof
+          ws_data_end[dst] = true
+          readers.delete(src)
+        end
+        ws.each do |dst|
+          data = buffers[dst]
+          write_nonblock(dst, data)
+          writers.delete(dst) if data.empty?
+        end
+        ws_data_end.delete_if do |dst, data_end|
+          if data_end && buffers[dst].empty?
+            Logger[:auto].debug { "Write completed #{io_inspect(dst)}" }
+            dst.close_write if dst.respond_to?(:close_write)
+            true
+          else
+            # wait write data
+            false
           end
         end
 
-        break if streams.empty?
-        rs = wait_readable(streams, timeout, stop_wait_cb)
-        return false unless rs # timeout or stop wait
+        return true if readers.empty? && writers.empty?
+        rs, ws, es = io_select([readers, writers], timeout, stop_wait_cb)
+        return false if rs.nil? || ws.nil? # timeout or stop
+        unless es.empty?
+          Logger[:auto].error do
+            "Stop forward streams, error streams: #{es.map(&method(:io_inspect))}"
+          end
+          return false
+        end
       end
-
-      true
     end
 
-    def stream_inspect(stream)
+    def io_inspect(stream)
       case stream
       when OpenSSL::SSL::SSLSocket
         ad = stream.to_io.remote_address
@@ -66,6 +98,8 @@ module Xjz
         [ad.ip_address, ad.ip_port].join(':')
       when WriterIO
         stream.writer.class
+      when IO
+        "io-#{stream.fileno}"
       else
         stream.inspect
       end
@@ -85,13 +119,20 @@ module Xjz
 
     private
 
-    def wait_readable(streams, timeout, stop_wait_cb = nil)
-      return if streams.empty?
+    # Args:
+    #   streams: [readers, writers], [[io1, io2], [io3, io4]]
+    # Return:
+    #   [readables, writeables]
+    def io_select(streams, timeout, stop_wait_cb = nil)
+      readers, writers = streams
+      all_streams = streams.flatten.compact
+      return if all_streams.empty?
       st = Time.now
       loop do
         return if stop_wait_cb && (stop_wait_cb.call(st) == true)
-        rs, _ = IO.select(streams, [], [], 0.1)
-        return rs if rs
+        rs, ws, es = IO.select(readers, writers, all_streams, 0.2)
+        return [rs, ws, []] if (rs && !rs.empty?) || (ws && !ws.empty?)
+        return [[], [], es] if es && !es.empty?
         return if (Time.now - st) >= timeout
       end
     end
