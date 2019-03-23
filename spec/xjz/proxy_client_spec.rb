@@ -25,8 +25,13 @@ RSpec.describe Xjz::ProxyClient do
 
   let(:res) { Xjz::Response.new({}, [], 200) }
 
-  after :each do
+  before :each do
+    @ap_config = $config['.api_projects']
     $config['.api_projects'] = []
+  end
+
+  after :each do
+    $config['.api_projects'] = @ap_config
   end
 
   it 'should return true if support h2' do

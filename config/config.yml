@@ -1,17 +1,53 @@
 ---
-root_ca_path: config/root_ca.pem
-key_path: config/key.pem
-proxy_timeout: 60  # seconds
-proxy_port: 9898
-proxy_http2: true
-alpn_protocols:
-  - h2
-  - http/1.1
-max_threads: 32
-logger_level:
-  default: debug
 
-# .api_projects will auto generate by projects
-projects:
-  - ../xjzapidoc/example1.yml
-  - ../xjzapidoc/example2
+default: &default
+  root_ca_path: config/root_ca.pem
+  key_path: config/key.pem
+  proxy_timeout: 60 # seconds
+  proxy_port: 9898
+  alpn_protocols:
+    - h2
+    - http/1.1
+  max_threads: 64
+  logger_level:
+    default: info
+
+  # .api_projects will auto generate by projects
+  projects:
+    - ../xjzapidoc/example1.yml
+    - ../xjzapidoc/example2
+
+  # proxy_mode: all # proxy any host
+  proxy_mode: projects_only # only proxy projects, directly forward for other hosts
+  # proxy_mode: whitelist # projects + whitelist
+  # proxy_mode: projects_only # projects + blacklist
+
+  host_whitelist:
+    - xjz.pw
+
+  host_blanklist:
+    - hello.com
+
+dev:
+  <<: *default
+  logger_level:
+    default: debug
+    io_helper.rb: info
+
+test:
+  <<: *default
+  root_ca_path: tmp/root_ca.pem
+  key_path: tmp/key.pem
+  proxy_timeout: 1
+  proxy_port: 59898
+  max_threads: 4
+  projects:
+    - ./spec/files/project.yml
+
+  proxy_mode: projects
+  host_whitelist: [ xjz.com ]
+  host_blacklist: [ hello.com ]
+
+  logger_level:
+    default: debug
+    io: info

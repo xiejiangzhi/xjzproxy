@@ -57,6 +57,6 @@ RSpec.describe Xjz::Logger do
 
   it '[] should return a prog logger of instance' do
     expect(Xjz::Logger[:app]).to eql(Xjz::Logger.instance[:app])
-    expect(Xjz::Logger[:auto].progname).to eql("spec/xjz/logger_spec.rb:#{__LINE__}")
+    expect(Xjz::Logger[:auto].progname).to eql("spec/xjz/logger_spec.rb")
   end
 end

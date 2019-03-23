@@ -89,6 +89,7 @@ apis:
 
   - title: Get user
     desc: show a user's info
+    enabled: true
     method: get
     url: http://asdf.com
     path: /api/v1/users/\d+

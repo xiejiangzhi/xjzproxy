@@ -8,16 +8,18 @@ module Xjz
       @repo_path = repo_path
     end
 
-    def match_host
+    def match_host?(host)
+      _, t = data['apis'].find { |k, v| k.match?("https://#{host}") || k.match?("http://#{host}") }
+      t ? true : false
     end
 
     # Return nil if don't hijack
     # Return a response if hijack req
     def hack_req(req)
-      _, t = data['apis'].find { |k, v| k.match("#{req.scheme}://#{req.host}") }
+      _, t = data['apis'].find { |k, v| k.match?("#{req.scheme}://#{req.host}") }
       return unless t
       apis = t[req.http_method.upcase] || []
-      api = apis.find { |a| a['.path_regexp'].match(req.path) }
+      api = apis.find { |a| a['enabled'] != false && a['.path_regexp'].match?(req.path) }
       return unless api
       Logger[:auto].debug { "Match mock data: #{api['method']} #{api['path']}" }
       res = (api['response']['success'] || []).sample

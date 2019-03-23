@@ -25,7 +25,7 @@ RSpec.describe Xjz::Reslover::Forward do
       server.write("world")
       Thread.new { sleep 0.1; user.write(" asdf"); user.close_write }
       subject.perform
-      expect(user.read).to eql('world')
+      expect(user.read).to eql("HTTP/1.1 200 OK\r\ncontent-length: 0\r\n\r\nworld")
       expect(server.read).to eql('hello asdf')
 
       [user, client, remote, server].each(&:close)

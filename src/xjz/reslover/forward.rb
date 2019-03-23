@@ -7,17 +7,21 @@ module Xjz
     end
 
     def perform
-      Logger[:auto].info { "Perform by Forward" }
+      Logger[:auto].info { "Perform #{req.scheme} #{req.host} by Forward" }
       server_socket = new_remote_socket
       user_socket = req.user_socket
-      if req.http_method != 'connect'
+      if req.http_method == 'connect'
+        HTTPHelper.write_res_to_conn(
+          Response.new({ 'Content-Length' => '0' }, [], 200), user_socket
+        )
+      else
         req.forward_conn_attrs = true
         server_socket << req.to_s
         server_socket.flush
       end
       IOHelper.forward_streams(
-        server_socket => user_socket,
-        user_socket => server_socket
+        user_socket => server_socket,
+        server_socket => user_socket
       )
     ensure
       user_socket.close rescue nil

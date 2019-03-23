@@ -4,11 +4,41 @@ module Xjz
 
     def call(env)
       req = Request.new(env)
-      req_method = req.http_method
 
       Logger[:auto].debug do
-        "#{req_method} #{req.host}:#{req.port} - #{req.headers.map { |kv| kv.join(': ') }.join(', ')}"
+        headers = req.headers.map { |kv| kv.join(': ') }.join(', ')
+        "#{req.http_method} #{req.host}:#{req.port} - #{headers}"
       end
+
+      if process_conn?(req)
+        dispatch_request(req)
+      else
+        Reslover::Forward.new(req).perform
+      end
+    end
+
+    private
+
+    def process_conn?(req)
+      case $config['proxy_mode']
+      when 'projects'
+        $config['.api_projects'].any? { |ap| ap.match_host?(req.host) }
+      when 'whitelist'
+        $config['.api_projects'].any? { |ap| ap.match_host?(req.host) } ||
+          $config['host_whitelist'].include?(req.host)
+      when 'blacklist'
+        !$config['host_blacklist'].include?(req.host)
+      when 'all'
+        true
+        # will process all
+      else
+        Logger[:auto].error "Invalid proxy mode #{$config['proxy_mode']}"
+        false
+      end
+    end
+
+    def dispatch_request(req)
+      req_method = req.http_method
 
       if req_method == 'connect'
         Reslover::SSL.new(req).perform
@@ -19,7 +49,7 @@ module Xjz
         when 'websocket'
           Reslover::Forward.new(req).perform
         else
-          Reslover::Forward.new(req).perform
+          Logger[:auto].error { "Cannot handle request upgrade #{flag}" }
         end
       elsif web_ui_request?(req)
         Reslover::WebUI.new(req).perform
@@ -28,11 +58,9 @@ module Xjz
       elsif VALID_REQUEST_METHODS.include?(req_method)
         Reslover::HTTP1.new(req).perform
       else
-        raise "Cannot handle request #{req.inspect}"
+        Logger[:auto].error { "Cannot handle request #{req.inspect}" }
       end
     end
-
-    private
 
     def web_ui_request?(req)
       req.user_socket.is_a?(TCPSocket) && req.env['REQUEST_URI'] =~ %r{^/}

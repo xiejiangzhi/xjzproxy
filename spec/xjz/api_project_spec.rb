@@ -53,6 +53,23 @@ RSpec.describe Xjz::ApiProject do
       ))
       expect(r).to be_nil
     end
+
+    it 'should return nil if api.enabled == true' do
+      ap.data['apis'].values.map(&:values).flatten.each do |api|
+        om = api.method(:[])
+        allow(api).to receive(:[]) do |name|
+          name == 'enabled' ? false : om.call(name)
+        end
+      end
+
+      r = ap.hack_req(Xjz::Request.new(
+        'HTTP_HOST' => 'xjz.pw',
+        'rack.url_scheme' => 'https',
+        'PATH_INFO' => '/api/v1/users',
+        'REQUEST_METHOD' => 'GET'
+      ))
+      expect(r).to be_nil
+    end
   end
 
   describe '#raw_data' do
@@ -92,6 +109,18 @@ RSpec.describe Xjz::ApiProject do
       expect(Xjz::ApiProject::Parser).to receive(:verify) \
         .with(ap.raw_data, file_path).and_return([t])
       expect(ap.errors).to eql([t])
+    end
+  end
+
+  describe 'match_host?' do
+    let(:ap) { Xjz::ApiProject.new(file_path) }
+
+    it 'should return true if match host' do
+      expect(ap.match_host?('xjz.pw')).to eql(true)
+    end
+
+    it 'should return false if not match host' do
+      expect(ap.match_host?('asdf.pw')).to eql(false)
     end
   end
 end

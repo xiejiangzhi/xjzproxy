@@ -19,7 +19,7 @@ module Xjz
       end
     rescue IO::EAGAINWaitReadable, Errno::EINTR, OpenSSL::SSL::SSLErrorWaitReadable
       true
-    rescue Errno::ECONNRESET, EOFError
+    rescue Errno::ECONNRESET, EOFError, Errno::ETIMEDOUT
       false
     end
 
@@ -93,7 +93,7 @@ module Xjz
       when OpenSSL::SSL::SSLSocket
         ad = stream.to_io.remote_address
         [ad.ip_address, ad.ip_port].join(':')
-      when stream.respond_to?(:remote_address)
+      when TCPSocket
         ad = stream.remote_address
         [ad.ip_address, ad.ip_port].join(':')
       when WriterIO
@@ -101,8 +101,16 @@ module Xjz
       when IO
         "io-#{stream.fileno}"
       else
-        stream.inspect
+        if stream.respond_to?(:remote_address)
+          ad = stream.remote_address
+          [ad.ip_address, ad.ip_port].join(':')
+        else
+          stream.inspect
+        end
       end
+    rescue => e
+      Logger[:auto].error { e.log_inspect }
+      stream.inspect
     end
 
     def generate_h2_response(res)

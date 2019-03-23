@@ -198,6 +198,7 @@ RSpec.describe Xjz::ApiProject::Parser do
             {
               "title" => "Get user",
               "desc" => "show a user's info",
+              'enabled' => true,
               "method" => "GET",
               "url" => 'http://asdf.com',
               "path" => '/api/v1/users/\d+',
