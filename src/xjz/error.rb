@@ -1,5 +1,6 @@
 class Exception
   def log_inspect
-    "#{self.class} #{message}: \n#{backtrace.join("\n")}"
+    bts = backtrace.select { |bt| bt[$root] }
+    "#{self.class} #{message}: \n#{bts.join("\n")}"
   end
 end

@@ -8,3 +8,5 @@ config/*.pem
 /spec/examples.txt
 
 *.swp
+
+.xjzapi

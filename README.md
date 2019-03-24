@@ -9,9 +9,11 @@ XjzProxy
 
 ## TODOs
 
+* GRPC on http2
 * verify + renderer gem for api project
 * script types
 * diff request params & response data
+* generate apidoc from real request
 * GUI: GTK3
 * build portable ruby
 * update request/response before process

@@ -1,11 +1,14 @@
 eval(File.read('Gemfile'))
 
+# debug
 gem 'pry'
-gem 'rspec', '~> 3.8.0'
 
+# tools
 gem 'rake'
 gem 'gem-licenses'
 
-gem 'rubocop', '~> 0.65.0'
-
+# testing
+gem 'rspec', '~> 3.8.0'
 gem 'webmock', '~> 3.5.1'
+
+gem 'rubocop', '~> 0.65.0'

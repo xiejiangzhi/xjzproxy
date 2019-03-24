@@ -120,8 +120,21 @@ RSpec.describe Xjz::ApiProject::Parser do
       expect(subject.parse(raw_data)['project']).to eql(
         'url' => 'https://xjz.pw',
         'desc' => 'desc',
-        "dir" => File.join($root, "spec/files")
+        "dir" => File.join($root, "spec/files"),
+        "grpc" => {
+          "dir" => "./project_protobufs",
+          "proto_files" => ["*.proto"],
+          "protoc_args" => nil
+        }
       )
+    end
+
+    fit 'should generate ruby proto and load them' do
+      gm = subject.parse(raw_data)['project']['.grpc_module']
+      binding.pry
+      # gm = $config.data['.grpc_module']
+      expect(gm).to be_a(Module)
+      expect(gm::HelloWorld).to_not be_nil
     end
 
     it 'should parse plugins' do

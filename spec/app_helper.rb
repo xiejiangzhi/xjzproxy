@@ -15,7 +15,11 @@ Dir[File.expand_path('../support/*.rb', __FILE__)].each do |path|
   load path
 end
 
-Xjz::Logger.instance.instance_eval { @logger = Logger.new('/dev/null', level: :debug) }
+Xjz::Logger.instance.instance_eval do
+  old_logger = @logger
+  @logger = Logger.new($stdout, level: :error)
+  @logger.formatter = old_logger.formatter
+end
 
 WebMock.disable_net_connect!
 

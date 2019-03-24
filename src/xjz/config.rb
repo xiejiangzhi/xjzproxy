@@ -32,6 +32,10 @@ module Xjz
       errors
     end
 
+    def load_projects
+      data['.api_projects'] = format_projects(data['projects'])
+    end
+
     def [](key)
       data[key.to_s]
     end
@@ -42,7 +46,6 @@ module Xjz
 
     def data
       @data ||= raw_data.slice(*SCHEMA.keys).deep_dup.tap do |r|
-        r['.api_projects'] = format_projects(r['projects'])
         r['host_whitelist'] ||= []
         r['host_blacklist'] ||= []
         r['logger_level'] ||= {}

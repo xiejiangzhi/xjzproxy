@@ -1,3 +1,5 @@
+require 'open3'
+
 module Xjz
   module ApiProject::Parser
     extend self
@@ -46,16 +48,21 @@ module Xjz
       partials: [:optional, NilClass, Hash],
       responses: [:optional, NilClass, Hash],
       apis: [ [Hash] ],
-      project: [
-        :optional,
-        [
-          NilClass,
-          {
-            url: [:optional, NilClass, String],
-            dir: String # auto set when load
-          }
-        ]
-      ],
+      project: [:optional, [
+        NilClass,
+        {
+          url: [:optional, NilClass, String],
+          dir: String, # auto set when load
+          grpc: [:optional, [
+            NilClass,
+            {
+              dir: String,
+              protoc_args: [:optional, NilClass, String],
+              proto_files: [:optional, NilClass, [[String]] ]
+            }
+          ]]
+        }
+      ]],
       plugins: [:optional, NilClass, Hash]
     }.deep_stringify_keys
 
@@ -142,7 +149,8 @@ module Xjz
     end
 
     def parse_project(project, env)
-      env['project'] = project.deep_dup
+      pj = env['project'] = project.deep_dup
+      pj['.grpc_module'] = generate_and_load_grpc(project['grpc'], pj['dir'])
     end
 
     def parse_plugins(plugins, env)
@@ -256,6 +264,77 @@ module Xjz
       end
       raise "Circular dependencies." if r.empty?
       r + sort_by_dependents!(data, ref_prefix, keys)
+    end
+
+    def generate_and_load_grpc(conf, root_dir)
+      return unless conf && conf['dir']
+      dir = File.join(root_dir, conf['dir'])
+      unless File.directory?(dir)
+        Logger[:auto].error { "Not found gRPC folder #{dir}" }
+        return
+      end
+
+      out_dir = File.join(dir, '.xjzapi/protos')
+      files = generate_protos(dir, out_dir, conf)
+      load_protos(files, out_dir)
+    end
+
+    def generate_protos(dir, out_dir, conf)
+      FileUtils.mkdir_p(out_dir)
+      sout_dir = Shellwords.escape(out_dir)
+      base_cmd = 'bundle exec grpc_tools_ruby_protoc'
+      base_cmd += " --ruby_out=#{sout_dir} --grpc_out=#{sout_dir} -I./#{Shellwords.escape(dir)}"
+      files = []
+      (conf['proto_files'] || ['**/*.proto']).each do |matcher|
+        files.concat(Dir[File.join(dir, matcher)].to_a)
+      end
+      # TODO open3 to concurrent generate files
+      files.uniq.map do |path|
+        generate_pbfiles(base_cmd, path, sout_dir)
+      end.compact.flatten
+    end
+
+    def generate_pbfiles(base_cmd, path, sout_dir)
+      cmd = base_cmd + " #{Shellwords.escape(path)}"
+      fname = File.basename(path).gsub(/\.[\w\-]+$/, '')
+      out_files = [
+        File.join(sout_dir, fname + '_pb.rb'),
+        File.join(sout_dir, fname + '_pb_service.rb')
+      ]
+      out_files_sts = out_files.each_with_object({}) do |f, r|
+        r[f] = File.exist?(f) ? File.mtime(f) : nil
+      end
+
+      out, err, status = Open3.capture3(cmd)
+      if status.exitstatus != 0
+        Logger[:auto].error { "Error of #{cmd}: #{err.presence || out}" }
+        return nil
+      elsif err.present?
+        Logger[:auto].warn { "#{path}: #{err.presence || out}" }
+      end
+
+      out_files.select do |fp|
+        next false unless File.exist?(fp)
+        mt = File.mtime(fp)
+        mt && mt != out_files_sts[fp]
+      end
+    end
+
+    def load_protos(files, out_dir)
+      Module.new.tap do |m|
+        m.module_exec do
+          define_singleton_method(:require) do |path|
+            Kernel.require(path)
+          rescue LoadError => e
+            raise e unless path =~ /_pb$/
+            file = File.join(out_dir, "#{path}.rb")
+            raise file unless File.exist?(file)
+            self.require(file)
+          end
+        end
+
+        files.each { |path| m.module_eval File.read(path) }
+      end
     end
   end
 end

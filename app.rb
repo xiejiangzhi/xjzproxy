@@ -15,3 +15,4 @@ $config = Xjz::Config.new(config_path)
 $config.verify.each do |err|
   Xjz::Logger[:auto].error { err }
 end
+$config.load_projects

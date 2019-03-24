@@ -28,6 +28,8 @@ RSpec.describe Xjz::Logger do
           'app' => 'debug', 'misc' => 'info', 'server' => 'warn'
         }[name]
       end
+      Thread.current[:first_log_time] = nil
+      Thread.current[:last_log_time] = nil
 
       subject[:app].debug { '1' }
       subject[:misc].debug { '2' }
