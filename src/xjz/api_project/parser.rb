@@ -1,4 +1,5 @@
 require 'open3'
+require 'google/protobuf'
 
 module Xjz
   module ApiProject::Parser
@@ -268,7 +269,7 @@ module Xjz
 
     def generate_and_load_grpc(conf, root_dir)
       return unless conf && conf['dir']
-      dir = File.join(root_dir, conf['dir'])
+      dir = File.expand_path(conf['dir'], root_dir)
       unless File.directory?(dir)
         Logger[:auto].error { "Not found gRPC folder #{dir}" }
         return
@@ -283,7 +284,7 @@ module Xjz
       FileUtils.mkdir_p(out_dir)
       sout_dir = Shellwords.escape(out_dir)
       base_cmd = 'bundle exec grpc_tools_ruby_protoc'
-      base_cmd += " --ruby_out=#{sout_dir} --grpc_out=#{sout_dir} -I./#{Shellwords.escape(dir)}"
+      base_cmd += " --ruby_out=#{sout_dir} --grpc_out=#{sout_dir} -I#{Shellwords.escape(dir)}"
       files = []
       (conf['proto_files'] || ['**/*.proto']).each do |matcher|
         files.concat(Dir[File.join(dir, matcher)].to_a)
@@ -298,8 +299,8 @@ module Xjz
       cmd = base_cmd + " #{Shellwords.escape(path)}"
       fname = File.basename(path).gsub(/\.[\w\-]+$/, '')
       out_files = [
-        File.join(sout_dir, fname + '_pb.rb'),
-        File.join(sout_dir, fname + '_pb_service.rb')
+        File.expand_path(fname + '_pb.rb', sout_dir),
+        File.expand_path(fname + '_pb_service.rb', sout_dir)
       ]
       out_files_sts = out_files.each_with_object({}) do |f, r|
         r[f] = File.exist?(f) ? File.mtime(f) : nil
@@ -321,19 +322,37 @@ module Xjz
     end
 
     def load_protos(files, out_dir)
+      Google::Protobuf::DescriptorPool.class_eval do
+        unless @xjz_gpdp
+          @xjz_gpdp = true
+          def self.generated_pool
+            Thread.current[:google_protobuf_dp] ||= new
+          end
+        end
+      end
+
       Module.new.tap do |m|
         m.module_exec do
+          @loaded_paths = []
+
           define_singleton_method(:require) do |path|
             Kernel.require(path)
           rescue LoadError => e
-            raise e unless path =~ /_pb$/
-            file = File.join(out_dir, "#{path}.rb")
-            raise file unless File.exist?(file)
-            self.require(file)
+            file = File.expand_path("#{path}.rb", out_dir)
+            raise e unless File.exist?(file)
+            load_code(file)
+          end
+
+          define_singleton_method(:load_code) do |path|
+            return if @loaded_paths.include?(path)
+            code = File.read(path)
+            self.module_eval(code, path, 1)
+            @loaded_paths << path
           end
         end
 
-        files.each { |path| m.module_eval File.read(path) }
+        Thread.current[:google_protobuf_dp] = nil
+        files.each { |path| m.load_code(path) }
       end
     end
   end

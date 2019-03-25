@@ -134,7 +134,8 @@ RSpec.describe Xjz::ApiProject::Parser do
       binding.pry
       # gm = $config.data['.grpc_module']
       expect(gm).to be_a(Module)
-      expect(gm::HelloWorld).to_not be_nil
+      expect(gm::hw::HelloWorld).to_not be_nil
+      expect(gm::hw2::HelloWorld).to_not be_nil
     end
 
     it 'should parse plugins' do
