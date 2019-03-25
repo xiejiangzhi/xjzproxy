@@ -6,7 +6,7 @@ project:
     dir: "./project_protobufs"
     protoc_args: 
     proto_files:
-    - "*.proto"
+    - "**/*.proto"
 plugins:
   auth:
     filter:

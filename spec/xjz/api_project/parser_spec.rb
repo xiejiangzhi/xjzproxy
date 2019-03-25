@@ -2,47 +2,6 @@ RSpec.describe Xjz::ApiProject::Parser do
   let(:file_path) { File.join($root, 'spec/files/project.yml') }
   let(:raw_data) { Xjz::ApiProject.new(file_path).raw_data }
 
-  describe 'verify' do
-    it 'should return nil if has no error' do
-      expect(subject.verify(raw_data)).to eql(nil)
-    end
-
-    it 'should return nil if has undefined keys' do
-      d = raw_data.deep_dup
-      d['asdf'] = 'lkajsdf'
-      d['types']['avatar']['lkjalksdf'] = 123
-      d['apis'][0]['lkjalksdf'] = 123
-      d['project']['asdf'] = '12313'
-      d['responses']['show_user']['asdf'] = '12313'
-      d['plugins']['auth']['asdf'] = '12313'
-      expect(subject.verify(raw_data)).to eql(nil)
-    end
-
-    it 'should return errors if has some bad format' do
-      d = raw_data.deep_dup
-      d['types']['xxx'] = { 'items' => 1 }
-      d['partials']['xxx'] = 123
-      d['apis'] << { a: 1 }
-      d['responses']['123'] = { b: 2 }
-      d['plugins']['xxx'] = { b: 2 }
-      expect(subject.verify(d)).to eql([
-        { full_path: "Hash[\"responses\"][\"123\"][\"http_code\"]", message: "present" },
-        { full_path: "Hash[\"responses\"][\"123\"][\"data\"]", message: "present" },
-        { full_path: "Hash[\"plugins\"][\"xxx\"][\"filter\"]", message: "present" },
-        { full_path: "Hash[\"types\"][\"xxx\"][\"items\"]", message: "a/an NilClass" },
-        { full_path: "Hash[\"types\"][\"xxx\"][\"items\"]", message: "a/an Array" },
-        {
-          full_path: "Hash[\"types\"][\"xxx\"][\"items\"]",
-          message: "one of absent (marked as :optional), a/an NilClass, a/an Array"
-        },
-        { full_path: "Hash[\"apis\"][2][\"title\"]", message: "present" },
-        { full_path: "Hash[\"apis\"][2][\"method\"]", message: "present" },
-        { full_path: "Hash[\"apis\"][2][\"path\"]", message: "present" },
-        { full_path: "Hash[\"apis\"][2][\"response\"]", message: "present" }
-      ])
-    end
-  end
-
   describe 'parse' do
     it 'should convert to DataTypes' do
       r = subject.parse(raw_data)['types']
@@ -117,25 +76,26 @@ RSpec.describe Xjz::ApiProject::Parser do
     end
 
     it 'should copy project data' do
-      expect(subject.parse(raw_data)['project']).to eql(
+      expect(subject.parse(raw_data)['project'].select { |k, v| k[0] != '.' }).to eql(
         'url' => 'https://xjz.pw',
         'desc' => 'desc',
         "dir" => File.join($root, "spec/files"),
         "grpc" => {
           "dir" => "./project_protobufs",
-          "proto_files" => ["*.proto"],
+          "proto_files" => ["**/*.proto"],
           "protoc_args" => nil
-        }
+        },
       )
     end
 
-    fit 'should generate ruby proto and load them' do
+    it 'should generate ruby proto and load them' do
       gm = subject.parse(raw_data)['project']['.grpc_module']
-      binding.pry
-      # gm = $config.data['.grpc_module']
       expect(gm).to be_a(Module)
-      expect(gm::hw::HelloWorld).to_not be_nil
-      expect(gm::hw2::HelloWorld).to_not be_nil
+      expect(gm.pb_pool).to be_a(Google::Protobuf::DescriptorPool)
+      expect(gm::Hw::Ms::HelloRequest.included_modules).to be_include(Google::Protobuf::MessageExts)
+      expect(gm::Hw::Ms::HelloReply.included_modules).to be_include(Google::Protobuf::MessageExts)
+      expect(gm::Hw2::HelloReply.included_modules).to be_include(Google::Protobuf::MessageExts)
+      expect(gm::Hw2::HelloRequest.included_modules).to be_include(Google::Protobuf::MessageExts)
     end
 
     it 'should parse plugins' do

@@ -1,10 +1,12 @@
-RSpec.describe Xjz::ApiProject::ResponseGenerator do
-  let(:subject) { described_class }
+RSpec.describe Xjz::ApiProject::ResponseRenderer do
+  let(:ap) { $config['.api_projects'].first }
+  let(:subject) { described_class.new(ap) }
+  let(:req) { Xjz::Request.new('HTTP_CONTENT_TYPE' => 'text/plain') }
 
-  describe '.generate' do
+  describe '.render' do
     describe 'without content-type' do
       it 'should return a response for a string' do
-        r = subject.generate({
+        r = subject.render(req, {
           http_code: 201,
           desc: 'asdf',
           data: 'hello'
@@ -19,7 +21,7 @@ RSpec.describe Xjz::ApiProject::ResponseGenerator do
         default_types = Xjz::ApiProject::DataType.default_types
         allow(default_types['integer']).to receive(:generate).and_return(123)
         allow(default_types['name']).to receive(:generate).and_return('name')
-        r = subject.generate({
+        r = subject.render(req, {
           http_code: 201,
           desc: 'asdf',
           data: {
@@ -39,7 +41,7 @@ RSpec.describe Xjz::ApiProject::ResponseGenerator do
         default_types = Xjz::ApiProject::DataType.default_types
         allow(default_types['integer']).to receive(:generate).and_return(123)
         allow(default_types['name']).to receive(:generate).and_return('name')
-        r = subject.generate({
+        r = subject.render(req, {
           http_code: 201,
           desc: 'asdf',
           data: [default_types['integer'], default_types['name'], 123]
@@ -53,7 +55,7 @@ RSpec.describe Xjz::ApiProject::ResponseGenerator do
 
     describe 'with content-type' do
       it 'should return a response for a string' do
-        r = subject.generate({
+        r = subject.render(req, {
           http_code: 201,
           headers: { content_type: 'application/json' },
           desc: 'asdf',
@@ -71,7 +73,7 @@ RSpec.describe Xjz::ApiProject::ResponseGenerator do
         default_types = Xjz::ApiProject::DataType.default_types
         allow(default_types['integer']).to receive(:generate).and_return(123)
         allow(default_types['name']).to receive(:generate).and_return('name')
-        r = subject.generate({
+        r = subject.render(req, {
           http_code: 201,
           desc: 'asdf',
           headers: { 'content-type' => 'application/xml' },
@@ -101,7 +103,7 @@ RSpec.describe Xjz::ApiProject::ResponseGenerator do
         default_types = Xjz::ApiProject::DataType.default_types
         allow(default_types['integer']).to receive(:generate).and_return(123)
         allow(default_types['name']).to receive(:generate).and_return('name')
-        r = subject.generate({
+        r = subject.render(req, {
           http_code: 201,
           headers: { 'content-type' => 'text/csv' },
           desc: 'asdf',

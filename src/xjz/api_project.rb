@@ -6,6 +6,7 @@ module Xjz
 
     def initialize(repo_path)
       @repo_path = repo_path
+      @response_renderer = ApiProject::ResponseRenderer.new(self)
     end
 
     def match_host?(host)
@@ -23,11 +24,11 @@ module Xjz
       return unless api
       Logger[:auto].debug { "Match mock data: #{api['method']} #{api['path']}" }
       res = (api['response']['success'] || []).sample
-      ApiProject::ResponseGenerator.generate(res)
+      @response_renderer.render(req, res)
     end
 
     def errors
-      Parser.verify(raw_data, repo_path)
+      Verifier.verify(raw_data, repo_path)
     end
 
     def data

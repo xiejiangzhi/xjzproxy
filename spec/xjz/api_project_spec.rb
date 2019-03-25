@@ -106,7 +106,7 @@ RSpec.describe Xjz::ApiProject do
     it 'should verify by Parser' do
       ap = Xjz::ApiProject.new(file_path)
       t = Time.now
-      expect(Xjz::ApiProject::Parser).to receive(:verify) \
+      expect(Xjz::ApiProject::Verifier).to receive(:verify) \
         .with(ap.raw_data, file_path).and_return([t])
       expect(ap.errors).to eql([t])
     end
