@@ -170,6 +170,7 @@ module Xjz
       r + sort_by_dependents!(data, ref_prefix, keys)
     end
 
+    # TODO lazy generate and load
     def generate_and_load_grpc(conf, root_dir)
       return unless conf && conf['dir']
       dir = File.expand_path(conf['dir'], root_dir)
@@ -203,7 +204,7 @@ module Xjz
       fname = File.basename(path).gsub(/\.[\w\-]+$/, '')
       out_files = [
         File.expand_path(fname + '_pb.rb', sout_dir),
-        File.expand_path(fname + '_pb_service.rb', sout_dir)
+        File.expand_path(fname + '_services_pb.rb', sout_dir)
       ]
       out_files_sts = out_files.each_with_object({}) do |f, r|
         r[f] = File.exist?(f) ? File.mtime(f) : nil
@@ -240,8 +241,10 @@ module Xjz
         m.module_exec do
           @loaded_paths = []
           @pb_pool = Google::Protobuf::DescriptorPool.generated_pool
+          @services = {}
 
           define_singleton_method(:pb_pool) { @pb_pool }
+          define_singleton_method(:services) { @services }
 
           define_singleton_method(:require) do |path|
             Kernel.require(path)

@@ -9,7 +9,7 @@ import "dir/messages.proto";
 // >= proto3, proto2 don't support rpc service
 service Greeter {
   // Sends a greeting
-  rpc SayHello (hw.ms.HelloRequest) returns (hw.ms.HelloReply) {}
-  rpc SayName (google.protobuf.Empty) returns (hw.ms.HelloReply) {}
+  rpc SayHello (hw.ms.Request) returns (hw.ms.Reply) {}
+  rpc SayName (google.protobuf.Empty) returns (hw.ms.Reply) {}
   rpc Mute (google.protobuf.Empty) returns (google.protobuf.Empty) {}
 }

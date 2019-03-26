@@ -2,10 +2,25 @@ syntax = "proto3";
 
 package hw.ms;
 
-message HelloRequest {
+message Request {
   string name = 1;
 }
 
-message HelloReply {
+message Reply {
   string message = 1;
+  Info info = 2;
+  repeated string keywords = 3;
+  oneof test_oneof {
+    string aa = 4;
+    string bb = 5;
+  }
+  enum Type {
+    NORMAL = 0;
+    VIP = 1;
+  }
+  Type type = 6;
+}
+
+message Info {
+  int32 age = 1;
 }

@@ -3,13 +3,13 @@ syntax = "proto3";
 package hw2;
 
 // The request message containing the user's name.
-message HelloRequest {
+message Request {
   string name = 1;
   string other = 2;
 }
 
 // The response message containing the greetings
-message HelloReply {
+message Reply {
   string message = 1;
   string other = 2;
 }

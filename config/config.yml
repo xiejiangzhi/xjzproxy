@@ -34,6 +34,8 @@ dev:
     default: debug
     io_helper.rb: info
 
+  proxy_mode: all
+
 test:
   <<: *default
   root_ca_path: tmp/root_ca.pem

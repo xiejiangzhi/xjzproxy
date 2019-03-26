@@ -92,10 +92,11 @@ RSpec.describe Xjz::ApiProject::Parser do
       gm = subject.parse(raw_data)['project']['.grpc_module']
       expect(gm).to be_a(Module)
       expect(gm.pb_pool).to be_a(Google::Protobuf::DescriptorPool)
-      expect(gm::Hw::Ms::HelloRequest.included_modules).to be_include(Google::Protobuf::MessageExts)
-      expect(gm::Hw::Ms::HelloReply.included_modules).to be_include(Google::Protobuf::MessageExts)
-      expect(gm::Hw2::HelloReply.included_modules).to be_include(Google::Protobuf::MessageExts)
-      expect(gm::Hw2::HelloRequest.included_modules).to be_include(Google::Protobuf::MessageExts)
+      expect(gm::Hw::Ms::Request.included_modules).to be_include(Google::Protobuf::MessageExts)
+      expect(gm::Hw::Ms::Reply.included_modules).to be_include(Google::Protobuf::MessageExts)
+      expect(gm::Hw::Greeter::Service.included_modules).to be_include(GRPC::GenericService)
+      expect(gm::Hw2::Reply.included_modules).to be_include(Google::Protobuf::MessageExts)
+      expect(gm::Hw2::Request.included_modules).to be_include(Google::Protobuf::MessageExts)
     end
 
     it 'should parse plugins' do

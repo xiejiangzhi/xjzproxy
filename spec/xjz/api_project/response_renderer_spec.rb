@@ -51,6 +51,35 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
         expect(r.body).to eql("[123,\"name\",123]")
         expect(r.h1_headers).to eql([['content-type', 'application/json'], ['content-length', '16']])
       end
+
+      fit 'should return a response for grpc request' do
+        default_types = Xjz::ApiProject::DataType.default_types
+        allow(default_types['integer']).to receive(:generate).and_return(123)
+        allow(default_types['string']).to receive(:generate).and_return('str')
+        req = Xjz::Request.new(
+          'HTTP_CONTENT_TYPE' => 'application/grpc',
+          'PATH_INFO' => '/Hw.Greeter/SayHello'
+        )
+
+        # a gRPC request, and we didn't define mock data
+        r = subject.render(req, nil)
+        expect(r).to be_a(Xjz::Response)
+        expect(r.code).to eql(200)
+        data = ap.data['project']['.grpc_module'].services[req.path].output.decode(r.body).to_hash
+        type = data.delete(:type)
+        expect(%i{VIP NORMAL}).to be_include(type)
+        expect(data).to eql(
+          message: 'str',
+          info: { age: 123 },
+          keywords: ['str'],
+          aa: '',
+          bb: 'str'
+        )
+        expect(r.h1_headers).to eql([
+          ["content-type", "application/grpc"],
+          ["content-length", (type == :NORMAL) ? '19' : "21"]
+        ])
+      end
     end
 
     describe 'with content-type' do
