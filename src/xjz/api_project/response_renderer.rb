@@ -18,11 +18,16 @@ module Xjz
     end
 
     def render(req, res_conf)
+      res_conf ||= {}
       headers = render_headers(res_conf['headers'])
       ct = HTTPHelper.get_header(headers, 'content-type')
       unless ct
         ct = get_accept_type(req, res_conf['data'])
         HTTPHelper.set_header(headers, 'content-type', ct)
+      end
+
+      if CONTENT_TYPES[:grpc] === ct
+        res_conf['data'] ||= generate_grpc_scheme(req)
       end
 
       body = render_body(res_conf['data'])
@@ -83,6 +88,13 @@ module Xjz
         else 'text/plain'
         end
       end
+    end
+
+    def generate_grpc_scheme(req)
+      service, action = req.path[1..-1].split('/')
+      service_name = service.split('.').map(&:camelcase).join('::')
+      m = ap.data['.grpc_module']
+      name = ap.data['.grpc_module'].pool.lookup()
     end
   end
 end
