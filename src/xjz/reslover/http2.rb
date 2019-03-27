@@ -18,7 +18,7 @@ module Xjz
     end
 
     def perform
-      Logger[:auto].debug { "Perform by HTTP2" }
+      Logger[:auto].info { "Perform by HTTP2" }
       upgrade_to_http2 if original_req.upgrade_flag
       resolver_server << HTTP2_REQ_HEADER
       IOHelper.forward_streams(@user_conn => WriterIO.new(resolver_server))

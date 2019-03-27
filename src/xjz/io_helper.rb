@@ -31,9 +31,6 @@ module Xjz
       # ignore
     end
 
-    def close_writer(ws_data_end)
-    end
-
     # Params
     #   streams_mapping:
     #     read_stream => write_stream
@@ -123,6 +120,14 @@ module Xjz
       h2_header.unshift([':status', code.to_s])
 
       [h2_header, body]
+    end
+
+    def set_proxy_host_port(io, host, port)
+      return if io.methods.include?(:proxy_host)
+      io.instance_eval do
+        define_singleton_method(:proxy_host) { host }
+        define_singleton_method(:proxy_port) { port }
+      end
     end
 
     private

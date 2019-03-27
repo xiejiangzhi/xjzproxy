@@ -16,6 +16,7 @@ default: &default
   projects:
     - ../xjzapidoc/example1.yml
     - ../xjzapidoc/example2
+    - ../xjzapidoc/example3
 
   # proxy_mode: all # proxy any host
   proxy_mode: projects_only # only proxy projects, directly forward for other hosts

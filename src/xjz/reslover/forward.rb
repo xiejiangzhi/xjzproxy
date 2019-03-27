@@ -28,6 +28,8 @@ module Xjz
       server_socket.close rescue nil
     end
 
+    private
+
     def new_remote_socket
       socket = TCPSocket.new(req.host, req.port)
       return socket if req.scheme == 'http'
@@ -40,5 +42,6 @@ module Xjz
       ssl_socket.connect
       ssl_socket
     end
+
   end
 end

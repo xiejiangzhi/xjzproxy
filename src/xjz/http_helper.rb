@@ -20,13 +20,25 @@ module Xjz
       end
 
       def write_conn_info_to_env!(env, conn)
-        if conn.is_a?(OpenSSL::SSL::SSLSocket)
+        case conn
+        when OpenSSL::SSL::SSLSocket
+          # todo fix it
           env['REMOTE_ADDR'] = conn.to_io.remote_address.ip_address
-          env['SERVER_PORT'] = (env['SERVER_PORT'] || 443).to_s
+          env['SERVER_NAME'] ||= conn.respond_to?(:proxy_host) ? conn.proxy_host : ''
+          env['SERVER_PORT'] = (
+            env['SERVER_PORT'] ||
+            (conn.respond_to?(:proxy_port) ? conn.proxy_port : nil) ||
+            443
+          ).to_s
           env['rack.url_scheme'] = 'https'
         else
           env['REMOTE_ADDR'] = conn.remote_address.ip_address
-          env['SERVER_PORT'] = (env['SERVER_PORT'] || 80).to_s
+          env['SERVER_NAME'] ||= conn.respond_to?(:proxy_host) ? conn.proxy_host : ''
+          env['SERVER_PORT'] = (
+            env['SERVER_PORT'] ||
+            (conn.respond_to?(:proxy_port) ? conn.proxy_port : nil) ||
+            80
+          ).to_s
         end
         env['rack.hijack?'] = true
         env['rack.hijack'] = proc { env['rack.hijack_io'] ||= conn }

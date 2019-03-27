@@ -37,11 +37,22 @@ module Xjz
       end
     end
 
+    def grpc_tunnel?(req)
+      $config['.api_projects'].any? do |ap|
+        ap.match_host?(req.host) && ap.data['project']['grpc']
+      end
+    end
+
     def dispatch_request(req)
       req_method = req.http_method
+      IOHelper.set_proxy_host_port(req.user_socket, req.host, req.port)
 
       if req_method == 'connect'
-        Reslover::SSL.new(req).perform
+        if grpc_tunnel?(req)
+          Reslover::GRPC.new(req).perform
+        else
+          Reslover::SSL.new(req).perform
+        end
       elsif flag = req.upgrade_flag
         case flag
         when 'h2c'
