@@ -36,7 +36,7 @@ module Xjz
     end
 
     def url
-      @url ||= rack_req.url
+      @url ||= rack_req.url.gsub(/\*$/, '')
     end
 
     def path
@@ -112,6 +112,10 @@ module Xjz
         str << "#{k}: #{v}\r\n"
       end
       str << LINE_END << body
+    end
+
+    def grpc?
+      env['xjz.grpc'] == true
     end
 
     private

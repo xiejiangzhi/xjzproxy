@@ -1,6 +1,6 @@
 module Xjz
   class Reslover::HTTP2
-    attr_reader :original_req, :conn, :host, :port
+    attr_reader :original_req, :conn, :host, :port, :proxy_client
 
     UPGRADE_RES = [
       'HTTP/1.1 101 Switching Protocols',
@@ -13,12 +13,14 @@ module Xjz
       @user_conn = req.user_socket
       @resolver_server = init_h2_resolver
       @remote_sock = nil
-      @host, @port = nil
+      @host, @port = req.host, req.port
       @req_scheme = req.scheme
+      @remote_support_h2 = nil
     end
 
     def perform
       Logger[:auto].info { "Perform by HTTP2" }
+      check_remote_server
       upgrade_to_http2 if original_req.upgrade_flag
       resolver_server << HTTP2_REQ_HEADER
       IOHelper.forward_streams(@user_conn => WriterIO.new(resolver_server))
@@ -36,9 +38,13 @@ module Xjz
         user_conn << bytes unless user_conn.closed?
       end
 
-      # conn.on(:frame_sent) do |frame|
-      #   Logger[:auto].debug { "Sent #{frame.inspect}" }
-      # end
+      conn.on(:frame_received) do |frame|
+        Logger[:auto].debug { "Recv #{frame.inspect}" }
+      end
+
+      conn.on(:frame_sent) do |frame|
+        Logger[:auto].debug { "Sent #{frame.inspect}" }
+      end
 
       conn.on(:stream) do |stream|
         header = []
@@ -50,8 +56,6 @@ module Xjz
         stream.on(:half_close) do
           Logger[:auto].debug { "Recv HTTP2 Request" }
           req = Request.new_for_h2(original_req.env, header, buffer)
-          @host ||= req.host
-          @port ||= req.port
 
           if remote_support_h2?
             proxy_http2_stream(stream, req)
@@ -82,18 +86,11 @@ module Xjz
     end
 
     def remote_support_h2?
-      @remote_support_h2 = if req_scheme == 'https'
-        if remote_sock.alpn_protocol == 'h2'
-          true
-        else
-          false
-        end
-      else
-        ProxyClient.h2_test(original_req)
-      end
+      @remote_support_h2
     end
 
     def upgrade_to_http2
+      Logger[:auto].debug { "Send upgrade request" }
       req = original_req
       user_conn.write(UPGRADE_RES)
       settings = req.get_header('http2-settings')
@@ -108,9 +105,18 @@ module Xjz
     end
 
     def proxy_http2_stream(stream, req)
-      res = proxy_client.send_req(req)
-      stream.headers(res.h2_headers, end_stream: false)
-      stream.data(res.body)
+      _res = proxy_client.send_req(req) do |event, data, flags|
+        case event
+        when :headers
+          stream.headers(
+            data,
+            end_stream: flags.include?(:end_stream),
+            end_headers: flags.include?(:end_headers)
+          )
+        when :data
+          stream.data(data, end_stream: flags.include?(:end_stream))
+        end
+      end
     end
 
     def proxy_http1_stream(stream, req)
@@ -119,10 +125,30 @@ module Xjz
       stream.data(res.body, end_stream: true)
     end
 
-    def proxy_client
-      @proxy_client ||= ProxyClient.new(
-        protocol: remote_support_h2? ? 'http2' : 'http1'
-      )
+    def check_remote_server
+      use_ssl = original_req.scheme == 'https'
+      if use_ssl && remote_sock.alpn_protocol == 'h2'
+        @remote_support_h2 = true
+      else
+        set_proxy_client(protocol: 'http2', ssl: use_ssl)
+        if proxy_client.http2_server?
+          @remote_support_h2 = true
+          return
+        else
+          set_proxy_client(protocol: 'http2', ssl: use_ssl, upgrade: true)
+          if proxy_client.http2_server?
+            @remote_support_h2 = true
+          else
+            @remote_support_h2 = false
+            set_proxy_client(protocol: 'http1', ssl: use_ssl)
+          end
+        end
+      end
+    end
+
+    def set_proxy_client(options)
+      @proxy_client.close if @proxy_client
+      @proxy_client = ProxyClient.new(host, port, options)
     end
   end
 end

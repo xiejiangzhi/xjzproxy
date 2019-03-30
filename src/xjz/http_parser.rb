@@ -9,7 +9,7 @@ module Xjz
       'SERVER_PROTOCOL' => "HTTP/2.0",
       'GATEWAY_INTERFACE' => 'CGI/1.2',
       'SERVER_NAME' => '',
-      'SERVER_PORT' => '443',
+      'SERVER_PORT' => nil,
       'PATH_INFO' => '*',
       'QUERY_STRING' => '',
       'rack.multithread' => true,
@@ -74,16 +74,16 @@ module Xjz
 
       if @env['REQUEST_METHOD'] == 'CONNECT'
         host, port = parser.request_url.split(':')
-        @env['SERVER_NAME'] = host
-        @env['SERVER_PORT'] = port
+        @env['SERVER_NAME'] = host.presence
+        @env['SERVER_PORT'] = port.presence
         @env['PATH_INFO'] = ''
         @env['QUERY_STRING'] = ''
       else
         uri = URI.parse(parser.request_url)
         @env['PATH_INFO'] = uri.path
         @env['QUERY_STRING'] = uri.query || ''
-        @env['SERVER_NAME'] = uri.host || @env['HTTP_HOST']
-        @env['SERVER_PORT'] = uri.port
+        @env['SERVER_NAME'] = (uri.host || @env['HTTP_HOST']).presence
+        @env['SERVER_PORT'] = uri.port.presence
       end
     end
 

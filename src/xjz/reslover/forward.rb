@@ -42,6 +42,5 @@ module Xjz
       ssl_socket.connect
       ssl_socket
     end
-
   end
 end

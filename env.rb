@@ -8,13 +8,17 @@ else
 end
 ENV['RACK_ENV'] = $app_env
 
+t = Time.now
 require 'bundler/setup'
+puts Time.now - t
 Bundler.require(:default)
 
+puts Time.now - t
 require 'yaml'
 require 'fileutils'
 require 'active_support/core_ext'
 
+puts Time.now - t
 $root = File.expand_path('../', __FILE__)
 
 $LOAD_PATH.unshift File.join($root, 'src')

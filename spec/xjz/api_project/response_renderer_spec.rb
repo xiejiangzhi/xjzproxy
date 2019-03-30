@@ -52,7 +52,7 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
         expect(r.h1_headers).to eql([['content-type', 'application/json'], ['content-length', '16']])
       end
 
-      fit 'should return a response for grpc request' do
+      it 'should return a response for grpc request' do
         default_types = Xjz::ApiProject::DataType.default_types
         allow(default_types['integer']).to receive(:generate).and_return(123)
         allow(default_types['string']).to receive(:generate).and_return('str')

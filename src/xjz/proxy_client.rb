@@ -1,35 +1,38 @@
 module Xjz
   class ProxyClient
-    attr_reader :client
-
-    def self.h2_test(req)
-      res = HTTParty.get(req.url, headers: req.headers)
-      res.code == 101
-    end
+    attr_reader :client, :protocol
 
     # protocols: http1, http2
-    def initialize(protocol: 'http1')
+    def initialize(host, port, protocol: 'http1', ssl: false, upgrade: false)
       @protocol = protocol
       @client = case protocol
-      when 'http1' then ProxyClient::HTTP1.new
-      when 'http2' then ProxyClient::HTTP2.new
+      when 'http1' then ProxyClient::HTTP1.new(host, port, ssl: ssl)
+      when 'http2' then ProxyClient::HTTP2.new(host, port, ssl: ssl, upgrade: upgrade)
       else
         raise "Invalid proxy client protocol '#{protocol}'"
       end
       Logger[:auto].debug { "New Proxy Client #{protocol}" }
     end
 
-    def send_req(req)
+    def http2_server?
+      protocol == 'http2' && client.ping
+    end
+
+    def send_req(req, &cb)
       Logger[:auto].info { " > #{req.http_method} #{req.url.split('?').first} #{@protocol}" }
       tracker = Tracker.track_req(req)
       # TODO call hook before request
-      res = hack_req(req) || @client.send_req(req)
-      Logger[:auto].info do
-        suffix = res.conn_close? ? ' - close' : ''
-        " < #{res.code} #{res.body.to_s.bytesize} bytes #{suffix}"
+      res = hack_req(req) || @client.send_req(req, &cb)
+      if res
+        Logger[:auto].info do
+          suffix = res.conn_close? ? ' - close' : ''
+          " < #{res.code} #{res.body.to_s.bytesize} bytes #{suffix}"
+        end
+        # TODO call hook after request
+        res
+      else
+        Response.new({}, 'XjzProxy failed to get response', '500')
       end
-      # TODO call hook after request
-      res
     ensure
       if tracker
         if res

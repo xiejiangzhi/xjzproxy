@@ -1,3 +1,8 @@
+PATH
+  remote: ../../PubCode/http-2
+  specs:
+    http-2 (0.10.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -18,7 +23,6 @@ GEM
       google-protobuf (~> 3.1)
       googleapis-common-protos-types (~> 1.0.0)
     grpc-tools (1.19.0)
-    http-2 (0.10.1)
     http_parser.rb (0.6.0)
     httparty (0.16.4)
       mime-types (~> 3.0)
@@ -51,7 +55,7 @@ DEPENDENCIES
   faker (~> 1.9.3)
   grpc (~> 1.19.0)
   grpc-tools (~> 1.19.0)
-  http-2 (~> 0.10.1)
+  http-2!
   http_parser.rb (~> 0.6.0)
   httparty (~> 0.16.4)
   rack (~> 2.0.6)

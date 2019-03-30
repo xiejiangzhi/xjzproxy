@@ -1,3 +1,8 @@
+PATH
+  remote: ../../PubCode/http-2
+  specs:
+    http-2 (0.10.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -27,7 +32,6 @@ GEM
       googleapis-common-protos-types (~> 1.0.0)
     grpc-tools (1.19.0)
     hashdiff (0.3.8)
-    http-2 (0.10.1)
     http_parser.rb (0.6.0)
     httparty (0.16.4)
       mime-types (~> 3.0)
@@ -103,7 +107,7 @@ DEPENDENCIES
   gem-licenses
   grpc (~> 1.19.0)
   grpc-tools (~> 1.19.0)
-  http-2 (~> 0.10.1)
+  http-2!
   http_parser.rb (~> 0.6.0)
   httparty (~> 0.16.4)
   pry

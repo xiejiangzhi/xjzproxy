@@ -12,6 +12,7 @@ module Xjz
       HTTPHelper.write_res_to_conn(Response.new({ 'Content-Length' => '0' }, [], 200), sock)
 
       HTTPParser.parse_request(sock) do |env|
+        env['xjz.grpc'] = true
         RequestDispatcher.new.call(env)
       end
     end

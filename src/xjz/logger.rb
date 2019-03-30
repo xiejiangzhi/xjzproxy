@@ -47,8 +47,10 @@ module Xjz
     def prog_logger(progname)
       name = progname.to_s
       @prog_loggers[name] ||= begin
-        level = $config['logger_level'][name] || $config['logger_level']['default']
-        ProgLogger.new(@logger, name, level || 'info')
+        level = if $config
+          $config['logger_level'][name] || $config['logger_level']['default']
+        end
+        ProgLogger.new(@logger, name, level || 'debug')
       end
     end
 

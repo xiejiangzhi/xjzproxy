@@ -7,7 +7,7 @@ module Xjz
       @last_raw_res = nil
     end
 
-    def send_req(req)
+    def send_req(req, &cb)
       opts = {
         headers: req.h1_proxy_headers,
         timeout: $config['proxy_timeout'],
@@ -19,6 +19,9 @@ module Xjz
       Logger[:auto].debug { [req.http_method, req.url, opts].inspect }
       res = @last_raw_res = @client.send(req.http_method, req.url, opts)
       Response.new(res.headers.to_hash, res.body, res.code)
+    end
+
+    def close
     end
   end
 end

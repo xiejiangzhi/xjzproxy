@@ -33,12 +33,14 @@ RSpec.describe Xjz::HTTPHelper do
     it 'should update env' do
       addr = double('addr', ip_address: '1.2.3.4')
       conn = double('conn', remote_address: addr)
+      Xjz::IOHelper.set_proxy_host_port(conn, 'xjz.pw', '80')
       env = {}
       Xjz::HTTPHelper.write_conn_info_to_env!(env, conn)
       expect(env.keys).to eql(%w{
-        REMOTE_ADDR SERVER_PORT rack.hijack? rack.hijack rack.hijack_io
+        REMOTE_ADDR SERVER_NAME SERVER_PORT rack.hijack? rack.hijack rack.hijack_io
       })
       expect(env['REMOTE_ADDR']).to eql('1.2.3.4')
+      expect(env['SERVER_NAME']).to eql('xjz.pw')
       expect(env['SERVER_PORT']).to eql('80')
       expect(env['rack.hijack?']).to eql(true)
       expect(env['rack.hijack_io']).to eql(conn)
@@ -47,14 +49,17 @@ RSpec.describe Xjz::HTTPHelper do
 
     it 'should update env to https if conn is a sslsocket' do
       addr = double('addr', ip_address: '1.2.3.4')
-      conn = double('conn', remote_address: addr, is_a?: true, to_io: nil)
+      conn = double('conn', remote_address: addr, to_io: nil)
+      Xjz::IOHelper.set_proxy_host_port(conn, 'xjz.pw', '443')
+      allow(OpenSSL::SSL::SSLSocket).to receive('===').and_return(true)
       allow(conn).to receive(:to_io).and_return(conn)
       env = {}
       Xjz::HTTPHelper.write_conn_info_to_env!(env, conn)
       expect(env.keys).to eql(%w{
-        REMOTE_ADDR SERVER_PORT rack.url_scheme rack.hijack? rack.hijack rack.hijack_io
+        REMOTE_ADDR SERVER_NAME SERVER_PORT rack.url_scheme rack.hijack? rack.hijack rack.hijack_io
       })
       expect(env['REMOTE_ADDR']).to eql('1.2.3.4')
+      expect(env['SERVER_NAME']).to eql('xjz.pw')
       expect(env['SERVER_PORT']).to eql('443')
       expect(env['rack.hijack?']).to eql(true)
       expect(env['rack.hijack_io']).to eql(conn)

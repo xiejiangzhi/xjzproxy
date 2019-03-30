@@ -5,7 +5,7 @@ module Xjz
     def initialize(req)
       @req = req
       @res = nil
-      @proxy_client = ProxyClient.new
+      @proxy_client = ProxyClient.new(req.host, req.port, ssl: req.scheme == 'https', protocol: 'http1')
     end
 
     def perform

@@ -34,17 +34,33 @@ RSpec.describe Xjz::ProxyClient do
     $config['.api_projects'] = @ap_config
   end
 
-  it 'should return true if support h2' do
-    url = "http://xjz.pw/asdf?a=123"
-    req_headers = Hash[req.headers]
+  describe '.h2_test' do
+    it 'should return h1upgrade if support upgrade by h1' do
+      url = "http://xjz.pw/asdf?a=123"
+      req_headers = Hash[req.headers]
 
-    stub_request(:get, url).with(headers: req_headers) \
-      .to_return(status: 200, body: "", headers: {})
-    expect(Xjz::ProxyClient.h2_test(req)).to eql(false)
+      stub_request(:get, url).with(headers: req_headers) \
+        .to_return(status: 200, body: "", headers: {})
+      expect(Xjz::ProxyClient.h2_test(req)).to eql(false)
 
-    stub_request(:get, url).with(headers: req_headers) \
-      .to_return(status: 101, body: "", headers: {})
-    expect(Xjz::ProxyClient.h2_test(req)).to eql(true)
+      stub_request(:get, url).with(headers: req_headers) \
+        .to_return(status: 101, body: "", headers: {})
+      expect(Xjz::ProxyClient.h2_test(req)).to eql('h1upgrade')
+    end
+
+    it 'should return h2 if support direct h2' do
+      server_client, local_remote = UNIXSocket.pair
+      h2s = new_http2_server(server_client) { nil }
+
+      Thread.new do
+        Xjz::IOHelper.forward_streams(
+          { server_client => Xjz::WriterIO.new(h2s) }, stop_wait_cb: proc { false }
+        )
+      end
+
+      allow_any_instance_of(Xjz::ProxyClient::HTTP2).to receive(:remote_sock).and_return(local_remote)
+      expect(Xjz::ProxyClient.h2_test(req)).to eql('h2')
+    end
   end
 
   it 'should create client for http1' do
