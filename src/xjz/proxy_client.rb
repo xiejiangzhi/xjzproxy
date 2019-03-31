@@ -43,6 +43,10 @@ module Xjz
       end
     end
 
+    def close
+      client.close
+    end
+
     def hack_req(req)
       $config['.api_projects'].each do |ap|
         res = ap.hack_req(req)

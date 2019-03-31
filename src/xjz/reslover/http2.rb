@@ -38,13 +38,13 @@ module Xjz
         user_conn << bytes unless user_conn.closed?
       end
 
-      conn.on(:frame_received) do |frame|
-        Logger[:auto].debug { "Recv #{frame.inspect}" }
-      end
+      # conn.on(:frame_received) do |frame|
+      #   Logger[:auto].debug { "Recv #{frame.inspect}" }
+      # end
 
-      conn.on(:frame_sent) do |frame|
-        Logger[:auto].debug { "Sent #{frame.inspect}" }
-      end
+      # conn.on(:frame_sent) do |frame|
+      #   Logger[:auto].debug { "Sent #{frame.inspect}" }
+      # end
 
       conn.on(:stream) do |stream|
         header = []
@@ -143,6 +143,12 @@ module Xjz
             set_proxy_client(protocol: 'http1', ssl: use_ssl)
           end
         end
+      end
+
+      if @remote_support_h2
+        Logger[:auto].info { "Connect remote by http2" }
+      else
+        Logger[:auto].info { "Connect remote by http1" }
       end
     end
 

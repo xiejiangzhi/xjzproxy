@@ -85,48 +85,75 @@ RSpec.describe Xjz::Reslover::HTTP2 do
     ss.each { |s| s.close unless s.closed? }
   end
 
-  it '#perform should return a response for https request' do
-    subject = Xjz::Reslover::HTTP2.new(req)
-    stub_request(:post, "https://xjz.pw/asdf?a=123").with(
-      body: "hello",
-      headers: req.h1_proxy_headers + [['Content-Length', '5']]
-    ).to_return(status: 200, body: "world1234567", headers: new_http1_res_headers)
-    allow(subject).to receive(:remote_support_h2?).and_return(false)
-    t = Thread.new do
-      user_socket.recv(24) # remove the request header
-      subject.perform rescue Errno::EPIPE
+  describe '#perform' do
+    it 'should return a response for https request' do
+      subject = Xjz::Reslover::HTTP2.new(req)
+      stub_request(:post, "https://xjz.pw/asdf?a=123").with(
+        body: "hello",
+        headers: req.h1_proxy_headers + [['Content-Length', '5']]
+      ).to_return(status: 200, body: "world1234567", headers: new_http1_res_headers)
+      allow(subject).to receive(:remote_support_h2?).and_return(false)
+      t = Thread.new do
+        user_socket.recv(24) # remove the request header
+        subject.perform # rescue Errno::EPIPE
+      end
+      res = new_http2_req(req, browser)
+      browser.close
+      t.join
+      expect(res.body).to eql("world1234567")
+      expect(res.code).to eql(200)
+      expect(res.h2_headers).to eql([
+        [":status", "200"], ["content-type", "text/plain"], ["content-length", "12"]
+      ])
+      t.kill
     end
-    res = new_http2_req(req, browser)
-    browser.close
-    expect(res.body).to eql("world1234567")
-    expect(res.code).to eql(200)
-    expect(res.h2_headers).to eql([
-      [":status", "200"], ["content-type", "text/plain"], ["content-length", "12"]
-    ])
-    t.kill
-  end
 
-  it '#perform should return a response for http upgrade request' do
-    subject = Xjz::Reslover::HTTP2.new(h2_upgrade_req)
-    stub_request(:get, "http://xjz.pw/asdf?a=123").with(
-      headers: {
-        'Accept' => '*/*',
-        'Content-Length' => '0',
-        'Host' => 'xjz.pw',
-        'Http2-Settings' => 'AAMAAABkAARAAAAAAAIAAAAA',
-        'User-Agent' => 'curl/7.54.0',
-        'Version' => 'HTTP/1.1'
-      }
-    ).to_return(status: 200, body: "hello", headers: { 'a' => '1' })
-    allow(subject).to receive(:remote_support_h2?).and_return(false)
-    t = Thread.new { subject.perform rescue Errno::EPIPE }
-    expect(browser.recv(71)).to \
-      eql("HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: h2c\r\n\r\n")
-    res = new_http2_req(req, browser, upgrade: true)
-    browser.close
-    expect(res.body).to eql("hello")
-    expect(res.code).to eql(200)
-    expect(res.h2_headers).to eql([[":status", "200"], ['a', '1'], ["content-length", "5"]])
-    t.kill
+    it 'should return a response for http upgrade request' do
+      subject = Xjz::Reslover::HTTP2.new(h2_upgrade_req)
+      stub_request(:get, "http://xjz.pw/asdf?a=123").with(
+        headers: {
+          'Accept' => '*/*',
+          'Content-Length' => '0',
+          'Host' => 'xjz.pw',
+          'Http2-Settings' => 'AAMAAABkAARAAAAAAAIAAAAA',
+          'User-Agent' => 'curl/7.54.0',
+          'Version' => 'HTTP/1.1'
+        }
+      ).to_return(status: 200, body: "hello", headers: { 'a' => '1' })
+      allow(subject).to receive(:remote_support_h2?).and_return(false)
+      t = Thread.new { subject.perform rescue Errno::EPIPE }
+      expect(browser.recv(71)).to \
+        eql("HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: h2c\r\n\r\n")
+      res = new_http2_req(req, browser, upgrade: true)
+      browser.close
+      expect(res.body).to eql("hello")
+      expect(res.code).to eql(200)
+      expect(res.h2_headers).to eql([[":status", "200"], ['a', '1'], ["content-length", "5"]])
+      t.kill
+    end
+
+    it 'should send a upgrade header if remote support upgrade by http1' do
+      subject = Xjz::Reslover::HTTP2.new(h2_upgrade_req, upgrade: true)
+      stub_request(:get, "http://xjz.pw/asdf?a=123").with(
+        headers: {
+          'Accept' => '*/*',
+          'Content-Length' => '0',
+          'Host' => 'xjz.pw',
+          'Http2-Settings' => 'AAMAAABkAARAAAAAAAIAAAAA',
+          'User-Agent' => 'curl/7.54.0',
+          'Version' => 'HTTP/1.1'
+        }
+      ).to_return(status: 200, body: "hello", headers: { 'a' => '1' })
+      allow(subject).to receive(:remote_support_h2?).and_return(false)
+      t = Thread.new { subject.perform rescue Errno::EPIPE }
+      expect(browser.recv(71)).to \
+        eql("HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: h2c\r\n\r\n")
+      res = new_http2_req(req, browser, upgrade: true)
+      browser.close
+      expect(res.body).to eql("hello")
+      expect(res.code).to eql(200)
+      expect(res.h2_headers).to eql([[":status", "200"], ['a', '1'], ["content-length", "5"]])
+      t.kill
+    end
   end
 end

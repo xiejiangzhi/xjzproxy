@@ -34,5 +34,7 @@ RSpec.configure do |config|
       client.close rescue nil
       server.shutdown rescue nil
     end
+
+    FakeIO.clear
   end
 end

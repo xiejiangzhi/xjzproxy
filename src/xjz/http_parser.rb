@@ -43,6 +43,27 @@ module Xjz
       end
     end
 
+    def self.parse_response(conn, &block)
+      headers = {}
+      buffers = []
+      parser = Http::Parser.new
+      parser.on_headers_complete = proc do
+        headers = parser.headers.to_a
+      end
+      parser.on_body = proc do |buffer|
+        buffers << buffer
+      end
+      stop_copy = false
+      parser.on_message_complete = proc do
+        stop_copy = true
+        block.call(parser.status_code, headers, buffers)
+      end
+      IOHelper.forward_streams(
+        { conn => WriterIO.new(parser) },
+        stop_wait_cb: proc { stop_copy }
+      )
+    end
+
     def initialize
       @parser = Http::Parser.new(self)
     end

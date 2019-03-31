@@ -194,4 +194,23 @@ RSpec.describe Xjz::HTTPParser do
       )
     end
   end
+
+  describe '.parse_response' do
+    it 'should return response data' do
+      conn, w = IO.pipe
+      addr = double('addr', ip_address: '1.2.3.4')
+      conn.define_singleton_method(:remote_address) { addr }
+      w << <<~RES
+        HTTP/1.1 200 OK\r
+        Content-Length: 5\r
+        content-type: text/plain
+        \r
+        hello
+        321
+      RES
+      data = []
+      Xjz::HTTPParser.parse_response(conn) { |*args| data.push(*args) }
+      expect(data).to eql([200, [['Content-Length', '5'], ['content-type', 'text/plain']], ['hello']])
+    end
+  end
 end

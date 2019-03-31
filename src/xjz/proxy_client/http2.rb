@@ -3,13 +3,14 @@ module Xjz
     attr_reader :client, :host, :port, :use_ssl
 
     UPGRADE_DATA = <<~REQ
-      GET %{path} HTTP/1.1
-      Connection: Upgrade, HTTP2-Settings
-      HTTP2-Settings: %{settings}
-      Upgrade: h2c
-      Host: %{host}
-      User-Agent: http-2 upgrade
-      Accept: */*
+      GET / HTTP/1.1\r
+      Connection: Upgrade, HTTP2-Settings\r
+      HTTP2-Settings: %{settings}\r
+      Upgrade: h2c\r
+      Host: %{host}\r
+      User-Agent: http-2 upgrade\r
+      Accept: */*\r
+      \r
     REQ
 
     def initialize(host, port, ssl: false, upgrade: false)
@@ -39,28 +40,25 @@ module Xjz
 
       stream.on(:headers) do |h, f|
         res_header.push(*h)
-        cb_stream.call(:headers, h, f)
+        cb_stream.call(:headers, h, f) if cb_stream
       end
       stream.on(:data) do |d, f|
         res_buffer << d
-        cb_stream.call(:data, d, f)
+        cb_stream.call(:data, d, f) if cb_stream
       end
-
       stream.on(:close) do
         stop_wait = true
         res = Response.new(res_header, res_buffer)
-        cb_stream.call(:close)
+        cb_stream.call(:close) if cb_stream
       end
 
-      Logger[:auto].debug { "#{req.headers.inspect} #{req.body.inspect}" }
-
+      Logger[:auto].debug { "Send request stream #{req.headers.inspect} #{req.body.inspect}" }
       if req.body.empty?
         stream.headers(req.headers)
       else
         stream.headers(req.headers, end_stream: false)
         stream.data(req.body)
       end
-      Logger[:auto].debug { "Sent http2 stream request" }
 
       IOHelper.forward_streams(
         { remote_sock => WriterIO.new(client) },
@@ -77,19 +75,28 @@ module Xjz
 
     def init_client(client)
       if @upgrade
-        remote_socket << UPGRADE_DATA
-        raise "TODO parse response"
+        upgrade_req = (UPGRADE_DATA % {
+          host: host,
+          settings: HTTP2::Client.settings_header(client.local_settings)
+        })
+        Logger[:auto].debug { upgrade_req.inspect }
+        remote_sock << upgrade_req
+        result = []
+        HTTPParser.parse_response(remote_sock) { |*r| result.concat(r) }
+        code, headers, body = result
+        Logger[:auto].debug { "#{code} #{headers.inspect} #{body.inspect}" }
+        raise "Could not upgrade h2c, code: #{code}" unless code == 101
       end
 
       client.on(:frame) do |bytes|
         remote_sock << bytes
       end
-      client.on(:frame_sent) do |frame|
-        Logger[:auto].debug { "-> #{frame.inspect}" }
-      end
-      client.on(:frame_received) do |frame|
-        Logger[:auto].debug { "<- #{frame.inspect}" }
-      end
+      # client.on(:frame_sent) do |frame|
+      #   Logger[:auto].debug { "-> #{frame.inspect}" }
+      # end
+      # client.on(:frame_received) do |frame|
+      #   Logger[:auto].debug { "<- #{frame.inspect}" }
+      # end
 
       # client.on(:promise) do |promise|
       #   promise.on(:promise_headers) do |h|

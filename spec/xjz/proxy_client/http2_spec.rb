@@ -1,4 +1,5 @@
 RSpec.describe Xjz::ProxyClient::HTTP2 do
+  let(:subject) { described_class.new(req.host, req.port) }
   let(:req) do
     Xjz::Request.new(
       "rack.version" => [1, 3],
@@ -33,35 +34,95 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
   end
 
   describe '#send_req' do
-    let(:ss) { UNIXSocket.pair }
-
-    after :each do
-      ss.each { |s| s.close unless s.closed? }
-    end
-
     it 'should return response' do
-      server_client, local_remote = ss
-      res_headers = [
-        [':status', '200'], ['content-type', 'text/plain']
-      ]
-      stop_wait = false
+      server_client, local_remote = FakeIO.pair(:a, :b)
+      res_headers = [[':status', '200'], ['content-type', 'text/plain']]
 
       h2s = new_http2_server(server_client) do |stream, headers, buffer|
-        stop_wait = true
         data = buffer.join
         stream.headers(res_headers + [['content-length', data.bytesize.to_s]])
         stream.data(data)
       end
 
-      Thread.new do
-        Xjz::IOHelper.forward_streams(
-          { server_client => Xjz::WriterIO.new(h2s) },
-          stop_wait_cb: proc { stop_wait }
-        )
-      end
+      server_client.reply_data = proc { |data, io| Xjz::WriterIO.new(h2s) << data if data }
 
       allow(subject).to receive(:remote_sock).and_return(local_remote)
       res = subject.send_req(req)
+      expect(res).to be_a(Xjz::Response)
+      expect(res.code).to eql(200)
+      expect(res.h2_headers).to eql(res_headers + [['content-length', '5']])
+      expect(res.body).to eql('hello')
+    end
+
+    it 'should request with callback' do
+      server_client, local_remote = FakeIO.pair(:a, :b)
+      res_headers = [[':status', '200'], ['content-type', 'text/plain']]
+
+      h2s = new_http2_server(server_client) do |stream, headers, buffer|
+        data = buffer.join
+        stream.headers(res_headers + [['content-length', data.bytesize.to_s]])
+        stream.data(data)
+      end
+
+      server_client.reply_data = proc { |data, io| Xjz::WriterIO.new(h2s) << data if data }
+
+      allow(subject).to receive(:remote_sock).and_return(local_remote)
+      data = []
+      res = subject.send_req(req) { |*args| data << args }
+      expect(data.inspect).to eql([
+        [
+          :headers,
+          [[":status", "200"], ["content-type", "text/plain"], ["content-length", "5"]], [:end_headers]
+        ],
+        [:data, "hello", [:end_stream]],
+        [:close]
+      ].inspect)
+      expect(res).to be_a(Xjz::Response)
+      expect(res.code).to eql(200)
+      expect(res.h2_headers).to eql(res_headers + [['content-length', '5']])
+      expect(res.body).to eql('hello')
+    end
+
+    it 'should send upgrade request if upgrade is ture' do
+      server_client, local_remote = FakeIO.pair(:a, :b)
+      server_client.reply_data << [<<~RES, 1024]
+        HTTP/1.1 101 Protocol switch\r
+        Upgrade: h2c\r
+        \r
+      RES
+
+      allow_any_instance_of(described_class).to receive(:remote_sock).and_return(local_remote)
+      subject = described_class.new(req.host, req.port, upgrade: true)
+      expect(server_client.rdata.join).to eql(<<~REQ
+        GET / HTTP/1.1\r
+        Connection: Upgrade, HTTP2-Settings\r
+        HTTP2-Settings: AAEAABAAAAIAAAABAAMAAABkAAQAAP__AAUAAEAAAAZ_____\r
+        Upgrade: h2c\r
+        Host: baidu.com\r
+        User-Agent: http-2 upgrade\r
+        Accept: */*\r
+        \r
+      REQ
+      )
+
+      res_headers = [[':status', '200'], ['content-type', 'text/plain']]
+      h2s = new_http2_server(server_client) do |stream, headers, buffer|
+        data = buffer.join
+        stream.headers(res_headers + [['content-length', data.bytesize.to_s]])
+        stream.data(data)
+      end
+      server_client.reply_data = proc { |msg, io| Xjz::WriterIO.new(h2s) << msg if msg }
+
+      data = []
+      res = subject.send_req(req) { |*args| data << args }
+      expect(data.inspect).to eql([
+        [
+          :headers,
+          [[":status", "200"], ["content-type", "text/plain"], ["content-length", "5"]], [:end_headers]
+        ],
+        [:data, "hello", [:end_stream]],
+        [:close]
+      ].inspect)
       expect(res).to be_a(Xjz::Response)
       expect(res.code).to eql(200)
       expect(res.h2_headers).to eql(res_headers + [['content-length', '5']])

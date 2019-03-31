@@ -19,8 +19,6 @@ module Support
     def new_http2_req(req, writer, upgrade: false)
       client = HTTP2::Client.new
       client.on(:frame) { |bytes| writer << bytes; writer.flush }
-      # client.on(:frame_sent) { |frame| puts ">>> sent frame: #{frame.inspect}" }
-      # client.on(:frame_received) { |frame| puts "<<< recv frame: #{frame.inspect}" }
 
       stream = upgrade ? client.upgrade : client.new_stream
       res_header = []
@@ -50,14 +48,6 @@ module Support
         stop_wait_cb: proc { stop_wait }, timeout: 1
       )
       res
-    end
-
-    def new_socket_pair
-      server = TCPServer.new(0)
-      client = TCPSocket.new(server.local_address.ip_address, server.local_address.ip_port)
-      remote = server.accept
-      (@sockets ||= []) << [server, client, remote]
-      [client, remote]
     end
   end
 end
