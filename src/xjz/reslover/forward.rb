@@ -31,7 +31,7 @@ module Xjz
     private
 
     def new_remote_socket
-      socket = TCPSocket.new(req.host, req.port)
+      socket = Socket.tcp(req.host, req.port, connect_timeout: $config['proxy_timeout'])
       return socket if req.scheme == 'http'
 
       ctx = OpenSSL::SSL::SSLContext.new
@@ -39,7 +39,7 @@ module Xjz
       ssl_socket = OpenSSL::SSL::SSLSocket.new(socket, ctx)
       ssl_socket.sync_close = true
       ssl_socket.hostname = req.host
-      ssl_socket.connect
+      IOHelper.ssl_connect(ssl_socket)
       ssl_socket
     end
   end

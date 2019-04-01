@@ -31,6 +31,7 @@ RSpec.describe Xjz::ProxyClient::HTTP1 do
       "rack.after_reply" => []
     )
   end
+  let(:subject) { described_class.new('xjz.pw', 80) }
 
   describe '#send_req' do
     it 'should retrun response' do

@@ -1,5 +1,5 @@
 RSpec.describe Xjz::Reslover::HTTP1 do
-  let(:rw_io) { new_socket_pair }
+  let(:rw_io) { FakeIO.pair(:a, :b) }
   let(:user_socket) { rw_io.first }
   let(:client_socket) { rw_io.last }
   let(:req) do
@@ -70,9 +70,6 @@ RSpec.describe Xjz::Reslover::HTTP1 do
     stub_request(:get, "http://xjz.pw/index?t=11").with(
       headers: { 'Host' => 'xjz.pw', 'X-A' => '123' }
     ).to_return(status: res[1][0], body: res[1][1], headers: res[1][2])
-
-    # addr = double('addr', ip_address: '1.2.3.4')
-    # req.user_socket.define_singleton_method(:remote_address) { addr }
 
     expect(Xjz::HTTPHelper).to receive(:write_res_to_conn).twice do |r, s|
       code, body, headers = res.shift

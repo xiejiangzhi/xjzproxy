@@ -12,7 +12,6 @@ module Xjz
       @original_req = req
       @user_conn = req.user_socket
       @resolver_server = init_h2_resolver
-      @remote_sock = nil
       @host, @port = req.host, req.port
       @req_scheme = req.scheme
       @remote_support_h2 = nil
@@ -25,7 +24,7 @@ module Xjz
       resolver_server << HTTP2_REQ_HEADER
       IOHelper.forward_streams(@user_conn => WriterIO.new(resolver_server))
     ensure
-      @remote_sock.close if @remote_sock
+      @proxy_client.close if @proxy_client
     end
 
     private
@@ -35,7 +34,11 @@ module Xjz
     def init_h2_resolver
       conn = HTTP2::Server.new
       conn.on(:frame) do |bytes|
-        user_conn << bytes unless user_conn.closed?
+        begin
+          user_conn << bytes unless user_conn.closed?
+        rescue Errno::EPIPE => e
+          Logger[:auto].error { e.log_inspect }
+        end
       end
 
       # conn.on(:frame_received) do |frame|
@@ -66,23 +69,6 @@ module Xjz
         end
       end
       conn
-    end
-
-    def remote_sock
-      return unless host && port
-      @remote_sock ||= begin
-        sock = TCPSocket.new(host, port)
-        if req_scheme == 'https'
-          ctx = OpenSSL::SSL::SSLContext.new
-          ctx.alpn_protocols = %w{h2 http/1.1}
-          ssl_sock = OpenSSL::SSL::SSLSocket.new(sock, ctx)
-          ssl_sock.hostname = host
-          ssl_sock.connect
-          ssl_sock
-        else
-          sock
-        end
-      end
     end
 
     def remote_support_h2?
@@ -126,35 +112,8 @@ module Xjz
     end
 
     def check_remote_server
-      use_ssl = original_req.scheme == 'https'
-      if use_ssl && remote_sock.alpn_protocol == 'h2'
-        @remote_support_h2 = true
-      else
-        set_proxy_client(protocol: 'http2', ssl: use_ssl)
-        if proxy_client.http2_server?
-          @remote_support_h2 = true
-          return
-        else
-          set_proxy_client(protocol: 'http2', ssl: use_ssl, upgrade: true)
-          if proxy_client.http2_server?
-            @remote_support_h2 = true
-          else
-            @remote_support_h2 = false
-            set_proxy_client(protocol: 'http1', ssl: use_ssl)
-          end
-        end
-      end
-
-      if @remote_support_h2
-        Logger[:auto].info { "Connect remote by http2" }
-      else
-        Logger[:auto].info { "Connect remote by http1" }
-      end
-    end
-
-    def set_proxy_client(options)
-      @proxy_client.close if @proxy_client
-      @proxy_client = ProxyClient.new(host, port, options)
+      protocol, @proxy_client = ProxyClient.auto_new_client(original_req)
+      @remote_support_h2 = (protocol == :h2 || protocol == :h2c)
     end
   end
 end

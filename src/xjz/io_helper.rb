@@ -130,6 +130,22 @@ module Xjz
       end
     end
 
+    def ssl_connect(ssl_sock)
+      ssl_sock.connect_nonblock
+    rescue IO::WaitReadable
+      if IO.select([ssl_sock], nil, nil, $config['proxy_timeout'])
+        retry
+      else
+        raise "Timeout to connection remote SSL"
+      end
+    rescue IO::WaitWritable
+      if IO.select(nil, [ssl_sock], nil, $config['proxy_timeout'])
+        retry
+      else
+        raise "Timeout to connection remote SSL"
+      end
+    end
+
     private
 
     # Args:

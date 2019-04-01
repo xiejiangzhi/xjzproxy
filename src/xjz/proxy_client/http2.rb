@@ -1,6 +1,6 @@
 module Xjz
   class ProxyClient::HTTP2
-    attr_reader :client, :host, :port, :use_ssl
+    attr_reader :client, :host, :port, :use_ssl, :upgrade
 
     UPGRADE_DATA = <<~REQ
       GET / HTTP/1.1\r
@@ -71,6 +71,22 @@ module Xjz
       remote_sock.close
     end
 
+    def remote_sock
+      @remote_sock ||= begin
+        sock = Socket.tcp(host, port, connect_timeout: $config['proxy_timeout'])
+        if use_ssl
+          ctx = OpenSSL::SSL::SSLContext.new
+          ctx.alpn_protocols = %w{h2}
+          ssl_sock = OpenSSL::SSL::SSLSocket.new(sock, ctx)
+          ssl_sock.hostname = host
+          IOHelper.ssl_connect(ssl_sock)
+          ssl_sock
+        else
+          sock
+        end
+      end
+    end
+
     private
 
     def init_client(client)
@@ -85,11 +101,15 @@ module Xjz
         HTTPParser.parse_response(remote_sock) { |*r| result.concat(r) }
         code, headers, body = result
         Logger[:auto].debug { "#{code} #{headers.inspect} #{body.inspect}" }
-        raise "Could not upgrade h2c, code: #{code}" unless code == 101
+        Logger[:auto].error { "Could not upgrade h2c, code: #{code}" } unless code == 101
       end
 
       client.on(:frame) do |bytes|
-        remote_sock << bytes
+        begin
+          remote_sock << bytes
+        rescue Errno::EPIPE => e
+          Logger[:auto].debug { e.log_inspect }
+        end
       end
       # client.on(:frame_sent) do |frame|
       #   Logger[:auto].debug { "-> #{frame.inspect}" }
@@ -111,22 +131,6 @@ module Xjz
       #     Logger[:auto].info { "promise data chunk: <<#{d.size}>>" }
       #   end
       # end
-    end
-
-    def remote_sock
-      @remote_sock ||= begin
-        sock = TCPSocket.new(host, port)
-        if use_ssl
-          ctx = OpenSSL::SSL::SSLContext.new
-          ctx.alpn_protocols = %w{h2}
-          ssl_sock = OpenSSL::SSL::SSLSocket.new(sock, ctx)
-          ssl_sock.hostname = host
-          ssl_sock.connect
-          ssl_sock
-        else
-          sock
-        end
-      end
     end
   end
 end

@@ -2,6 +2,35 @@ module Xjz
   class ProxyClient
     attr_reader :client, :protocol
 
+    def self.auto_new_client(req)
+      use_ssl = req.scheme == 'https'
+      host, port = req.host, req.port
+      pclient = ProxyClient.new(host, port, protocol: 'http2', ssl: use_ssl)
+
+      if use_ssl && pclient.client.remote_sock.alpn_protocol == 'h2'
+        Logger[:auto].info { "Connect remote by h2" }
+        return [:h2, pclient]
+      else
+        pclient.close
+        pclient = ProxyClient.new(host, port, protocol: 'http2', ssl: use_ssl)
+        if pclient.client.ping
+          Logger[:auto].info { "Connect remote by h2" }
+          return [:h2, pclient]
+        else
+          pclient.close
+          pclient = ProxyClient.new(host, port, protocol: 'http2', ssl: use_ssl, upgrade: true)
+          if pclient.client.ping
+            Logger[:auto].info { "Connect remote by h2c" }
+            return [:h2c, pclient]
+          else
+            pclient.close
+            Logger[:auto].info { "Connect remote by http1" }
+            return [:h1, ProxyClient.new(host, port, protocol: 'http1', ssl: use_ssl)]
+          end
+        end
+      end
+    end
+
     # protocols: http1, http2
     def initialize(host, port, protocol: 'http1', ssl: false, upgrade: false)
       @protocol = protocol
@@ -12,10 +41,6 @@ module Xjz
         raise "Invalid proxy client protocol '#{protocol}'"
       end
       Logger[:auto].debug { "New Proxy Client #{protocol}" }
-    end
-
-    def http2_server?
-      protocol == 'http2' && client.ping
     end
 
     def send_req(req, &cb)

@@ -1,8 +1,8 @@
 RSpec.describe Xjz::Reslover::Forward do
   describe 'perform' do
-    it 'should should forward user_socket & req target' do
-      user, client = UNIXSocket.pair
-      remote, server = UNIXSocket.pair
+    fit 'should should forward user_socket & req target' do
+      user, client = FakeIO.pair(:a, :b)
+      remote, server = FakeIO.pair(:c, :d)
       req = Xjz::Request.new(
         'HTTP_HOST' => 'xjz.pw',
         'rack.url_scheme' => 'https',
@@ -15,7 +15,7 @@ RSpec.describe Xjz::Reslover::Forward do
       subject = Xjz::Reslover::Forward.new(req)
       expect(TCPSocket).to receive(:new).with('xjz.pw', 443).and_return('tcpsock')
       expect(OpenSSL::SSL::SSLSocket).to receive(:new) \
-        .with('tcpsock', kind_of(OpenSSL::SSL::SSLContext)).and_return(remote)
+        .with(client, kind_of(OpenSSL::SSL::SSLContext)).and_return(remote)
       remote.singleton_class.class_eval { attr_accessor :sync_close, :hostname, :connect }
       expect(remote).to receive(:sync_close=).with(true)
       expect(remote).to receive(:hostname=).with('xjz.pw')

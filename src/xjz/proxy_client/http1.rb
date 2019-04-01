@@ -1,10 +1,12 @@
 module Xjz
   class ProxyClient::HTTP1
-    attr_reader :client, :last_raw_res
+    attr_reader :client, :last_raw_res, :use_ssl, :upgrade
 
-    def initialize
+    def initialize(host, port, ssl: false, upgrade: false)
+      @host, @port = host, port
       @client = HTTParty
-      @last_raw_res = nil
+      @use_ssl = ssl
+      @upgrade = false
     end
 
     def send_req(req, &cb)
@@ -17,7 +19,7 @@ module Xjz
 
       Logger[:auto].debug { "Send http1 request #{}" }
       Logger[:auto].debug { [req.http_method, req.url, opts].inspect }
-      res = @last_raw_res = @client.send(req.http_method, req.url, opts)
+      res = @client.send(req.http_method, req.url, opts)
       Response.new(res.headers.to_hash, res.body, res.code)
     end
 

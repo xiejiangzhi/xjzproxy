@@ -1,11 +1,11 @@
 RSpec.describe Xjz::Reslover::SSL do
   describe 'perform' do
     it 'should wrap socket with ssl and call http1 reslover' do
-      client, remote = new_socket_pair
-      ssl_client = OpenSSL::SSL::SSLSocket.new(client)
+      _server, rsock, lsock = FakeIO.server_pair(:sa, :a, :b)
+      ssl_client = OpenSSL::SSL::SSLSocket.new(lsock.io)
       req = Xjz::Request.new(
-        'rack.hijack' => Proc.new { remote },
-        'rack.hijack_io' => remote
+        'rack.hijack' => Proc.new { rsock.io },
+        'rack.hijack_io' => rsock.io
       )
       expect_any_instance_of(Xjz::RequestDispatcher).to receive(:call) do |t, env|
         new_req = Xjz::Request.new(env)
@@ -15,8 +15,8 @@ RSpec.describe Xjz::Reslover::SSL do
       end
       reslover = Xjz::Reslover::SSL.new(req)
       t = Thread.new { reslover.perform }
-      IO.select([client])
-      expect(client.read_nonblock(1024)).to eql("HTTP/1.1 200 OK\r\ncontent-length: 0\r\n\r\n")
+      IO.select([lsock])
+      expect(lsock.read_nonblock(1024)).to eql("HTTP/1.1 200 OK\r\ncontent-length: 0\r\n\r\n")
       ssl_client.hostname = 'xjz.pw'
       ssl_client.connect
       expect(ssl_client.peer_cert.subject.to_s).to eql("/CN=xjz.pw/O=XjzProxy")
@@ -25,11 +25,9 @@ RSpec.describe Xjz::Reslover::SSL do
         Host: xjz.pw:443
 
       REQ
-      client.close_write
+      rsock.close_write
       sleep 0.1
       t.kill
-      client.close
-      remote.close
     end
   end
 end

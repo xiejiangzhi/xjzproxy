@@ -17,7 +17,7 @@ module Xjz
       ssl_sock = OpenSSL::SSL::SSLSocket.new(sock, self.class.ssl_ctx)
       ssl_sock.sync_close
       ssl_sock.accept
-      IOHelper.set_proxy_host_port(ssl_socket, req.host, req.port)
+      IOHelper.set_proxy_host_port(ssl_sock, req.host, req.port)
       Logger[:auto].debug { "SSLSocket Accepted" }
 
       HTTPParser.parse_request(ssl_sock) do |env|

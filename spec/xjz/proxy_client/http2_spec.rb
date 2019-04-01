@@ -129,4 +129,25 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
       expect(res.body).to eql('hello')
     end
   end
+
+  describe 'remote_socket' do
+    it 'should return ssl sock if use ssl' do
+      pclient = described_class.new(req.host, req.port, ssl: true)
+      expect(pclient.remote_sock).to be_a(OpenSSL::SSL::SSLSocket)
+    end
+
+    it 'should return tcp sock if not use ssl' do
+      pclient = described_class.new(req.host, req.port, ssl: false)
+      expect(pclient.remote_sock).to be_a(Socket)
+    end
+
+    it 'should timeout if cannot connect to remote' do
+      s = TCPServer.new(0)
+      addr = s.local_address
+      pclient = described_class.new(addr.ip_address, addr.ip_port, ssl: true)
+      expect {
+        pclient.remote_sock
+      }.to raise_error("Timeout to connection remote SSL")
+    end
+  end
 end

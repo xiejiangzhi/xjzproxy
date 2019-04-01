@@ -9,7 +9,7 @@ class FakeIO
 
   def_delegators(:@io,
     :close, :closed?, :close_write, :close_read, :closed_write?, :closed_read?,
-    :flush
+    :flush, :eof?, :sync, :sync=, :remote_address, :local_address, :readpartial
   )
 
   @socks = {}
@@ -22,15 +22,24 @@ class FakeIO
   end
 
   def self.pair(sname, tname)
-    sname = sname.to_sym
-    tname = tname.to_sym
-    @pairs[sname] = tname
-    @pairs[tname] = sname
-    @socks[sname], @socks[tname] = UNIXSocket.pair unless @socks[sname]
+    server_pair(:server, sname, tname)[1..2]
+  end
+
+  # rname: remote sock name
+  # lname: local sock name
+  def self.server_pair(sname, rname, lname)
+    sname = "__srv_#{sname}"
+    rname, lname = [rname, lname].map { |v| "_s_#{v}".to_sym }
+    @pairs[rname], @pairs[lname] = rname, lname
+    server = @socks[sname] ||= TCPServer.new('127.0.0.1', 0)
+    t = Thread.new { @socks[rname] = server.accept }
+    @socks[lname] = TCPSocket.new('127.0.0.1', server.local_address.ip_port)
+    t.join
 
     [
-      @instances[sname] ||= new(sname, @socks[sname]),
-      @instances[tname] ||= new(tname, @socks[tname])
+      server,
+      @instances[rname] ||= new(rname, @socks[rname]),
+      @instances[lname] ||= new(lname, @socks[lname])
     ]
   end
 
@@ -40,6 +49,9 @@ class FakeIO
 
   def self.fetch_target(name)
     @instances[@pairs[name.to_sym]]
+  end
+
+  def accept
   end
 
   def initialize(name, io)
@@ -69,21 +81,21 @@ class FakeIO
   def <<(*args)
     io.method(__method__).call(*args).tap do |r|
       wdata << args.join
-      target.on_msg
+      target&.on_msg
     end
   end
 
   def write(*args)
     io.method(__method__).call(*args).tap do |r|
       wdata << args.join
-      target.on_msg
+      target&.on_msg
     end
   end
 
   def write_nonblock(*args)
     io.method(__method__).call(*args).tap do |r|
       wdata << args.join
-      target.on_msg
+      target&.on_msg
     end
   end
 
@@ -108,15 +120,11 @@ class FakeIO
     end
   end
 
-  def remote_address
-    OpenStruct.new(ip_address: '1.2.3.4', ip_port: 12345)
-  end
-
-  def local_address
-    OpenStruct.new(ip_address: '127.0.0.1', ip_port: 12345)
-  end
-
   def to_io
-    io
+    io.respond_to?(:to_io) ? io.to_io : io
+  end
+
+  def copy_to(dst)
+    Xjz::IOHelper.forward_streams(self => dst)
   end
 end
