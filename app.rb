@@ -1,9 +1,12 @@
 $app_name = 'XjzProxy'
 
-require File.expand_path('../src/xjz/logger.rb', __FILE__)
-
 module Xjz
   require File.expand_path('../env', __FILE__)
+
+  require File.expand_path('../src/xjz/logger.rb', __FILE__)
+  require File.expand_path('../src/xjz/config.rb', __FILE__)
+  config_path = ENV['CONFIG_PATH'] || File.join($root, 'config/config.yml')
+  $config = Xjz::Config.new(config_path)
 
   # init sub module
   module Reslover; end
@@ -13,10 +16,7 @@ module Xjz
   Dir[File.join($root, 'src/xjz/**/*.rb')].sort.each { |path| require path }
 end
 
-Xjz::Logger[:auto].debug { "Loading config..." }
-
-config_path = ENV['CONFIG_PATH'] || File.join($root, 'config/config.yml')
-$config = Xjz::Config.new(config_path)
+Xjz::Logger[:auto].debug { "Verify config..." }
 $config.verify.each do |err|
   Xjz::Logger[:auto].error { err }
 end

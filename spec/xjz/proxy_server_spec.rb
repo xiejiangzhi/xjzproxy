@@ -11,7 +11,7 @@ RSpec.describe Xjz::ProxyServer do
       expect(server.app).to receive(:call) do |env|
         expect(env.delete('rack.errors')).to be_a(StringIO)
         expect(env.delete('rack.hijack')).to be_a(Proc)
-        expect(env.delete('rack.hijack_io')).to eql(remote)
+        expect(env.delete('rack.hijack_io')).to be_a(TCPSocket)
         expect(env.delete('rack.hijack?')).to eql(true)
         expect(env.delete('rack.input')).to be_a(StringIO)
         expect(env).to eql(

@@ -1,39 +1,36 @@
 RSpec.describe Xjz::Reslover::Forward do
   describe 'perform' do
-    fit 'should should forward user_socket & req target' do
-      user, client = FakeIO.pair(:a, :b)
-      remote, server = FakeIO.pair(:c, :d)
+    it 'should should forward user_socket & req target' do
+      FakeIO.hijack_socket!(binding)
+      r1, l1 = FakeIO.pair
+      r2, l2 = FakeIO.pair
+      r2.reply_data = [['data', 1024], ['', 1024]]
       req = Xjz::Request.new(
         'HTTP_HOST' => 'xjz.pw',
         'rack.url_scheme' => 'https',
         'SERVER_PORT' => '443',
         'PATH_INFO' => '/',
         'REQUEST_METHOD' => 'CONNECT',
-        'rack.hijack' => proc { client },
-        'rack.hijack_io' => client
+        'rack.hijack' => proc { r1.to_io },
+        'rack.hijack_io' => r1.to_io
       )
       subject = Xjz::Reslover::Forward.new(req)
-      expect(TCPSocket).to receive(:new).with('xjz.pw', 443).and_return('tcpsock')
-      expect(OpenSSL::SSL::SSLSocket).to receive(:new) \
-        .with(client, kind_of(OpenSSL::SSL::SSLContext)).and_return(remote)
-      remote.singleton_class.class_eval { attr_accessor :sync_close, :hostname, :connect }
-      expect(remote).to receive(:sync_close=).with(true)
-      expect(remote).to receive(:hostname=).with('xjz.pw')
-      expect(remote).to receive(:connect)
+      expect(Socket).to receive(:tcp).with('xjz.pw', 443, connect_timeout: 1).and_return(l2.to_io)
 
-      user.write("hello")
-      server.write("world")
-      Thread.new { sleep 0.1; user.write(" asdf"); user.close_write }
+      l1.write("hello")
+      Thread.new { sleep 0.1; l1.write(" asdf"); l1.close_write }
+      Thread.new { r2.ssl_accept }
       subject.perform
-      expect(user.read).to eql("HTTP/1.1 200 OK\r\ncontent-length: 0\r\n\r\nworld")
-      expect(server.read).to eql('hello asdf')
+      expect(l1.readpartial(1024)).to eql("HTTP/1.1 200 OK\r\ncontent-length: 0\r\n\r\ndata")
+      expect(r2.rdata).to eql(['hello', ' asdf'])
 
-      [user, client, remote, server].each(&:close)
+      expect(l2.sslsock.sync_close).to eql(true)
+      expect(l2.sslsock.hostname).to eql('xjz.pw')
     end
 
     it 'should should forward socket for http request' do
-      user, client = UNIXSocket.pair
-      remote, server = UNIXSocket.pair
+      r1, l1 = FakeIO.pair
+      r2, l2 = FakeIO.pair
       req = Xjz::Request.new(
         'HTTP_HOST' => 'xjz.pw',
         'rack.url_scheme' => 'http',
@@ -41,22 +38,19 @@ RSpec.describe Xjz::Reslover::Forward do
         'REQUEST_METHOD' => 'GET',
         'PATH_INFO' => '/',
         'HTTP_CONNECTION' => 'Upgrade',
-        'rack.hijack' => proc { client },
-        'rack.hijack_io' => client,
+        'rack.hijack' => proc { r1.io },
+        'rack.hijack_io' => r1.io,
         'rack.input' => StringIO.new('hello')
       )
       new_req = req.dup
       new_req.forward_conn_attrs = true
-      new_req.instance_eval { @body = 'hello' }
+      new_req.instance_eval { @body = req.env['rack.input'].string }
       subject = Xjz::Reslover::Forward.new(req)
-      expect(TCPSocket).to receive(:new).with('xjz.pw', 443).and_return(remote)
-      server.write("world")
-      Thread.new { user.close_write }
+      expect(Socket).to receive(:tcp).with('xjz.pw', 443, connect_timeout: 1).and_return(l2.to_io)
+      Thread.new { sleep 0.1; r2.write("world"); l1.close_write }
       subject.perform
-      expect(user.read).to eql('world')
-      expect(server.read).to eql(new_req.to_s)
-
-      [user, client, remote, server].each(&:close)
+      expect(l1.tread).to eql('world')
+      expect(r2.tread).to eql(new_req.to_s)
     end
   end
 end

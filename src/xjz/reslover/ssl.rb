@@ -25,6 +25,11 @@ module Xjz
       end
     end
 
+    def self.reset_certs
+      @ssl_ctx = nil
+      @ssl_ctxes.clear if @ssl_ctxes
+    end
+
     private
 
     def self.ssl_ctx
@@ -45,8 +50,8 @@ module Xjz
     end
 
     def self.fetch_ssl_ctx_by_domain(server_name, &block)
-      @ssl_ctxs ||= {}
-      @ssl_ctxs[server_name] ||= begin
+      @ssl_ctxes ||= {}
+      @ssl_ctxes[server_name] ||= begin
         Logger[:auto].info { "Generate cert for #{server_name}" }
         ctx = OpenSSL::SSL::SSLContext.new
         ctx.add_certificate(cert_manager.issue_cert(server_name), cert_manager.pkey)

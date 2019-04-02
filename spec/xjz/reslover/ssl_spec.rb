@@ -1,7 +1,7 @@
 RSpec.describe Xjz::Reslover::SSL do
   describe 'perform' do
     it 'should wrap socket with ssl and call http1 reslover' do
-      _server, rsock, lsock = FakeIO.server_pair(:sa, :a, :b)
+      _server, rsock, lsock = FakeIO.server_pair
       ssl_client = OpenSSL::SSL::SSLSocket.new(lsock.io)
       req = Xjz::Request.new(
         'rack.hijack' => Proc.new { rsock.io },

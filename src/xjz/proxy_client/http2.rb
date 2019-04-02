@@ -78,6 +78,7 @@ module Xjz
           ctx = OpenSSL::SSL::SSLContext.new
           ctx.alpn_protocols = %w{h2}
           ssl_sock = OpenSSL::SSL::SSLSocket.new(sock, ctx)
+          ssl_sock.sync_close = true
           ssl_sock.hostname = host
           IOHelper.ssl_connect(ssl_sock)
           ssl_sock

@@ -81,7 +81,7 @@ RSpec.describe Xjz::Reslover::HTTP2 do
   let(:browser) { @lsock }
 
   before :each do
-    @server, @rsock, @lsock = FakeIO.server_pair(:s, :a, :b)
+    @server, @rsock, @lsock = FakeIO.server_pair
     allow(Xjz::ProxyClient).to receive(:auto_new_client).and_return([
       :h1, Xjz::ProxyClient::HTTP1.new(req.host, req.port)
     ])

@@ -186,7 +186,7 @@ RSpec.describe Xjz::HTTPParser do
         "REQUEST_URI" => "*",
         "SCRIPT_NAME" => "",
         "SERVER_NAME" => "",
-        "SERVER_PORT" => "443",
+        "SERVER_PORT" => "80",
         "SERVER_PROTOCOL" => "HTTP/2.0",
         "rack.multiprocess" => false,
         "rack.multithread" => true,

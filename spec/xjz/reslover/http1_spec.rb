@@ -1,5 +1,5 @@
 RSpec.describe Xjz::Reslover::HTTP1 do
-  let(:rw_io) { FakeIO.pair(:a, :b) }
+  let(:rw_io) { FakeIO.pair }
   let(:user_socket) { rw_io.first }
   let(:client_socket) { rw_io.last }
   let(:req) do

@@ -35,7 +35,7 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
 
   describe '#send_req' do
     it 'should return response' do
-      server_client, local_remote = FakeIO.pair(:a, :b)
+      server_client, local_remote = FakeIO.pair
       res_headers = [[':status', '200'], ['content-type', 'text/plain']]
 
       h2s = new_http2_server(server_client) do |stream, headers, buffer|
@@ -55,7 +55,7 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
     end
 
     it 'should request with callback' do
-      server_client, local_remote = FakeIO.pair(:a, :b)
+      server_client, local_remote = FakeIO.pair
       res_headers = [[':status', '200'], ['content-type', 'text/plain']]
 
       h2s = new_http2_server(server_client) do |stream, headers, buffer|
@@ -84,7 +84,7 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
     end
 
     it 'should send upgrade request if upgrade is ture' do
-      server_client, local_remote = FakeIO.pair(:a, :b)
+      server_client, local_remote = FakeIO.pair
       server_client.reply_data << [<<~RES, 1024]
         HTTP/1.1 101 Protocol switch\r
         Upgrade: h2c\r

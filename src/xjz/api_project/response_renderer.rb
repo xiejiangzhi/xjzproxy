@@ -82,7 +82,7 @@ module Xjz
     # accept: application/grpc, appalication/json;q=0.8
     # content-type: application/grpc;charset=utf8
     def get_accept_type(req, body)
-      if req.content_type.to_s.split(';').first.strip =~ CONTENT_TYPES[:grpc]
+      if req.content_type.to_s.split(';').first.to_s.strip =~ CONTENT_TYPES[:grpc]
         'application/grpc'
       else
         accepts = req.get_header('accept').to_s.split(',').map { |v| v.split(';').first.strip }
