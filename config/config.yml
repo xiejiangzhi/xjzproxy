@@ -19,9 +19,9 @@ default: &default
     - ../xjzapidoc/example3
 
   # proxy_mode: all # proxy any host
-  proxy_mode: projects_only # only proxy projects, directly forward for other hosts
+  proxy_mode: projects # only proxy projects, directly forward for other hosts
   # proxy_mode: whitelist # projects + whitelist
-  # proxy_mode: projects_only # projects + blacklist
+  # proxy_mode: projects # projects + blacklist
 
   host_whitelist:
     - xjz.pw

@@ -32,7 +32,7 @@ module Xjz
         true
         # will process all
       else
-        Logger[:auto].error "Invalid proxy mode #{$config['proxy_mode']}"
+        Logger[:auto].error { "Invalid proxy mode #{$config['proxy_mode']}" }
         false
       end
     end

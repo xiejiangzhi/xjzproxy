@@ -17,6 +17,7 @@ puts Time.now - t
 require 'yaml'
 require 'fileutils'
 require 'active_support/core_ext'
+require 'shellwords'
 
 puts Time.now - t
 $root = File.expand_path('../', __FILE__)

@@ -101,6 +101,7 @@ module Xjz
         eval <<-RUBY, binding, __FILE__, __LINE__ + 1
           def #{name}(msg = nil, &block)
             return if LEVELS['#{name}'] < @level_index
+            block ||= proc { msg }
             logger.#{name}(@progname, &block)
           end
         RUBY
