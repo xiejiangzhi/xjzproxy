@@ -66,7 +66,9 @@ module Xjz
 
     def parse_project(project, env)
       pj = env['project'] = project.deep_dup
-      pj['.grpc_module'] = generate_and_load_grpc(project['grpc'], pj['dir'])
+      if grpc_options = pj['grpc']
+        pj['.grpc_module'] = ApiProject::GRPCParser.new(pj['dir'], grpc_options).parse
+      end
     end
 
     def parse_plugins(plugins, env)
@@ -168,102 +170,6 @@ module Xjz
       end
       raise "Circular dependencies." if r.empty?
       r + sort_by_dependents!(data, ref_prefix, keys)
-    end
-
-    # TODO lazy generate and load
-    def generate_and_load_grpc(conf, root_dir)
-      return unless conf && conf['dir']
-      dir = File.expand_path(conf['dir'], root_dir)
-      unless File.directory?(dir)
-        Logger[:auto].error { "Not found gRPC folder #{dir}" }
-        return
-      end
-
-      out_dir = File.join(dir, '.xjzapi/protos')
-      files = generate_protos(dir, out_dir, conf)
-      load_protos(files, out_dir)
-    end
-
-    def generate_protos(dir, out_dir, conf)
-      FileUtils.mkdir_p(out_dir)
-      sout_dir = Shellwords.escape(out_dir)
-      base_cmd = 'bundle exec grpc_tools_ruby_protoc'
-      base_cmd += " --ruby_out=#{sout_dir} --grpc_out=#{sout_dir} -I#{Shellwords.escape(dir)}"
-      files = []
-      (conf['proto_files'] || ['**/*.proto']).each do |matcher|
-        files.concat(Dir[File.join(dir, matcher)].to_a)
-      end
-      # TODO open3 to concurrent generate files
-      files.uniq.map do |path|
-        generate_pbfiles(base_cmd, path, sout_dir)
-      end.compact.flatten
-    end
-
-    def generate_pbfiles(base_cmd, path, sout_dir)
-      cmd = base_cmd + " #{Shellwords.escape(path)}"
-      fname = File.basename(path).gsub(/\.[\w\-]+$/, '')
-      out_files = [
-        File.expand_path(fname + '_pb.rb', sout_dir),
-        File.expand_path(fname + '_services_pb.rb', sout_dir)
-      ]
-      out_files_sts = out_files.each_with_object({}) do |f, r|
-        r[f] = File.exist?(f) ? File.mtime(f) : nil
-      end
-
-      out, err, status = Open3.capture3(cmd)
-      if status.exitstatus != 0
-        Logger[:auto].error { "Error of #{cmd}: #{err.presence || out}" }
-        return nil
-      elsif err.present?
-        Logger[:auto].warn { "#{path}: #{err.presence || out}" }
-      end
-
-      out_files.select do |fp|
-        next false unless File.exist?(fp)
-        mt = File.mtime(fp)
-        mt && mt != out_files_sts[fp]
-      end
-    end
-
-    def load_protos(files, out_dir)
-      Google::Protobuf::DescriptorPool.class_eval do
-        unless @xjz_gpdp
-          @xjz_gpdp = true
-          def self.generated_pool
-            Thread.current[:google_protobuf_dp] ||= new
-          end
-        end
-      end
-
-      Module.new.tap do |m|
-        Thread.current[:google_protobuf_dp] = nil
-
-        m.module_exec do
-          @loaded_paths = []
-          @pb_pool = Google::Protobuf::DescriptorPool.generated_pool
-          @services = {}
-
-          define_singleton_method(:pb_pool) { @pb_pool }
-          define_singleton_method(:services) { @services }
-
-          define_singleton_method(:require) do |path|
-            Kernel.require(path)
-          rescue LoadError => e
-            file = File.expand_path("#{path}.rb", out_dir)
-            raise e unless File.exist?(file)
-            load_code(file)
-          end
-
-          define_singleton_method(:load_code) do |path|
-            return if @loaded_paths.include?(path)
-            code = File.read(path)
-            self.module_eval(code, path, 1)
-            @loaded_paths << path
-          end
-        end
-
-        files.each { |path| m.load_code(path) }
-      end
     end
   end
 end

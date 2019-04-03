@@ -1,6 +1,6 @@
-RSpec.describe Xjz::Helper::GRPC do
+RSpec.describe Xjz::ApiProject::GRPC do
   let(:ap) { Xjz::ApiProject.new(File.join($root, 'spec/files/grpc.yml')) }
-  let(:subject) { Xjz::Helper::GRPC.new(ap) }
+  let(:subject) { Xjz::ApiProject::GRPC.new(ap) }
 
   describe 'find_rpc' do
     it 'should return a rpc object' do

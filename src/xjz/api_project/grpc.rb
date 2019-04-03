@@ -1,5 +1,5 @@
 module Xjz
-  class Helper::GRPC
+  class ApiProject::GRPC
     attr_reader :api_project, :grpc, :rpcs_map, :desc_map
 
     def initialize(ap)

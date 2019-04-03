@@ -10,6 +10,7 @@ gem 'httparty', '~> 0.16.4'
 gem 'http_parser.rb', '~> 0.6.0', require: 'http_parser'
 # gem 'http-2', '~> 0.10.1', require: 'http/2'
 gem 'http-2', require: 'http/2', path: '~/PubCode/http-2'
+gem 'google-protobuf', '~> 3.7.0'
 gem 'grpc', '~> 1.19.0'
 gem 'grpc-tools', '~> 1.19.0'
 

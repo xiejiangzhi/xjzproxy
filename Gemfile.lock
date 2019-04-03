@@ -53,6 +53,7 @@ DEPENDENCIES
   classy_hash (~> 0.2.1)
   concurrent-ruby (~> 1.1.4)
   faker (~> 1.9.3)
+  google-protobuf (~> 3.7.0)
   grpc (~> 1.19.0)
   grpc-tools (~> 1.19.0)
   http-2!
