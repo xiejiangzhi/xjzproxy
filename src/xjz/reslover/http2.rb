@@ -1,5 +1,5 @@
 module Xjz
-  class Reslover::HTTP2
+  class Resolver::HTTP2
     attr_reader :original_req, :conn, :host, :port, :proxy_client
 
     UPGRADE_RES = [

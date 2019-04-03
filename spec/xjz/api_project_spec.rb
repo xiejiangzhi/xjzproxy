@@ -70,6 +70,24 @@ RSpec.describe Xjz::ApiProject do
       ))
       expect(r).to be_nil
     end
+
+    it 'should return a response for grpc request' do
+      file_path = File.join($root, 'spec/files/grpc.yml')
+      ap = Xjz::ApiProject.new(file_path)
+      r = ap.hack_req(Xjz::Request.new(
+        'HTTP_HOST' => 'grpc.xjz.pw',
+        'HTTP_CONTENT_TYPE' => 'application/grpc',
+        'HTTP_ACCEPT' => 'application/grpc',
+        'rack.url_scheme' => 'https',
+        'PATH_INFO' => '/Hw.Greeter/SayHello',
+        'REQUEST_METHOD' => 'POST'
+      ))
+      expect(r.code).to eql(400)
+      expect(r.h1_headers).to eql([
+        ["a", "aaa"], ["content-type", "application/grpc"], ["content-length", "30"]
+      ])
+      expect(r.body).to eql("\n\nhello gRPC\x12\x02\b\x17\x1A\x01a\x1A\x01b*\x06data b")
+    end
   end
 
   describe '#raw_data' do

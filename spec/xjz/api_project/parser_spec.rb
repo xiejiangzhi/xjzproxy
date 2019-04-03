@@ -80,15 +80,11 @@ RSpec.describe Xjz::ApiProject::Parser do
         'url' => 'https://xjz.pw',
         'desc' => 'desc',
         "dir" => File.join($root, "spec/files"),
-        "grpc" => {
-          "dir" => "./project_protobufs",
-          "proto_files" => ["**/*.proto"],
-          "protoc_args" => nil
-        },
       )
     end
 
     it 'should generate ruby proto and load them' do
+      raw_data = Xjz::ApiProject.new(File.join($root, 'spec/files/grpc.yml')).raw_data
       gm = subject.parse(raw_data)['project']['.grpc_module']
       expect(gm).to be_a(Module)
       expect(gm.pb_pool).to be_a(Google::Protobuf::DescriptorPool)

@@ -1,4 +1,4 @@
-RSpec.describe Xjz::Reslover::HTTP1 do
+RSpec.describe Xjz::Resolver::HTTP1 do
   let(:rw_io) { FakeIO.pair }
   let(:user_socket) { rw_io.first }
   let(:client_socket) { rw_io.last }
@@ -35,7 +35,7 @@ RSpec.describe Xjz::Reslover::HTTP1 do
     )
   end
 
-  let(:subject) { Xjz::Reslover::HTTP1.new(req) }
+  let(:subject) { Xjz::Resolver::HTTP1.new(req) }
 
   it '#perform should write response' do
     stub_request(:post, "http://xjz.pw/asdf?a=123").with(

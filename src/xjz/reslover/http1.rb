@@ -1,5 +1,5 @@
 module Xjz
-  class Reslover::HTTP1
+  class Resolver::HTTP1
     attr_reader :res, :req, :proxy_client
 
     def initialize(req)

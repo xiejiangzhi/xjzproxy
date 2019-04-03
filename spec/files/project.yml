@@ -2,12 +2,6 @@
 project:
   url: https://xjz.pw
   desc: desc
-  grpc:
-    dir: ./project_protobufs
-    protoc_args:
-    proto_files: # which file will generate
-      # https://ruby-doc.org/core-2.2.0/Dir.html#method-c-glob
-      - '**/*.proto'
 
 types:
   status:

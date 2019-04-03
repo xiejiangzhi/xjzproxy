@@ -9,7 +9,8 @@ module Xjz
   $config = Xjz::Config.new(config_path)
 
   # init sub module
-  module Reslover; end
+  module Helper; end
+  module Resolver; end
   class ProxyClient; end
 
   Xjz::Logger[:auto].debug { "Loading code..." }

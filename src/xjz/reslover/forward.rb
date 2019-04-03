@@ -1,5 +1,5 @@
 module Xjz
-  class Reslover::Forward
+  class Resolver::Forward
     attr_reader :req
 
     def initialize(req)

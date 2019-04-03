@@ -53,19 +53,21 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
       end
 
       it 'should return a response for grpc request' do
+        ap = Xjz::ApiProject.new(File.join($root, 'spec/files/grpc.yml'))
+        subject = described_class.new(ap)
         default_types = Xjz::ApiProject::DataType.default_types
         allow(default_types['integer']).to receive(:generate).and_return(123)
         allow(default_types['string']).to receive(:generate).and_return('str')
         req = Xjz::Request.new(
           'HTTP_CONTENT_TYPE' => 'application/grpc',
-          'PATH_INFO' => '/Hw.Greeter/SayHello'
+          'PATH_INFO' => '/Hw.Greeter/SayName'
         )
 
         # a gRPC request, and we didn't define mock data
-        r = subject.render(req, nil)
+        r = subject.render(req, ap.grpc.res_desc(req.path))
         expect(r).to be_a(Xjz::Response)
         expect(r.code).to eql(200)
-        data = ap.data['project']['.grpc_module'].services[req.path].output.decode(r.body).to_hash
+        data = ap.grpc.find_rpc(req.path).output.decode(r.body).to_hash
         type = data.delete(:type)
         expect(%i{VIP NORMAL}).to be_include(type)
         expect(data).to eql(

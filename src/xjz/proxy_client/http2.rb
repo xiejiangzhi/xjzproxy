@@ -109,7 +109,7 @@ module Xjz
         begin
           remote_sock << bytes
         rescue Errno::EPIPE => e
-          Logger[:auto].debug { e.log_inspect }
+          Logger[:auto].error { e.log_inspect }
         end
       end
       # client.on(:frame_sent) do |frame|

@@ -57,7 +57,7 @@ RSpec.describe FakeIO do
     r1, l1 = FakeIO.pair(:a)
     l1.reply_data = proc { |msg, io| io << "<- #{msg}" }
 
-    rs = OpenSSL::SSL::SSLSocket.new(r1.to_io, Xjz::Reslover::SSL.ssl_ctx)
+    rs = OpenSSL::SSL::SSLSocket.new(r1.to_io, Xjz::Resolver::SSL.ssl_ctx)
     ls = OpenSSL::SSL::SSLSocket.new(l1.to_io)
     Thread.new { rs.accept }
     Xjz::IOHelper.ssl_connect(ls)

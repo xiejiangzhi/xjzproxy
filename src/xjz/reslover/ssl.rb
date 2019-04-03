@@ -2,7 +2,7 @@ require 'socket'
 require 'openssl'
 
 module Xjz
-  class Reslover::SSL
+  class Resolver::SSL
     attr_reader :req
 
     def initialize(req)

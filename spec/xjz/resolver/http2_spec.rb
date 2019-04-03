@@ -1,4 +1,4 @@
-RSpec.describe Xjz::Reslover::HTTP2 do
+RSpec.describe Xjz::Resolver::HTTP2 do
   let(:h2_upgrade_req) do
     Xjz::Request.new(
       "rack.version" => [1, 3],
@@ -89,7 +89,7 @@ RSpec.describe Xjz::Reslover::HTTP2 do
 
   describe '#perform' do
     it 'should return a response for https request' do
-      subject = Xjz::Reslover::HTTP2.new(req)
+      subject = Xjz::Resolver::HTTP2.new(req)
       stub_request(:post, "https://xjz.pw/asdf?a=123").with(
         body: "hello",
         headers: req.h1_proxy_headers + [['Content-Length', '5']]
@@ -110,7 +110,7 @@ RSpec.describe Xjz::Reslover::HTTP2 do
     end
 
     it 'should return a response for http upgrade request' do
-      subject = Xjz::Reslover::HTTP2.new(h2_upgrade_req)
+      subject = Xjz::Resolver::HTTP2.new(h2_upgrade_req)
       stub_request(:get, "http://xjz.pw/asdf?a=123").with(
         headers: {
           'Accept' => '*/*',
@@ -134,7 +134,7 @@ RSpec.describe Xjz::Reslover::HTTP2 do
     end
 
     it 'should send a upgrade header if remote support upgrade by http1' do
-      subject = Xjz::Reslover::HTTP2.new(h2_upgrade_req)
+      subject = Xjz::Resolver::HTTP2.new(h2_upgrade_req)
       stub_request(:get, "http://xjz.pw/asdf?a=123").with(
         headers: {
           'Accept' => '*/*',

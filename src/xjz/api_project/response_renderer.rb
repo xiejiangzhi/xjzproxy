@@ -18,21 +18,28 @@ module Xjz
       @api_project = ap
     end
 
-    def render(req, res_conf)
-      res_conf ||= {}
-      headers = render_headers(res_conf['headers'])
+    def render(req, res_desc)
+      if res_desc.blank?
+        Logger[:auto].warn { "Response description is empty" }
+        return Response.new({}, 'Not found response' , 400)
+      end
+
+      headers = render_headers(res_desc['headers'])
       ct = HTTPHelper.get_header(headers, 'content-type')
       unless ct
-        ct = get_accept_type(req, res_conf['data'])
+        ct = get_accept_type(req, res_desc['data'])
         HTTPHelper.set_header(headers, 'content-type', ct)
       end
 
-      res_conf['data'] ||= generate_grpc_scheme(req) if CONTENT_TYPES[:grpc] === ct
+      if CONTENT_TYPES[:grpc] === ct && api_project.grpc&.find_rpc(req.path).blank?
+        Logger[:auto].error { "Not found rpc service for #{req.path}" }
+        return Response.new({}, "Not found rpc service for #{req.path}", 400)
+      end
 
-      body = render_body(res_conf['data'])
+      body = render_body(res_desc['data'])
       body = format_body(req, body, ct)
 
-      Response.new(headers, body, res_conf['http_code'] || 200)
+      Response.new(headers, body, res_desc['http_code'] || 200)
     end
 
     def render_headers(conf)
@@ -70,7 +77,7 @@ module Xjz
         if grpc_type == 'json'
           body.to_json
         else
-          find_rpc(req).output.new(body).to_proto
+          api_project.grpc.find_rpc(req.path).output.new(body).to_proto
         end
       when CONTENT_TYPES[:text]
         body.to_s
@@ -94,55 +101,6 @@ module Xjz
         when Hash, Array then 'application/json'
         else 'text/plain'
         end
-      end
-    end
-
-    def generate_grpc_scheme(req)
-      rpc = find_rpc(req)
-      fetch_schema_of_pb_desc(rpc.output.descriptor)
-    end
-
-    def fetch_schema_of_pb_desc(pbd)
-      types = api_project.data['types']
-      pbd.each_with_object({}) do |field, r|
-        # https://developers.google.com/protocol-buffers/docs/proto3#scalar
-        type = case field.type
-        when :float, :double
-          types['float']
-        when :int32, :int64, :uint32, :uint64, :sint32, :sint64, :fixed32, :fixed64, :sfixed32, :sfixed64
-          types['integer']
-        when :bool
-          types['boolean']
-        when :string, :bytes
-          types['string']
-        when :enum
-          field.subtype.to_a.sample.last
-        when :message
-          fetch_schema_of_pb_desc(field.subtype)
-        else
-          raise "Unsuppoerted type '#{field.type}'"
-        end
-
-        r[field.name] = (field.label == :repeated) ? [type] : type
-      end
-    end
-
-    def find_rpc(req)
-      m = api_project.data['project']['.grpc_module']
-      m.services[req.path] ||= begin
-        service, action = req.path[1..-1].split('/')
-        service_name = service.split('.').map(&:camelcase).join('::') + '::Service'
-
-        scls = begin
-          m.const_get(service_name)
-        rescue NameError => e
-          raise "Not found service by '#{service_name}'"
-        end
-
-        scls.rpc_descs[action.to_sym].tap do |rpc|
-          raise "Not found RPC method by #{service}/#{action}" unless rpc
-        end
-
       end
     end
   end

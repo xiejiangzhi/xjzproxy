@@ -1,5 +1,5 @@
 module Xjz
-  class Reslover::GRPC
+  class Resolver::GRPC
     attr_reader :req
 
     def initialize(req)

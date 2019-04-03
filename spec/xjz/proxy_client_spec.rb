@@ -87,13 +87,13 @@ RSpec.describe Xjz::ProxyClient do
 
     before :each do
       @server, @rsock, @lsock = FakeIO.server_pair
-      Xjz::Reslover::SSL.reset_certs
+      Xjz::Resolver::SSL.reset_certs
     end
 
     it 'should return protocol and client if server support h2 alpn' do
       config_data['alpn_protocols'] = ['h2', 'http/1.1']
       t = Thread.new do
-        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Reslover::SSL.ssl_ctx)
+        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Resolver::SSL.ssl_ctx)
         ssl_sock = ssl_server.accept
         sleep 0.1
         ssl_sock.close
@@ -109,7 +109,7 @@ RSpec.describe Xjz::ProxyClient do
     it 'should return protocol and client if server support h2 without alpn' do
       config_data['alpn_protocols'] = ['http/1.1']
       t = Thread.new do
-        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Reslover::SSL.ssl_ctx)
+        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Resolver::SSL.ssl_ctx)
         ssl_server.accept.close
         sock = ssl_server.accept
         h2s = new_http2_server(sock)
@@ -128,11 +128,11 @@ RSpec.describe Xjz::ProxyClient do
     it 'should return protocol and client if server support h2c' do
       config_data['alpn_protocols'] = ['http/1.1']
       t = Thread.new {
-        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Reslover::SSL.ssl_ctx)
+        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Resolver::SSL.ssl_ctx)
         ssl_server.accept.close
-        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Reslover::SSL.ssl_ctx)
+        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Resolver::SSL.ssl_ctx)
         ssl_server.accept.close
-        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Reslover::SSL.ssl_ctx)
+        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Resolver::SSL.ssl_ctx)
         sock = ssl_server.accept
         d = sock.readpartial(1024)
         expect(d).to eql(<<~REQ
@@ -168,7 +168,7 @@ RSpec.describe Xjz::ProxyClient do
     it 'should return protocol and client if server do not support h2' do
       config_data['alpn_protocols'] = ['http/1.1']
       t = Thread.new do
-        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Reslover::SSL.ssl_ctx)
+        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Resolver::SSL.ssl_ctx)
         ssl_server.accept.close
         ssl_server.accept.close
         ssl_server.accept.close

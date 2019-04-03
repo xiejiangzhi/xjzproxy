@@ -1,4 +1,4 @@
-RSpec.describe Xjz::Reslover::Forward do
+RSpec.describe Xjz::Resolver::Forward do
   describe 'perform' do
     it 'should should forward user_socket & req target' do
       FakeIO.hijack_socket!(binding)
@@ -14,7 +14,7 @@ RSpec.describe Xjz::Reslover::Forward do
         'rack.hijack' => proc { r1.to_io },
         'rack.hijack_io' => r1.to_io
       )
-      subject = Xjz::Reslover::Forward.new(req)
+      subject = Xjz::Resolver::Forward.new(req)
       expect(Socket).to receive(:tcp).with('xjz.pw', 443, connect_timeout: 1).and_return(l2.to_io)
 
       l1.write("hello")
@@ -45,7 +45,7 @@ RSpec.describe Xjz::Reslover::Forward do
       new_req = req.dup
       new_req.forward_conn_attrs = true
       new_req.instance_eval { @body = req.env['rack.input'].string }
-      subject = Xjz::Reslover::Forward.new(req)
+      subject = Xjz::Resolver::Forward.new(req)
       expect(Socket).to receive(:tcp).with('xjz.pw', 443, connect_timeout: 1).and_return(l2.to_io)
       Thread.new { sleep 0.1; r2.write("world"); l1.close_write }
       subject.perform

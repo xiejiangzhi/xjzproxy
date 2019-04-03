@@ -13,7 +13,7 @@ module Xjz
       if process_conn?(req)
         dispatch_request(req)
       else
-        Reslover::Forward.new(req).perform
+        Resolver::Forward.new(req).perform
       end
     end
 
@@ -49,25 +49,25 @@ module Xjz
 
       if req_method == 'connect'
         if grpc_tunnel?(req)
-          Reslover::GRPC.new(req).perform
+          Resolver::GRPC.new(req).perform
         else
-          Reslover::SSL.new(req).perform
+          Resolver::SSL.new(req).perform
         end
       elsif flag = req.upgrade_flag
         case flag
         when 'h2c'
-          Reslover::HTTP2.new(req).perform
+          Resolver::HTTP2.new(req).perform
         when 'websocket'
-          Reslover::Forward.new(req).perform
+          Resolver::Forward.new(req).perform
         else
           Logger[:auto].error { "Cannot handle request upgrade #{flag}" }
         end
       elsif web_ui_request?(req)
-        Reslover::WebUI.new(req).perform
+        Resolver::WebUI.new(req).perform
       elsif req_method == 'pri'
-        Reslover::HTTP2.new(req).perform
+        Resolver::HTTP2.new(req).perform
       elsif VALID_REQUEST_METHODS.include?(req_method)
-        Reslover::HTTP1.new(req).perform
+        Resolver::HTTP1.new(req).perform
       else
         Logger[:auto].error { "Cannot handle request #{req.inspect}" }
       end

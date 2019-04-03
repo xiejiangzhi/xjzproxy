@@ -158,7 +158,7 @@ class FakeIO
 
   def ssl_accept
     raise "SSL Socket initied" if @sslsock
-    self.class.watch_sslsocket(OpenSSL::SSL::SSLSocket.new(io, Xjz::Reslover::SSL.ssl_ctx))
+    self.class.watch_sslsocket(OpenSSL::SSL::SSLSocket.new(io, Xjz::Resolver::SSL.ssl_ctx))
     sslsock.accept
   end
 

@@ -40,11 +40,11 @@ RSpec.describe Xjz::RequestDispatcher do
 
     def init_checker(r, n = 1)
       [
-        [Xjz::Reslover::Forward, fr],
-        [Xjz::Reslover::SSL, sslr],
-        [Xjz::Reslover::HTTP1, h1r],
-        [Xjz::Reslover::HTTP2, h2r],
-        [Xjz::Reslover::WebUI, webr],
+        [Xjz::Resolver::Forward, fr],
+        [Xjz::Resolver::SSL, sslr],
+        [Xjz::Resolver::HTTP1, h1r],
+        [Xjz::Resolver::HTTP2, h2r],
+        [Xjz::Resolver::WebUI, webr],
       ].each do |cls, v|
         if r == v
           expect(cls).to receive(:new).with(kind_of(Xjz::Request)).and_return(v).exactly(n).times

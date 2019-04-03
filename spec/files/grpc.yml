@@ -1,0 +1,34 @@
+---
+project:
+  url: https://grpc.xjz.pw
+  desc: desc
+  grpc:
+    dir: ./project_protobufs
+    protoc_args:
+    proto_files: # which file will generate
+      # https://ruby-doc.org/core-2.2.0/Dir.html#method-c-glob
+      - '**/*.proto'
+
+types:
+
+responses:
+  list_users:
+    http_code: 400
+    headers:
+      a: 'aaa'
+    data:
+      aa: data a
+      bb: data b
+      info:
+        age: 23
+      keywords: [a, b]
+      message: hello gRPC
+
+apis:
+  - title: Get user info
+    method: POST
+    path: /Hw.Greeter/SayHello
+    response:
+      success:
+        - .r/list_users
+

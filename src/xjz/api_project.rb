@@ -17,18 +17,31 @@ module Xjz
     # Return nil if don't hijack
     # Return a response if hijack req
     def hack_req(req)
-      _, t = data['apis'].find { |k, v| k.match?("#{req.scheme}://#{req.host}") }
-      return unless t
-      apis = t[req.http_method.upcase] || []
-      api = apis.find { |a| a['enabled'] != false && a['.path_regexp'].match?(req.path) }
-      return unless api
-      Logger[:auto].debug { "Match mock data: #{api['method']} #{api['path']}" }
-      res = (api['response']['success'] || []).sample
+      res = if grpc
+        grpc.res_desc(req.path)
+      else
+        api = find_api(req.http_method, req.scheme, req.host, req.path)
+        (api&.dig('response', 'success') || []).sample
+      end
+      return unless res
+      Logger[:auto].debug { "Match mock data: #{req.http_method} #{req.path}" }
       @response_renderer.render(req, res)
+    end
+
+    def find_api(http_method, scheme, host, path)
+      _, t = data['apis'].find { |k, v| k.match?("#{scheme}://#{host}") }
+      return unless t
+      apis = t[http_method.upcase] || []
+      apis.find { |a| a['enabled'] != false && a['.path_regexp'].match?(path) }
     end
 
     def errors
       Verifier.verify(raw_data, repo_path)
+    end
+
+    def grpc
+      return unless data['project']['.grpc_module']
+      @grpc ||= Helper::GRPC.new(self)
     end
 
     def data
@@ -64,5 +77,6 @@ module Xjz
       erb.filename = file_path
       YAML.load(erb.result, filename: file_path)
     end
+
   end
 end

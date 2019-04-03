@@ -2,11 +2,6 @@
 project:
   url: https://xjz.pw
   desc: desc
-  grpc:
-    dir: "./project_protobufs"
-    protoc_args: 
-    proto_files:
-    - "**/*.proto"
 plugins:
   auth:
     filter:
