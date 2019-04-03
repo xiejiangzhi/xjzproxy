@@ -29,6 +29,9 @@ module Xjz
         stop_wait_cb: proc { v.present? }
       )
       v.present?
+    rescue Errno::EPROTOTYPE => e
+      Logger[:auto].error { e.log_inspect }
+      false
     end
 
     def send_req(req, &cb_stream)
@@ -68,7 +71,7 @@ module Xjz
     end
 
     def close
-      remote_sock.close
+      @remote_sock&.close
     end
 
     def remote_sock

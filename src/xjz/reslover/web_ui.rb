@@ -1,8 +1,9 @@
 module Xjz
   class Resolver::WebUI
-    attr_reader :req, :template_dir
+    attr_reader :req, :template_dir, :api_project
 
-    def initialize(req)
+    def initialize(req, ap = nil)
+      @api_project = ap
       @req = req
       @template_dir = $config['template_dir'] || File.join($root, 'src/views')
     end

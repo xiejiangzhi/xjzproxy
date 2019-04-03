@@ -1,6 +1,6 @@
 module Xjz
   class Resolver::HTTP2
-    attr_reader :original_req, :conn, :host, :port, :proxy_client
+    attr_reader :original_req, :conn, :host, :port, :proxy_client, :api_project
 
     UPGRADE_RES = [
       'HTTP/1.1 101 Switching Protocols',
@@ -8,13 +8,15 @@ module Xjz
       'Upgrade: h2c'
     ].join("\r\n") + "\r\n\r\n"
 
-    def initialize(req)
+    def initialize(req, ap = nil)
+      @api_project = ap
       @original_req = req
       @user_conn = req.user_socket
       @resolver_server = init_h2_resolver
       @host, @port = req.host, req.port
       @req_scheme = req.scheme
       @remote_support_h2 = nil
+      @proxy_client = nil
     end
 
     def perform
@@ -24,7 +26,7 @@ module Xjz
       resolver_server << HTTP2_REQ_HEADER
       IOHelper.forward_streams(@user_conn => WriterIO.new(resolver_server))
     ensure
-      @proxy_client.close if @proxy_client
+      @proxy_client&.close
     end
 
     private
@@ -112,7 +114,7 @@ module Xjz
     end
 
     def check_remote_server
-      protocol, @proxy_client = ProxyClient.auto_new_client(original_req)
+      protocol, @proxy_client = ProxyClient.auto_new_client(original_req, api_project)
       @remote_support_h2 = (protocol == :h2 || protocol == :h2c)
     end
   end

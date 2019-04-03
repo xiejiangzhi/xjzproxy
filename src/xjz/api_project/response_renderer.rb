@@ -77,7 +77,10 @@ module Xjz
         if grpc_type == 'json'
           body.to_json
         else
-          api_project.grpc.find_rpc(req.path).output.new(body).to_proto
+          compressed = 0
+          pb_data = api_project.grpc.find_rpc(req.path).output.new(body).to_proto
+          flags = [compressed, pb_data.bytesize]
+          flags.pack("CN") + pb_data
         end
       when CONTENT_TYPES[:text]
         body.to_s

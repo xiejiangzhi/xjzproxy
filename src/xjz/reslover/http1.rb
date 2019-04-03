@@ -1,11 +1,14 @@
 module Xjz
   class Resolver::HTTP1
-    attr_reader :res, :req, :proxy_client
+    attr_reader :res, :req, :proxy_client, :api_project
 
-    def initialize(req)
+    def initialize(req, ap = nil)
+      @api_project = ap
       @req = req
       @res = nil
-      @proxy_client = ProxyClient.new(req.host, req.port, ssl: req.scheme == 'https', protocol: 'http1')
+      @proxy_client = ProxyClient.new(
+        req.host, req.port, ssl: req.scheme == 'https', protocol: 'http1', api_project: ap
+      )
     end
 
     def perform

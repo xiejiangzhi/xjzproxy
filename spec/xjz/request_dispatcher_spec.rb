@@ -38,7 +38,7 @@ RSpec.describe Xjz::RequestDispatcher do
     let(:h2r) { double('http2', perform: true) }
     let(:webr) { double('webui', perform: true) }
 
-    def init_checker(r, n = 1)
+    def init_checker(r, n = 1, ap = nil)
       [
         [Xjz::Resolver::Forward, fr],
         [Xjz::Resolver::SSL, sslr],
@@ -47,7 +47,7 @@ RSpec.describe Xjz::RequestDispatcher do
         [Xjz::Resolver::WebUI, webr],
       ].each do |cls, v|
         if r == v
-          expect(cls).to receive(:new).with(kind_of(Xjz::Request)).and_return(v).exactly(n).times
+          expect(cls).to receive(:new).with(kind_of(Xjz::Request), ap).and_return(v).exactly(n).times
           expect(v).to receive(:perform).exactly(n).times
         else
           expect(cls).to_not receive(:new)
@@ -72,7 +72,7 @@ RSpec.describe Xjz::RequestDispatcher do
       end
 
       it 'should process if host is a api project' do
-        init_checker(h1r)
+        init_checker(h1r, 1, $config['.api_projects'][0])
         env['HTTP_HOST'] = 'xjz.pw'
         subject.call(env)
       end
@@ -84,7 +84,7 @@ RSpec.describe Xjz::RequestDispatcher do
       end
 
       it 'should process conn if host belongs to project' do
-        init_checker(h2r)
+        init_checker(h2r, 1, $config['.api_projects'][0])
         env['HTTP_HOST'] = 'xjz.pw'
         env['REQUEST_METHOD'] = 'PRI'
         subject.call(env)
@@ -117,7 +117,8 @@ RSpec.describe Xjz::RequestDispatcher do
       end
 
       it 'should process other host' do
-        init_checker(h1r, 2)
+        init_checker(h1r)
+        init_checker(h1r, 1, $config['.api_projects'][0])
         env['HTTP_HOST'] = 'xjz123.com'
         subject.call(env)
         env['HTTP_HOST'] = 'xjz.pw'
@@ -131,7 +132,9 @@ RSpec.describe Xjz::RequestDispatcher do
       end
 
       it 'should process all conn' do
-        init_checker(h1r, 3)
+        init_checker(h1r)
+        init_checker(h1r, 1, $config['.api_projects'][0])
+        init_checker(h1r)
         env['HTTP_HOST'] = 'hello.com'
         subject.call(env)
 

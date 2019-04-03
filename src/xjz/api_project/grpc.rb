@@ -45,7 +45,7 @@ module Xjz
 
     def res_desc(path)
       desc = output_desc(path)
-      api = api_project.find_api('post', 'https', 'grpc.xjz.pw', path)
+      api = api_project.find_api('post', nil, nil, path)
       res = (api&.dig('response', 'success') || []).sample || {}
 
       {

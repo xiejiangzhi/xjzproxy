@@ -29,7 +29,11 @@ module Xjz
     end
 
     def find_api(http_method, scheme, host, path)
-      _, t = data['apis'].find { |k, v| k.match?("#{scheme}://#{host}") }
+      _, t = if scheme.nil? && host.nil?
+        data['apis'].to_a.first
+      else
+        data['apis'].find { |k, v| k.match?("#{scheme}://#{host}") }
+      end
       return unless t
       apis = t[http_method.upcase] || []
       apis.find { |a| a['enabled'] != false && a['.path_regexp'].match?(path) }
@@ -63,6 +67,7 @@ module Xjz
     def load_dir(dir_path)
       Dir["#{dir_path}/**/*.{yml,yaml}"].sort.each_with_object({}) do |path, r|
         load_file(path).each do |key, val|
+          next unless val
           if val.is_a?(Array)
             (r[key] ||= []).push(*val)
           else
@@ -77,6 +82,5 @@ module Xjz
       erb.filename = file_path
       YAML.load(erb.result, filename: file_path)
     end
-
   end
 end

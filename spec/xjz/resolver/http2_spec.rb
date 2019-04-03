@@ -146,7 +146,7 @@ RSpec.describe Xjz::Resolver::HTTP2 do
         }
       ).to_return(status: 200, body: "hello", headers: { 'a' => '1' })
       allow(subject).to receive(:remote_support_h2?).and_return(false)
-      t = Thread.new { subject.perform rescue Errno::EPIPE }
+      t = Thread.new { subject.perform }
       expect(browser.readpartial(71)).to \
         eql("HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: h2c\r\n\r\n")
       res = new_http2_req(req, browser, upgrade: true)

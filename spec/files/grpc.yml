@@ -2,6 +2,9 @@
 project:
   url: https://grpc.xjz.pw
   desc: desc
+  # all protocols: http1, http2
+  protocol: http1
+  ssl: false
   grpc:
     dir: ./project_protobufs
     protoc_args:

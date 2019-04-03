@@ -48,8 +48,8 @@ RSpec.describe Xjz::ProxyClient do
   end
 
   it 'should use ApiProject response if hack_req return a response' do
-    c = Xjz::ProxyClient.new '1.1.1.1', 0, protocol: 'http1'
     ap = Xjz::ApiProject.new('repopath')
+    c = Xjz::ProxyClient.new '1.1.1.1', 0, protocol: 'http1', api_project: ap
     config_data['.api_projects'] = [ap]
     allow(ap).to receive(:hack_req).and_return(nil)
 
@@ -110,7 +110,6 @@ RSpec.describe Xjz::ProxyClient do
       config_data['alpn_protocols'] = ['http/1.1']
       t = Thread.new do
         ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Resolver::SSL.ssl_ctx)
-        ssl_server.accept.close
         sock = ssl_server.accept
         h2s = new_http2_server(sock)
         h2io = Xjz::WriterIO.new(h2s)
@@ -125,13 +124,10 @@ RSpec.describe Xjz::ProxyClient do
       t.join
     end
 
-    it 'should return protocol and client if server support h2c' do
+    it 'should return protocol and client if request include upgrade for h2c' do
       config_data['alpn_protocols'] = ['http/1.1']
+      allow(req).to receive(:upgrade_flag).and_return('h2c')
       t = Thread.new {
-        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Resolver::SSL.ssl_ctx)
-        ssl_server.accept.close
-        ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Resolver::SSL.ssl_ctx)
-        ssl_server.accept.close
         ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Resolver::SSL.ssl_ctx)
         sock = ssl_server.accept
         d = sock.readpartial(1024)
@@ -170,8 +166,6 @@ RSpec.describe Xjz::ProxyClient do
       t = Thread.new do
         ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Resolver::SSL.ssl_ctx)
         ssl_server.accept.close
-        ssl_server.accept.close
-        ssl_server.accept.close
       end
       p, c = Xjz::ProxyClient.auto_new_client(req)
       expect(p).to eql(:h1)
@@ -179,6 +173,62 @@ RSpec.describe Xjz::ProxyClient do
       expect(c.client.use_ssl).to eql(true)
       expect(c.client.upgrade).to eql(false)
       t.join
+    end
+
+    it 'should return protocol and client if api_project protocol is http2' do
+      ap = Xjz::ApiProject.new('a_dir')
+      allow(ap).to receive(:data).and_return('project' => { 'protocol' => 'http1' })
+      allow(ap).to receive(:grpc).and_return(nil)
+      p, c = Xjz::ProxyClient.auto_new_client(req, ap)
+      expect(p).to eql(:h1)
+      expect(c.client).to be_a(Xjz::ProxyClient::HTTP1)
+      expect(c.client.use_ssl).to eql(false)
+      expect(c.client.upgrade).to eql(false)
+    end
+
+    it 'should return protocol and client if api_project protocol is http2' do
+      ap = Xjz::ApiProject.new('a_dir')
+      allow(ap).to receive(:data).and_return('project' => { 'protocol' => 'http2' })
+      allow(ap).to receive(:grpc).and_return(nil)
+      p, c = Xjz::ProxyClient.auto_new_client(req, ap)
+      expect(p).to eql(:h2c)
+      expect(c.client).to be_a(Xjz::ProxyClient::HTTP2)
+      expect(c.client.use_ssl).to eql(false)
+      expect(c.client.upgrade).to eql(false)
+    end
+
+    it 'should return protocol and client if api_project protocol is http2 with ssl' do
+      ap = Xjz::ApiProject.new('a_dir')
+      allow(ap).to receive(:data).and_return('project' => { 'protocol' => 'http2', 'ssl' => true })
+      allow(ap).to receive(:grpc).and_return(nil)
+      p, c = Xjz::ProxyClient.auto_new_client(req, ap)
+      expect(p).to eql(:h2)
+      expect(c.client).to be_a(Xjz::ProxyClient::HTTP2)
+      expect(c.client.use_ssl).to eql(true)
+      expect(c.client.upgrade).to eql(false)
+    end
+
+    it 'should return protocol and client if api_project is a grpc project' do
+      ap = Xjz::ApiProject.new('a_dir')
+      allow(ap).to receive(:data).and_return('project' => {})
+      allow(ap).to receive(:grpc).and_return('grpc')
+      p, c = Xjz::ProxyClient.auto_new_client(req, ap)
+      expect(p).to eql(:h2c)
+      expect(c.client).to be_a(Xjz::ProxyClient::HTTP2)
+      expect(c.client.use_ssl).to eql(false)
+      expect(c.client.upgrade).to eql(false)
+    end
+
+    it 'should return protocol and client if api_project is http2 and req upgrade' do
+      ap = Xjz::ApiProject.new('a_dir')
+      allow(ap).to receive(:data).and_return('project' => {})
+      allow(ap).to receive(:grpc).and_return('grpc')
+      allow(req).to receive(:upgrade_flag).and_return('h2c')
+      p, c = Xjz::ProxyClient.auto_new_client(req, ap)
+      expect(p).to eql(:h2c)
+      expect(c.client).to be_a(Xjz::ProxyClient::HTTP2)
+      expect(c.client.use_ssl).to eql(false)
+      expect(c.client.upgrade).to eql(true)
     end
   end
 end

@@ -1,8 +1,9 @@
 module Xjz
   class Resolver::Forward
-    attr_reader :req
+    attr_reader :req, :api_project
 
-    def initialize(req)
+    def initialize(req, ap = nil)
+      @api_project = ap
       @req = req
     end
 

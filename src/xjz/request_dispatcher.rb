@@ -10,22 +10,28 @@ module Xjz
         "#{req.http_method} #{req.host}:#{req.port} - #{headers}"
       end
 
-      if process_conn?(req)
-        dispatch_request(req)
+      ap = find_api_project(req)
+      if process_conn?(ap, req)
+        dispatch_request(ap, req)
       else
-        Resolver::Forward.new(req).perform
+        Resolver::Forward.new(req, ap).perform
       end
     end
 
     private
 
-    def process_conn?(req)
+    def find_api_project(req)
+      $config['.api_projects'].find { |ap| ap.match_host?(req.host) }.tap do |r|
+        Logger[:auto].debug { "Find api project by #{req.host}: #{r&.repo_path.inspect}" }
+      end
+    end
+
+    def process_conn?(ap, req)
       case $config['proxy_mode']
       when 'projects'
-        $config['.api_projects'].any? { |ap| ap.match_host?(req.host) }
+        ap ? true : false
       when 'whitelist'
-        $config['.api_projects'].any? { |ap| ap.match_host?(req.host) } ||
-          $config['host_whitelist'].include?(req.host)
+        (ap || $config['host_whitelist'].include?(req.host)) ? true : false
       when 'blacklist'
         !$config['host_blacklist'].include?(req.host)
       when 'all'
@@ -37,37 +43,31 @@ module Xjz
       end
     end
 
-    def grpc_tunnel?(req)
-      $config['.api_projects'].any? do |ap|
-        ap.match_host?(req.host) && ap.data['project']['grpc']
-      end
-    end
-
-    def dispatch_request(req)
+    def dispatch_request(ap, req)
       req_method = req.http_method
       IOHelper.set_proxy_host_port(req.user_socket, req.host, req.port)
 
       if req_method == 'connect'
-        if grpc_tunnel?(req)
-          Resolver::GRPC.new(req).perform
+        if ap&.grpc
+          Resolver::GRPC.new(req, ap).perform
         else
-          Resolver::SSL.new(req).perform
+          Resolver::SSL.new(req, ap).perform
         end
       elsif flag = req.upgrade_flag
         case flag
         when 'h2c'
-          Resolver::HTTP2.new(req).perform
+          Resolver::HTTP2.new(req, ap).perform
         when 'websocket'
-          Resolver::Forward.new(req).perform
+          Resolver::Forward.new(req, ap).perform
         else
           Logger[:auto].error { "Cannot handle request upgrade #{flag}" }
         end
       elsif web_ui_request?(req)
-        Resolver::WebUI.new(req).perform
+        Resolver::WebUI.new(req, ap).perform
       elsif req_method == 'pri'
-        Resolver::HTTP2.new(req).perform
+        Resolver::HTTP2.new(req, ap).perform
       elsif VALID_REQUEST_METHODS.include?(req_method)
-        Resolver::HTTP1.new(req).perform
+        Resolver::HTTP1.new(req, ap).perform
       else
         Logger[:auto].error { "Cannot handle request #{req.inspect}" }
       end

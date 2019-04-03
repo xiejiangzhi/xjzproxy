@@ -67,7 +67,7 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
         r = subject.render(req, ap.grpc.res_desc(req.path))
         expect(r).to be_a(Xjz::Response)
         expect(r.code).to eql(200)
-        data = ap.grpc.find_rpc(req.path).output.decode(r.body).to_hash
+        data = ap.grpc.find_rpc(req.path).output.decode(r.body[5..-1]).to_hash
         type = data.delete(:type)
         expect(%i{VIP NORMAL}).to be_include(type)
         expect(data).to eql(
@@ -79,7 +79,7 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
         )
         expect(r.h1_headers).to eql([
           ["content-type", "application/grpc"],
-          ["content-length", (type == :NORMAL) ? '19' : "21"]
+          ["content-length", (type == :NORMAL) ? '24' : "26"]
         ])
       end
     end

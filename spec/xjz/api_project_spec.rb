@@ -84,9 +84,9 @@ RSpec.describe Xjz::ApiProject do
       ))
       expect(r.code).to eql(400)
       expect(r.h1_headers).to eql([
-        ["a", "aaa"], ["content-type", "application/grpc"], ["content-length", "30"]
+        ["a", "aaa"], ["content-type", "application/grpc"], ["content-length", "35"]
       ])
-      expect(r.body).to eql("\n\nhello gRPC\x12\x02\b\x17\x1A\x01a\x1A\x01b*\x06data b")
+      expect(r.body).to eql("\x00\x00\x00\x00\x1E\n\nhello gRPC\x12\x02\b\x17\x1A\x01a\x1A\x01b*\x06data b")
     end
   end
 
