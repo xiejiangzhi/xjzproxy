@@ -21,7 +21,11 @@ module Xjz
         grpc.res_desc(req.path)
       else
         api = find_api(req.http_method, req.scheme, req.host, req.path)
-        (api&.dig('response', 'success') || []).sample
+        if api.nil? || api['.enabled'] == false || api['enabled'] == false
+          nil
+        else
+          (api&.dig('response', 'success') || []).sample
+        end
       end
       return unless res
       Logger[:auto].debug { "Match mock data: #{req.http_method} #{req.path}" }
@@ -29,14 +33,19 @@ module Xjz
     end
 
     def find_api(http_method, scheme, host, path)
-      _, t = if scheme.nil? && host.nil?
-        data['apis'].to_a.first
+      h_apis = if scheme.nil? && host.nil?
+        data['apis'].values
       else
-        data['apis'].find { |k, v| k.match?("#{scheme}://#{host}") }
+        data['apis'].select { |k, v| k.match?("#{scheme}://#{host}") }.map(&:last)
       end
-      return unless t
-      apis = t[http_method.upcase] || []
-      apis.find { |a| a['enabled'] != false && a['.path_regexp'].match?(path) }
+      return if h_apis.empty?
+      h_apis.each do |t|
+        apis = t[http_method.upcase]
+        next unless apis
+        api = apis.find { |a| a['.path_regexp'].match?(path) }
+        return api if api
+      end
+      nil
     end
 
     def errors

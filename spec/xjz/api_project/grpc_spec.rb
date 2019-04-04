@@ -72,5 +72,18 @@ RSpec.describe Xjz::ApiProject::GRPC do
         'http_code' => 200
       )
     end
+
+    it 'should return nil if api is disabled' do
+      om = ap.method(:find_api)
+      allow(ap).to receive(:find_api) do |*args|
+        expect(args).to eql(['post', nil, nil, '/Hw.Greeter/SayHello'])
+        om.call(*args).merge('enabled' => false)
+      end
+      expect(subject.res_desc('/Hw.Greeter/SayHello')).to be_nil
+    end
+
+    it 'should return nil if not found rpc api' do
+      expect(subject.res_desc('/Hw.Greeter/SayHelloasdf')).to be_nil
+    end
   end
 end

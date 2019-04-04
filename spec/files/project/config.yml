@@ -1,6 +1,6 @@
 ---
 project:
-  url: https://xjz.pw
+  url: https?://xjz.pw
   desc: desc
 plugins:
   auth:

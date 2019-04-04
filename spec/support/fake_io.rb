@@ -135,6 +135,7 @@ class FakeIO
     if reply
       raise "Timeout to read data" unless IO.select([to_io], nil, nil, 1)
       sock = ssl ? self.sslsock : self
+      sleep 0.01 # wait sock data
       msg = read_len ? sock.readpartial(read_len) : sock.readpartial(4096)
 
       case reply

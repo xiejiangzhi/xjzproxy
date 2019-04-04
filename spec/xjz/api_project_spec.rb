@@ -1,10 +1,9 @@
 RSpec.describe Xjz::ApiProject do
   let(:file_path) { File.join($root, 'spec/files/project.yml') }
   let(:dir_path) { File.join($root, 'spec/files/project') }
+  let(:ap) { Xjz::ApiProject.new(file_path) }
 
   describe '#hack_req' do
-    let(:ap) { Xjz::ApiProject.new(file_path) }
-
     it 'should generate response for a valid req' do
       dts = ap.data['types']
       allow(dts['integer']).to receive(:generate).and_return(123)
@@ -59,6 +58,23 @@ RSpec.describe Xjz::ApiProject do
         om = api.method(:[])
         allow(api).to receive(:[]) do |name|
           name == 'enabled' ? false : om.call(name)
+        end
+      end
+
+      r = ap.hack_req(Xjz::Request.new(
+        'HTTP_HOST' => 'xjz.pw',
+        'rack.url_scheme' => 'https',
+        'PATH_INFO' => '/api/v1/users',
+        'REQUEST_METHOD' => 'GET'
+      ))
+      expect(r).to be_nil
+    end
+
+    it 'should return nil if api[.enabled] == true' do
+      ap.data['apis'].values.map(&:values).flatten.each do |api|
+        om = api.method(:[])
+        allow(api).to receive(:[]) do |name|
+          name == '.enabled' ? false : om.call(name)
         end
       end
 
@@ -130,15 +146,37 @@ RSpec.describe Xjz::ApiProject do
     end
   end
 
-  describe 'match_host?' do
-    let(:ap) { Xjz::ApiProject.new(file_path) }
-
+  describe '.match_host?' do
     it 'should return true if match host' do
       expect(ap.match_host?('xjz.pw')).to eql(true)
     end
 
     it 'should return false if not match host' do
       expect(ap.match_host?('asdf.pw')).to eql(false)
+    end
+  end
+
+  describe '#find_api' do
+    it 'should return api desc' do
+      expect(ap.find_api('get', 'https', 'xjz.pw', '/api/v1/users')['title']).to \
+        eql('Get all users')
+      expect(ap.find_api('get', 'http', 'xjz.pw', '/api/v1/users')['title']).to \
+        eql('Get all users')
+      expect(ap.find_api('get', 'http', 'asdf.com', '/api/v1/users/123')['title']).to \
+        eql('Get user')
+    end
+
+    it 'should return nil if not found any' do
+      expect(ap.find_api('get', 'https', 'xjz.pw123', '/api/v1/users')).to be_nil
+      expect(ap.find_api('get', 'hxxp', 'xjz.pw', '/api/v1/users')).to be_nil
+      expect(ap.find_api('get', 'https', 'asdf.com', '/api/v1/users/123')).to be_nil
+      expect(ap.find_api('get', 'http', 'asdf.com', '/api/v2/users/123')).to be_nil
+      expect(ap.find_api('get', nil, 'asdf.com', '/api/v2/users/123')).to be_nil
+    end
+
+    it 'should return api if have not scheme and host' do
+      expect(ap.find_api('get', nil, nil, '/api/v1/users')['title']).to eql('Get all users')
+      expect(ap.find_api('get', nil, nil, '/api/v1/users/3')['title']).to eql('Get user')
     end
   end
 end

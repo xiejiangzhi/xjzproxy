@@ -77,7 +77,7 @@ RSpec.describe Xjz::ApiProject::Parser do
 
     it 'should copy project data' do
       expect(subject.parse(raw_data)['project'].select { |k, v| k[0] != '.' }).to eql(
-        'url' => 'https://xjz.pw',
+        'url' => 'https?://xjz.pw',
         'desc' => 'desc',
         "dir" => File.join($root, "spec/files"),
       )
@@ -123,7 +123,7 @@ RSpec.describe Xjz::ApiProject::Parser do
     it 'should parse apis' do
       r = subject.parse(raw_data)
       expect(r['apis']).to eql(
-        %r{\Ahttps://xjz.pw\Z} => {
+        %r{\Ahttps?://xjz.pw\Z} => {
           'GET' => [
             {
               "title" => "Get all users",

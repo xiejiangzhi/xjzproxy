@@ -45,7 +45,9 @@ module Xjz
 
     def res_desc(path)
       desc = output_desc(path)
+      return unless desc
       api = api_project.find_api('post', nil, nil, path)
+      return if api && (api['enabled'] == false || api['.enabled'] == false)
       res = (api&.dig('response', 'success') || []).sample || {}
 
       {
