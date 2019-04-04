@@ -1,4 +1,4 @@
-require 'grpc'
+require 'open3'
 
 module Xjz
   class ApiProject::GRPCParser

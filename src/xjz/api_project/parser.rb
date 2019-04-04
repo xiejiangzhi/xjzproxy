@@ -1,5 +1,3 @@
-require 'open3'
-require 'google/protobuf'
 
 module Xjz
   module ApiProject::Parser

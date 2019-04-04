@@ -12,6 +12,8 @@ default: &default
   logger_level:
     default: info
 
+  # template_dir: /path/to/templates
+
   # .api_projects will auto generate by projects
   projects:
     - ../xjzapidoc/example1.yml
@@ -50,6 +52,8 @@ test:
   proxy_mode: projects
   host_whitelist: [ xjz.com ]
   host_blacklist: [ hello.com ]
+
+  template_dir: ./spec/files/webviews
 
   logger_level:
     default: debug

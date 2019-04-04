@@ -13,7 +13,8 @@ module Xjz
       projects: [:optional, NilClass, [[String]] ],
       proxy_mode: String,
       host_whitelist: [:optional, NilClass, [[String]] ],
-      host_blacklist: [:optional, NilClass, [[String]] ]
+      host_blacklist: [:optional, NilClass, [[String]] ],
+      template_dir: [:optional, NilClass, String]
     }.stringify_keys
 
     def initialize(path)
