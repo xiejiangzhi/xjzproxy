@@ -1,0 +1,67 @@
+### <%= api['title'] || api['path'] %>
+
+<%= api['desc'] %>
+
+% if api['labels'].present?
+
+
+**Labels**
+
+<%= api['labels'].map { |name| "`#{name}`" }.join(' - ') %>
+% end
+
+
+**Request**
+
+```
+<%= api['method'].to_s.upcase %> <%= api['path'] %>
+```
+
+
+% if api['query'].present?
+**Query**
+
+<%= render 'xjzapidoc/data.md', data: api['query'] %>
+% end
+
+
+% if api['body'].present?
+**Body**
+
+<%= render 'xjzapidoc/data.md', data: api['body'] %>
+% end
+
+
+% if api['params'].present?
+**Params**
+
+<%= render 'xjzapidoc/data.md', data: api['params'] %>
+% end
+
+
+% successes = api['response']['success']
+% if successes.present?
+**Success Response**
+
+<%= render 'xjzapidoc/data.md', data: successes[0] %>
+
+Example
+
+```
+<%= render_project_data('apis', [host_regexp, api['method'], api['path'], 'success']) %>
+```
+% end
+
+
+% errors = api['response']['error']
+% if errors.present?
+**Error Response**
+
+<%= render 'xjzapidoc/data.md', data: errors[0] %>
+
+Example
+
+```
+<%= render_project_data('apis', [host_regexp, api['method'], api['path'], 'error']) %>
+```
+% end

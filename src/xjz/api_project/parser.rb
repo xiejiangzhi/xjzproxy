@@ -51,14 +51,16 @@ module Xjz
     def parse_apis(apis, env)
       r = env['apis']
       purl = env['project']['url']
-      apis.each do |api|
+      apis.each_with_index do |api, i|
         m = api['method'].to_s.upcase
-        url = Regexp.new('\A' + (api['url'] || purl) + '\Z')
-        r[url] ||= {}
+        url = (api['url'] ||= purl)
+        url_regexp = Regexp.new('\A' + url + '\Z')
+        r[url_regexp] ||= {}
         expand_api = expand_hash(api, env)
         expand_api['.path_regexp'] = Regexp.new('\A' + expand_api['path'] + '(\.\w+)?\Z')
         expand_api['method'] = m
-        (r[url][m] ||= []) << expand_api
+        expand_api['.index'] = i
+        (r[url_regexp][m] ||= []) << expand_api
       end
     end
 

@@ -45,6 +45,10 @@ module Xjz
       end
     end
 
+    def inspect
+      "#<#{self.class.name} #{@raw_data['type']}>"
+    end
+
     private
 
     def incr_counter

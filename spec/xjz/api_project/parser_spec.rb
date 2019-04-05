@@ -136,10 +136,12 @@ RSpec.describe Xjz::ApiProject::Parser do
                 "page" => 1,
                 ".page.required" => true,
                 "q" => 123,
-                "status" => "$t/integer",
+                "status" => r['types']['integer'],
                 ".status.required" => { "unless" => "q" },
                 ".status.rejected" => { "if" => "q" }
               },
+              '.index' => 0,
+              'url' => 'https?://xjz.pw',
               "response" => {
                 "success" => [
                   r['responses']['list_users'],
@@ -176,6 +178,7 @@ RSpec.describe Xjz::ApiProject::Parser do
               ".path_regexp" => %r{\A/api/v1/users/\d+(\.\w+)?\Z},
               "labels" => ['auth'],
               "query" => nil,
+              '.index' => 1,
               "response" => {
                 "success" => [r['responses']['show_user']],
                 "error" => [r['responses']['invalid_token']]

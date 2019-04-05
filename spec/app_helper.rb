@@ -3,6 +3,7 @@ ENV['BUNDLE_GEMFILE'] = File.expand_path('../../Gemfile', __FILE__)
 
 require 'webmock/rspec'
 require 'fileutils'
+require 'super_diff/rspec'
 
 require 'bundler/setup'
 Bundler.require(:default, 'test')

@@ -13,7 +13,8 @@ RSpec.describe Xjz::Config do
       "proxy_port" => 59898,
       "proxy_timeout" => 1,
       "proxy_mode" => "projects",
-      "root_ca_path" => "tmp/root_ca.pem"
+      "root_ca_path" => "tmp/root_ca.pem",
+      "template_dir" => "./spec/files/webviews"
     )
   end
 
@@ -71,6 +72,7 @@ RSpec.describe Xjz::Config do
       - xjz.com
       host_blacklist:
       - hello.com
+      template_dir: "./spec/files/webviews"
     YAML
     )
   end

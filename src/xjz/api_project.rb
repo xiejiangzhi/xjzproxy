@@ -2,7 +2,7 @@ require 'erb'
 
 module Xjz
   class ApiProject
-    attr_reader :repo_path
+    attr_reader :repo_path, :response_renderer
 
     def initialize(repo_path)
       @repo_path = repo_path

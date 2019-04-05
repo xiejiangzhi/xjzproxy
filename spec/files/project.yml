@@ -65,7 +65,7 @@ apis:
       page: 1
       .page.required: true
       q: 123
-      status: $t/integer
+      status: .t/integer
       .status.required:
         unless: q
       .status.rejected:

@@ -1,4 +1,7 @@
 p hello
 .a test webview var #{vars['a']}
 
-= render 'sub_template.html'
+- if vars['a']
+  a var #{a}
+
+= render 'sub_template.html', a: 999

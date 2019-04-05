@@ -49,6 +49,8 @@ GEM
     parallel (1.14.0)
     parser (2.6.0.0)
       ast (~> 2.4.0)
+    patience_diff (1.1.0)
+      trollop (~> 1.16)
     powerpack (0.1.2)
     pry (0.12.2)
       coderay (~> 1.1.0)
@@ -88,9 +90,13 @@ GEM
     slim (4.0.1)
       temple (>= 0.7.6, < 0.9)
       tilt (>= 2.0.6, < 2.1)
+    super_diff (0.1.0)
+      diff-lcs
+      patience_diff
     temple (0.8.1)
     thread_safe (0.3.6)
     tilt (2.0.9)
+    trollop (1.16.2)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
     unicode-display_width (1.4.1)
@@ -122,6 +128,7 @@ DEPENDENCIES
   rspec (~> 3.8.0)
   rubocop (~> 0.65.0)
   slim (~> 4.0.1)
+  super_diff
   webmock (~> 3.5.1)
 
 BUNDLED WITH

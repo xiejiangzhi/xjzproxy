@@ -2,14 +2,123 @@ module Xjz
   class ApiProject::DocRenderer
     attr_reader :api_project, :template_dir
 
-    TEMPLATE_NAME = 'xjzapidoc.html'
+    TEMPLATE_PREFIX = 'xjzapidoc'
 
     def initialize(ap)
       @api_project = ap
     end
 
-    def render
-      Helper::Webview.render(TEMPLATE_NAME, api_project.data)
+    def render(type = 'md')
+      path = "#{TEMPLATE_PREFIX}/index.#{type}"
+      Helper::Webview.render(path, {
+        'project' => api_project,
+        'raw_data' => api_project.raw_data,
+        'data' => api_project.data
+      }, [DocViewHelper])
+    end
+
+    module DocViewHelper
+      # Params
+      #   data:
+      #     a: 1
+      #     .a.desc: 123
+      #     .a.required: true
+      #     b: .t/integer
+      #     c: {
+      #       a: 123
+      #     }
+      #     .c.desc: 'xxx'
+      # Returns
+      #   [
+      #     ['a', { 'val' => 1, 'desc' => 123, 'required: true }],
+      #     ['b', { 'type' => '.t/integer' }]
+      #     ['c', { 'type' => 'Hash', 'desc' => 'xxx' }],
+      #     ['c.a', { 'val' => 123 }],
+      #   ]
+      def format_data(data, result = {}, prefix = nil)
+        case data
+        when Hash
+          data.each do |k, v|
+            _save_data_line(k, v, result, prefix)
+          end
+        when Array
+          data.each_with_index do |v, i|
+            _save_data_line(i.to_s, v, result, prefix)
+          end
+        else
+          _save_data_line('', data, result, prefix)
+          # nothing
+        end
+        result
+      end
+
+      def md_escape(str)
+        str.gsub('_', '\\_')
+      end
+
+      # call('responses', 'xxname')
+      # call('apis', [/hostreg/, 'post', '/path/to/xxx', 'success'])
+      def render_project_data(category, id)
+        c = category.to_s
+        cdata = project.data[c]
+        data = case c
+        when 'apis'
+          apis = cdata.dig(id[0], id[1].upcase)
+          apis.find { |api| api['path'] == id[2] }['response'][id[3]].first['data']
+        when 'responses'
+          cdata[id.to_s]['data']
+        else
+          cdata[id.to_s]
+        end
+        if data
+          JSON.pretty_generate(project.response_renderer.render_body(data)).html_safe
+        else
+          nil
+        end
+      end
+
+      def apis_each(&block)
+        raise "block is required" unless block
+        rapis = project.raw_data['apis']
+        project.data['apis'].each do |regexp, data|
+          apis = []
+          data.map { |m, as| apis.concat(([m] * as.length).zip(as)) }
+          apis.sort_by! { |m, api| api['path'] }
+          apis.each do |m, parsed_api|
+            api = rapis[parsed_api['.index']]
+            block.call(regexp, api)
+          end
+        end
+      end
+
+      def _save_data_line(k, v, result, prefix = nil)
+        o = nil
+        _, k, o = k.split('.') if k[0] == '.'
+        pk = prefix ? "#{prefix}[#{k.inspect}]" : k
+        r = result[pk] ||= {}
+
+        if o
+          r[o] = v
+        elsif v.to_s[0] == '.'
+          val, oper, *args = v.split
+          r['type'] = val
+          if oper
+            r['type_oper'] = oper
+            r['type_args'] = args
+          end
+        else
+          case v
+          when Hash
+            r['type'] = 'hash'
+            format_data(v, result, pk)
+          when Array
+            r['type'] = 'array'
+            format_data(v, result, pk)
+          else
+            r['val'] = v
+          end
+        end
+      end
     end
   end
 end
