@@ -121,6 +121,8 @@ module Xjz
     def load_protos(files)
       out_path = output_path
       Module.new.tap do |m|
+        mid = [Digest::SHA256.hexdigest(files.join(',')), Time.now.to_f].join('_').tr('.', '')
+        ApiProject::GRPCParser.const_set("ParsedModule_#{mid}", m)
         Google::Protobuf::DescriptorPool.reset_pb_pool!
 
         m.module_exec do

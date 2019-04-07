@@ -1,0 +1,18 @@
+### <a name="<%= path %>"><%= path %></a>
+
+**Input `<%= input_name %>`**
+
+% if rpc_input
+<%= render 'xjzapidoc/data.md', data: rpc_input %>
+% else
+None
+% end
+
+
+**Output `<%= output_name %>`**
+
+% if rpc_output
+<%= render 'xjzapidoc/data.md', data: rpc_output %>
+% else
+None
+% end

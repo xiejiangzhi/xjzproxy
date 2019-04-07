@@ -9,6 +9,14 @@ RSpec.describe Xjz::ApiProject::DocRenderer do
       expect(str).to be_match(/\AXJZapi Document/)
       expect(str['Request']).to_not be_nil
     end
+
+    it 'should render grpc project with ap data' do
+      grpc_path = File.expand_path('spec/files/grpc.yml', $root)
+      subject = described_class.new(Xjz::ApiProject.new(grpc_path))
+      str = subject.render
+      expect(str).to be_match(/\AXJZapi Document/)
+      expect(str['Request']).to_not be_nil
+    end
   end
 
   describe Xjz::ApiProject::DocRenderer::DocViewHelper do

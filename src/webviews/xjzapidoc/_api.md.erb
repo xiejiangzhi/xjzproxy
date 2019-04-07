@@ -2,9 +2,9 @@
 
 <%= api['desc'] %>
 
+[GRPC Info](#<%= api['path'] %>)
+
 % if api['labels'].present?
-
-
 **Labels**
 
 <%= api['labels'].map { |name| "`#{name}`" }.join(' - ') %>
@@ -17,25 +17,12 @@
 <%= api['method'].to_s.upcase %> <%= api['path'] %>
 ```
 
+% %w{query body params}.each do |name|
+% if api[name].present?
+**<%= name.titleize %>**
 
-% if api['query'].present?
-**Query**
-
-<%= render 'xjzapidoc/data.md', data: api['query'] %>
+<%= render 'xjzapidoc/data.md', data: api[name] %>
 % end
-
-
-% if api['body'].present?
-**Body**
-
-<%= render 'xjzapidoc/data.md', data: api['body'] %>
-% end
-
-
-% if api['params'].present?
-**Params**
-
-<%= render 'xjzapidoc/data.md', data: api['params'] %>
 % end
 
 

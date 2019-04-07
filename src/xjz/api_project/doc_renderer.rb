@@ -91,6 +91,27 @@ module Xjz
         end
       end
 
+      def grpc_each(&block)
+        grpc = project.grpc
+        grpc.services.each do |service|
+          service.rpc_descs.sort_by(&:first).each do |name, rpc|
+            path = "/#{service.service_name}/#{name}"
+            input, output = [rpc.input, rpc.output].map do |msg|
+              if msg == Google::Protobuf::Empty
+                [msg.descriptor.name, nil]
+              else
+                [msg.descriptor.name, grpc.proto_msg_to_schema(msg)]
+              end
+            end
+            block.call(path, input, output)
+          end
+        end
+      end
+
+      def proto_msg_to_data(proto_msg)
+        fetch_schema_of_pb_desc(desc)
+      end
+
       def _save_data_line(k, v, result, prefix = nil)
         o = nil
         _, k, o = k.split('.') if k[0] == '.'
@@ -106,6 +127,8 @@ module Xjz
             r['type_oper'] = oper
             r['type_args'] = args
           end
+        elsif v.is_a?(ApiProject::DataType)
+          r['type'] = v.name
         else
           case v
           when Hash

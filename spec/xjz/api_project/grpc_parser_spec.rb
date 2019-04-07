@@ -12,6 +12,7 @@ RSpec.describe Xjz::ApiProject::GRPCParser do
       gm = subject.parse
       expect(File.exist?(cache_path)).to eql(true)
       expect(gm).to be_a(Module)
+      expect(gm.name).to be_match(/^Xjz::ApiProject::GRPCParser::ParsedModule_\w+/)
       expect(gm.pb_pool).to be_a(Google::Protobuf::DescriptorPool)
       expect(gm::Hw::Ms::Request.included_modules).to be_include(Google::Protobuf::MessageExts)
       expect(gm::Hw::Ms::Reply.included_modules).to be_include(Google::Protobuf::MessageExts)

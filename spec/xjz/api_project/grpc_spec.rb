@@ -86,4 +86,40 @@ RSpec.describe Xjz::ApiProject::GRPC do
       expect(subject.res_desc('/Hw.Greeter/SayHelloasdf')).to be_nil
     end
   end
+
+  describe '#services' do
+    it 'should return all services' do
+      t = Time.now
+      allow(Time).to receive(:now).and_return(t)
+      id = "ffed6c4896a5fb9483521dc8b0fd3dea759abcc74371e801ee66fde2d323c6fe_#{t.to_f}".tr('.', '')
+      expect(subject.services.map(&:name)).to eql([
+        "Xjz::ApiProject::GRPCParser::ParsedModule_#{id}::Hw::Greeter::Service"
+      ])
+
+      m = Class.new { include GRPC::GenericService }
+      subject.grpc.const_set("GxxxxService", m)
+      expect(subject.services.map(&:name)).to eql([
+        "Xjz::ApiProject::GRPCParser::ParsedModule_#{id}::Hw::Greeter::Service",
+        "Xjz::ApiProject::GRPCParser::ParsedModule_#{id}::GxxxxService"
+      ])
+    end
+  end
+
+  describe '#proto_msg_to_schema' do
+    it 'should return a scheme' do
+      expect(subject.proto_msg_to_schema(subject.grpc::Hw::Ms::Request)).to eql(
+        "name" => ap.data['types']['string']
+      )
+    end
+
+    it 'should raise a error for invalid msg' do
+      expect {
+        expect(subject.proto_msg_to_schema('asdf'))
+      }.to raise_error("Invalid proto msg, it isn't a protobuf message")
+
+      expect {
+        expect(subject.proto_msg_to_schema(Class.new))
+      }.to raise_error("Invalid proto msg, it isn't a protobuf message")
+    end
+  end
 end

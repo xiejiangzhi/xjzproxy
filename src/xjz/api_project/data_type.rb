@@ -34,6 +34,10 @@ module Xjz
       @mutex = Mutex.new
     end
 
+    def name
+      @raw_data['type']
+    end
+
     def generate
       incr_counter
       if raw_data['type']

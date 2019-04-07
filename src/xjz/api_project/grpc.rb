@@ -32,15 +32,13 @@ module Xjz
     def input_desc(path)
       rpc = find_rpc(path)
       return unless rpc
-      desc = rpc.input.descriptor
-      @desc_map[desc] ||= fetch_schema_of_pb_desc(desc)
+      proto_msg_to_schema(rpc.input)
     end
 
     def output_desc(path)
       rpc = find_rpc(path)
       return unless rpc
-      desc = rpc.output.descriptor
-      @desc_map[desc] ||= fetch_schema_of_pb_desc(desc)
+      proto_msg_to_schema(rpc.output)
     end
 
     def res_desc(path)
@@ -55,6 +53,22 @@ module Xjz
         'http_code' => res['http_code'] || 200,
         'data' => res['data'] || desc
       }
+    end
+
+    def services
+      ObjectSpace.each_object(Class).select do |c|
+        c.included_modules.include?(GRPC::GenericService) &&
+          c.parents.include?(grpc)
+      end
+    end
+
+    def proto_msg_to_schema(proto_msg)
+      unless proto_msg.is_a?(Class) &&
+          proto_msg.included_modules.include?(Google::Protobuf::MessageExts)
+        raise "Invalid proto msg, it isn't a protobuf message"
+      end
+      desc = proto_msg.descriptor
+      @desc_map[desc] ||= fetch_schema_of_pb_desc(desc)
     end
 
     private

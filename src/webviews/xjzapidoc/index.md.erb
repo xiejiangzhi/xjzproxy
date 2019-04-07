@@ -8,6 +8,21 @@
 % end
 
 
+% if project.grpc
+## GRPC
+
+% grpc_each do |path, input, output|
+<%=
+render(
+  'xjzapidoc/grpc.md', path: path,
+  input_name: input[0], rpc_input: input[1],
+  output_name: output[0], rpc_output: output[1]
+)
+%>
+% end
+% end
+
+
 % %w{responses partials types}.each do |part_name|
 ## <a name="<%= part_name %>"><%= part_name.titleize %></a>
 
