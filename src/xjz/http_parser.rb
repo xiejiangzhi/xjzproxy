@@ -18,7 +18,7 @@ module Xjz
     }.freeze
 
     def self.parse_request(conn, &block)
-      IO.select([conn], nil, nil, 3)
+      IO.select([conn], nil, nil, $config['proxy_timeout'])
       data = conn.read_nonblock(HTTP2_REQ_HEADER.bytesize)
 
       if data.upcase == HTTP2_REQ_HEADER

@@ -45,13 +45,14 @@ module Xjz
 
       def write_res_to_conn(res, conn)
         return if conn.closed?
-        conn << res.to_s
+        data = res.to_s
+        conn << data
         if res.conn_close?
           conn.close
         else
           conn.flush
         end
-        Logger[:auto].debug { "Wrote" }
+        Logger[:auto].debug { "Wrote res #{data.bytesize} bytes" }
       end
     end
   end

@@ -5,7 +5,7 @@ module Xjz
     attr_reader :server_socket, :server_thread, :thread_pool, :app
 
     def initialize
-      @server_socket = TCPServer.new($config['proxy_port'])
+      @server_socket = TCPServer.new('0.0.0.0', $config['proxy_port'])
       @thread_pool = Concurrent::ThreadPoolExecutor.new(
          min_threads: 2,
          max_threads: $config['max_threads'],
