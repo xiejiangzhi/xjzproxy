@@ -17,7 +17,7 @@ module Xjz
     end
 
     def start
-      @server_thread = Thread.new do
+      @server_thread ||= Thread.new do
         loop do
           begin
             conn = server_socket.accept
@@ -45,6 +45,7 @@ module Xjz
       server_socket.shutdown rescue nil
       server_thread.kill rescue nil
       server_pool.shutdown rescue nil
+      @server_thread = nil
     end
   end
 end

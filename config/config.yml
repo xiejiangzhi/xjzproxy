@@ -31,6 +31,9 @@ default: &default
   host_blanklist:
     - hello.com
 
+  webui_whitelist:
+    - 127.0.0.1
+
 dev:
   <<: *default
   logger_level:

@@ -1,3 +1,5 @@
+$root = File.expand_path('../', __FILE__)
+
 app_env = ENV['APP_ENV']
 $app_env = case app_env
 when 'stg', 'dev', 'test', 'prod' then app_env
@@ -7,9 +9,11 @@ else
   'prod'
 end
 ENV['RACK_ENV'] = $app_env
+ENV['BOOTSNAP_CACHE_DIR'] = File.expand_path('tmp/bootsnap', $root)
 
 t = Time.now
 require 'bundler/setup'
+require 'bootsnap/setup'
 puts Time.now - t
 Bundler.require(:default)
 
@@ -20,6 +24,5 @@ require 'active_support/core_ext'
 require 'shellwords'
 
 puts Time.now - t
-$root = File.expand_path('../', __FILE__)
 
 $LOAD_PATH.unshift File.join($root, 'src')

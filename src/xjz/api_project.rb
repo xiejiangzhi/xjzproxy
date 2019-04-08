@@ -1,5 +1,3 @@
-require 'erb'
-
 module Xjz
   class ApiProject
     attr_reader :repo_path, :response_renderer

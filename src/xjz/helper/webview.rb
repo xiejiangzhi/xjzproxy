@@ -3,21 +3,20 @@ module Xjz
     extend self
 
     TEMPLATE_ENGINES = %w{erb slim}
+    TEMPLATE_ARGS = {
+      trim: '%-',
+      disable_escape: true,
+    }
 
     def render(name, vars = {}, helper_modules = nil)
-      path = fetch_template_path(name)
       ve = ViewEntity.new(vars, helper_modules)
 
-      case path
-      when /\.slim$/i
-        slim = Slim::Template.new(path, use_html_safe: true)
-        slim.render(ve._slim_env)
-      when /\.erb$/i
-        erb = ERB.new(File.read(path), trim_mode: '%-')
-        erb.filename = path
-        erb.result(ve._erb_env)
+      if Array === name
+        layout, template = name.map { |p| Tilt.new(fetch_template_path(p), TEMPLATE_ARGS) }
+        layout.render(ve, vars) { template.render(ve, vars) }
       else
-        raise "Not found template engine to render #{path}"
+        template = Tilt.new(fetch_template_path(name), TEMPLATE_ARGS)
+        template.render(ve, vars)
       end
     end
 
@@ -49,23 +48,7 @@ module Xjz
         path = path.join('/')
         Helper::Webview.render(
           path, vars.merge(new_vars.stringify_keys), @helper_modules
-        ).html_safe
-      end
-
-      def _slim_env
-        _setup_vars!
-        self
-      end
-
-      def _erb_env
-        _setup_vars!
-        instance_eval { binding }
-      end
-
-      def _setup_vars!
-        vars.each do |k, v|
-          define_singleton_method(k) { v }
-        end
+        )
       end
     end
   end

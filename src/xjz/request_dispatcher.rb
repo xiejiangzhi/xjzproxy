@@ -47,7 +47,9 @@ module Xjz
       req_method = req.http_method
       IOHelper.set_proxy_host_port(req.user_socket, req.host, req.port)
 
-      if req_method == 'connect'
+      if web_ui_request?(req)
+        Resolver::WebUI.new(req, ap).perform
+      elsif req_method == 'connect'
         if ap&.grpc
           Resolver::GRPC.new(req, ap).perform
         else
@@ -62,8 +64,6 @@ module Xjz
         else
           Logger[:auto].error { "Cannot handle request upgrade #{flag}" }
         end
-      elsif web_ui_request?(req)
-        Resolver::WebUI.new(req, ap).perform
       elsif req_method == 'pri'
         Resolver::HTTP2.new(req, ap).perform
       elsif VALID_REQUEST_METHODS.include?(req_method)

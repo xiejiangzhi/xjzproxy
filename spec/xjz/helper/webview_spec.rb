@@ -42,5 +42,16 @@ RSpec.describe Xjz::Helper::Webview do
       md = Module.new { def m_asdf; "m asdf string"; end }
       expect(m.render('need_helper_module', {}, [md])).to eql("m asdf string")
     end
+
+    it 'should render with layout' do
+      data = m.render(['webui/layout.html', 'webui/index.html'], 'a' => 12332111)
+      puts data.inspect
+      expect(data).to eql(
+        "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />"\
+        "<meta content=\"initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width\""\
+        " name=\"viewport\" /><title>test</title></head>"\
+        "<body><a href='#123'>xxx</a>\n<b>a</b>\n\n<i>b</i></body></html>"
+      )
+    end
   end
 end

@@ -2,6 +2,7 @@ $app_name = 'XjzProxy'
 
 module Xjz
   require File.expand_path('../env', __FILE__)
+  require File.expand_path('../init', __FILE__)
 
   require File.expand_path('../src/xjz/logger.rb', __FILE__)
   require File.expand_path('../src/xjz/config.rb', __FILE__)
@@ -11,6 +12,7 @@ module Xjz
   # init sub module
   module Helper; end
   module Resolver; end
+  module WebUI; end
   class ProxyClient; end
 
   Xjz::Logger[:auto].debug { "Loading code..." }
@@ -23,3 +25,5 @@ $config.verify.each do |err|
 end
 Xjz::Logger[:auto].debug { "Load projects..." }
 $config.load_projects
+
+

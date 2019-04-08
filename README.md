@@ -25,3 +25,8 @@ XjzProxy
 - [ ] ------ 4 ------ (3.5)
 - [ ] 3.0 generate apidoc from real request
 - [ ] 0.5 script types
+
+
+## TODO Libraries
+
+* https://github.com/filewatcher/filewatcher
