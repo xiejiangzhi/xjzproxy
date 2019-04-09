@@ -39,11 +39,11 @@ module Xjz
         )
         [{}, [body], 200]
       when '/ws'
-        if req.upgrade_flag == 'websocket' && WebUI::WebSocket.new(req).perform
-          # finish
-        else
-          [{}, ['Failed to perform websocket'], 400]
+        if req.upgrade_flag == 'websocket'
+          ws = $config.shared_data.webui.ws = WebUI::WebSocket.new(req)
+          return if ws.perform
         end
+        [{}, ['Failed to perform websocket'], 400]
       else
         [{}, ["Not Found"], 404]
       end

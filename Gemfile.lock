@@ -53,7 +53,7 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport (~> 5.2.2)
-  bootsnap
+  bootsnap (~> 1.4.2)
   builder (~> 3.2.3)
   classy_hash (~> 0.2.1)
   concurrent-ruby (~> 1.1.4)

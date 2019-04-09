@@ -36,6 +36,16 @@ RSpec.describe Xjz::IOHelper do
       expect(rd.read_nonblock(100000).length).to eql(65536)
       expect(data).to eql('a' * 4)
     end
+
+    it 'should not cut data but call callback if give a callback' do
+      data = 'a' * 65540
+      rd, wr = IO.pipe
+      args = []
+      subject.write_nonblock(wr, data) { |len| args << len }
+      expect(rd.read_nonblock(100000).length).to eql(65536)
+      expect(data).to eql('a' * 65540)
+      expect(args).to eql([65536])
+    end
   end
 
   describe '.forward_stream' do

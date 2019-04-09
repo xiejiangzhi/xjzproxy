@@ -1,7 +1,6 @@
 RSpec.describe Xjz::Resolver::WebUI do
-  let(:ss) { FakeIO.pair }
-  let(:user_socket) { ss.first }
-  let(:client) { ss.last }
+  let(:user_socket) { FakeIO.pair(:a).first  }
+  let(:client) { FakeIO.pair(:a).last }
   let(:req) do
     Xjz::Request.new(
       "rack.version" => [1, 3],
@@ -102,5 +101,25 @@ RSpec.describe Xjz::Resolver::WebUI do
   end
 
   describe 'WebSocket' do
+    let(:wsc) { WebSocket::Handshake::Client.new(url: 'ws://127.0.0.1/ws') }
+
+    it 'GET /ws should handle websocket' do
+      req.env['PATH_INFO'] = '/ws'
+      req.env['HTTP_UPGRADE'] = 'websocket'
+      req.env['HTTP_CONNECTION'] = 'upgrade'
+      allow(req).to receive(:to_s).and_return(wsc.to_s)
+      client.reply_data = proc { |data, io| wsc << data }
+      t = Thread.new { subject.perform }
+      sleep 0.1
+      expect(wsc.finished?).to eql(true)
+      expect(wsc.valid?).to eql(true)
+      msg = []
+      $config.shared_data.webui.ws.bind(:message) { |frame| msg << frame }
+      frame = WebSocket::Frame::Outgoing::Server.new(version: wsc.version, data: "Hello", type: :text)
+      client << frame.to_s
+      sleep 0.1
+      expect(msg.first.data).to eql('Hello')
+      t.kill
+    end
   end
 end

@@ -24,7 +24,7 @@ RSpec.describe Xjz::ApiProject::DocRenderer do
       Xjz::Helper::Webview::ViewEntity.new(
         { project: ap },
         [Xjz::ApiProject::DocRenderer::DocViewHelper]
-      ).tap { |o| o._setup_vars! }
+      )
     end
 
     it '#format_data should return formated data' do

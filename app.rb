@@ -25,5 +25,3 @@ $config.verify.each do |err|
 end
 Xjz::Logger[:auto].debug { "Load projects..." }
 $config.load_projects
-
-

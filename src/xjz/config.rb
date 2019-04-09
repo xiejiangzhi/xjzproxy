@@ -37,6 +37,12 @@ module Xjz
       data['.api_projects'] = format_projects(data['projects'])
     end
 
+    def shared_data
+      @shared_data ||= build_obj(
+        webui: build_obj([:ws], readonly: false)
+      )
+    end
+
     def [](key)
       data[key.to_s]
     end
@@ -68,6 +74,26 @@ module Xjz
     end
 
     private
+
+    # data: support each, first is key, last is value
+    #   like hash, array
+    def build_obj(data, readonly: true)
+      Object.new.tap do |obj|
+        keys = data.map { |k, _v| k }
+
+        obj.singleton_class.class_eval do
+          if readonly
+            attr_reader(*keys)
+          else
+            attr_accessor(*keys)
+          end
+        end
+        data.each do |k, v|
+          next if v.nil?
+          obj.instance_variable_set("@#{k}", v)
+        end
+      end
+    end
 
     def format_projects(v)
       return [] unless v

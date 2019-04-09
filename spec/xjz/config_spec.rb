@@ -76,4 +76,11 @@ RSpec.describe Xjz::Config do
     YAML
     )
   end
+
+  it '#shared_data should return a shared data object' do
+    expect(config.shared_data.class).to eql(Object)
+    expect { config.shared_data.webui = 13 }.to raise_error(/^undefined method `webui=/)
+    config.shared_data.webui.ws = 123
+    expect(config.shared_data.webui.ws).to eql(123)
+  end
 end

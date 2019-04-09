@@ -14,11 +14,12 @@ module Xjz
       @ws_handshake = WebSocket::Handshake::Server.new
       @ws_parser = nil
       @out_buffer = ''
+      @out_lock = Mutex.new
 
       @events = {}
     end
 
-    def bing(name, &block)
+    def bind(name, &block)
       name = name.to_s
       raise "Invalid event name" unless EVENT_NAMES.include?(name)
       raise "Need a event block" unless block
@@ -61,13 +62,29 @@ module Xjz
       end
     end
 
+    def send_msg(msg)
+      push_outbuf WebSocket::Frame::Outgoing::Server.new(
+        version: ws_handshake.version, data: msg.to_s, type: :text
+      ).to_s
+    end
+
     private
+
+    def push_outbuf(buf)
+      @out_lock.synchronize { @out_buffer << buf }
+    end
+
+    def cut_outbuf(n)
+      @out_lock.synchronize { @out_buffer.slice!(0, n) }
+    end
 
     def loop_data
       readables = [conn]
       writeables = []
       loop do
-        rs, ws = IO.select(readables, writeables)
+        break if conn.closed?
+        writeables << conn if writeables.empty? && @out_buffer.present?
+        rs, ws = IO.select(readables, writeables, nil, 0.1)
         if rs.present?
           r = IOHelper.read_nonblock(conn) do |data|
             ws_parser << data
@@ -78,7 +95,7 @@ module Xjz
         end
 
         if ws.present?
-          IOHelper.write_nonblock(conn, @out_buffer)
+          IOHelper.write_nonblock(conn, @out_buffer) { |bytes| cut_outbuf(bytes) }
           writeables.clear if @out_buffer.empty?
         end
 

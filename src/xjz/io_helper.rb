@@ -23,10 +23,10 @@ module Xjz
       false
     end
 
-    def write_nonblock(dst, data)
-      bytes = dst.write_nonblock(data)
-      Logger[:auto].debug { "#{data.bytesize} bytes > #{io_inspect(dst)}" }
-      data.slice!(0, bytes)
+    def write_nonblock(dst, data, &block)
+      byte_len = dst.write_nonblock(data)
+      Logger[:auto].debug { "#{byte_len} bytes > #{io_inspect(dst)}" }
+      block ? block.call(byte_len) : data.slice!(0, byte_len)
     rescue IO::WaitWritable, Errno::EINTR, OpenSSL::SSL::SSLErrorWaitWritable
       # ignore
     end

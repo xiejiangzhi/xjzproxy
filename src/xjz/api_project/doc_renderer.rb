@@ -18,6 +18,10 @@ module Xjz
     end
 
     module DocViewHelper
+      def project
+        @project ||= vars['project']
+      end
+
       # Params
       #   data:
       #     a: 1
