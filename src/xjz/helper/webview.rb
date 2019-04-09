@@ -2,25 +2,36 @@ module Xjz
   module Helper::Webview
     extend self
 
-    TEMPLATE_ENGINES = %w{erb slim}
+    TEMPLATE_ENGINES = %w{erb slim scss}
     TEMPLATE_ARGS = {
-      trim: '%-',
-      disable_escape: true,
+      Tilt['erb'] => {
+        trim: '%-',
+      },
+      Tilt['slim'] => {
+        disable_escape: true,
+      },
+      Tilt['scss'] => {
+        style: :compressed
+      }
     }
 
     def render(name, vars = {}, helper_modules = nil)
       ve = ViewEntity.new(vars, helper_modules)
 
       if Array === name
-        layout, template = name.map { |p| Tilt.new(fetch_template_path(p), TEMPLATE_ARGS) }
+        layout, template = name.map { |p| fetch_template(fetch_template_path(p)) }
         layout.render(ve, vars) { template.render(ve, vars) }
       else
-        template = Tilt.new(fetch_template_path(name), TEMPLATE_ARGS)
+        template = fetch_template(fetch_template_path(name))
         template.render(ve, vars)
       end
     end
 
     private
+
+    def fetch_template(path)
+      Tilt.new(path, TEMPLATE_ARGS[Tilt[path]] || {})
+    end
 
     def fetch_template_path(name)
       template_dirs = [$config['template_dir'], 'src/webviews'].compact.map do |path|

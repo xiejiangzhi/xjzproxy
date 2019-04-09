@@ -34,9 +34,7 @@ module Xjz
       when '/root_ca.crt'
         msg_download_res(Resolver::SSL.cert_manager.root_ca.to_pem, 'xjzproxy_root_ca.crt')
       when '/'
-        body = Helper::Webview.render(
-          ['webui/layout.html', 'webui/index.html'], history: Tracker.instance.history
-        )
+        body = Helper::Webview.render('webui/index.html', history: Tracker.instance.history)
         [{}, [body], 200]
       when '/ws'
         if req.upgrade_flag == 'websocket'
@@ -44,6 +42,18 @@ module Xjz
           return if ws.perform
         end
         [{}, ['Failed to perform websocket'], 400]
+      when %r{\A/static/.+(js|css|png)\Z}
+        path = File.join($root, 'src', req.path)
+        content_type = case path
+        when 'js' then 'text/javascript'
+        when 'css' then 'text/css'
+        when 'png' then 'image/png'
+        end
+        if File.exist?(path)
+          [{ 'content-type' => content_type }.compact, [File.read(path)], 200]
+        else
+          [{}, ["Not Found"], 404]
+        end
       else
         [{}, ["Not Found"], 404]
       end

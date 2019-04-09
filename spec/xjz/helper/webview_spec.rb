@@ -17,9 +17,12 @@ RSpec.describe Xjz::Helper::Webview do
     end
 
     it 'should raise error when not found' do
+      tengines = Xjz::Helper::Webview::TEMPLATE_ENGINES
       expect {
         m.render('not_found_xxasdf.html')
-      }.to raise_error('Not found template not_found_xxasdf.html.(erb|slim)')
+      }.to raise_error(
+        "Not found template not_found_xxasdf.html.(#{tengines.join('|')})"
+      )
     end
 
     it 'should back to default template if we have a default template' do
@@ -45,7 +48,6 @@ RSpec.describe Xjz::Helper::Webview do
 
     it 'should render with layout' do
       data = m.render(['webui/layout.html', 'webui/index.html'], 'a' => 12332111)
-      puts data.inspect
       expect(data).to eql(
         "<!DOCTYPE html><html><head><meta charset=\"utf-8\" />"\
         "<meta content=\"initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width\""\

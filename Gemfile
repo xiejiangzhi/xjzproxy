@@ -21,6 +21,7 @@ gem 'faker', "~> 1.9.3"
 gem 'tilt', '~> 2.0.9'
 gem 'slim', '~> 4.0.1'
 gem 'websocket', '~> 1.2.8'
+gem 'sassc', '~> 2.0.1'
 
 # Other
 gem 'bootsnap', '~> 1.4.2', require: false

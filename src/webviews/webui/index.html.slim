@@ -1,3 +1,31 @@
-script type='text/javascript' = render 'webui/index.js'
+doctype html
 
-div id="output" Init
+html
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width"
+
+    title XJZ Proxy
+
+    script type='text/javascript' src='/static/jquery.min.js'
+    link rel='stylesheet' href='/static/pure.min.css'
+
+    script type='text/javascript' = render 'webui/index.js'
+    style = render 'webui/index.css'
+
+  body
+    .pure-g.headers
+      .pure-u-1-4
+        .block.conf Proxy Config
+
+      .pure-u-1-4
+        .block.req_res Request/Response
+
+      .pure-u-1-4
+        .block.doc Document
+
+      .pure-u-1-4
+        .block.report Report
+
+    .pure-g.content
+      .pure-u-1-1 body

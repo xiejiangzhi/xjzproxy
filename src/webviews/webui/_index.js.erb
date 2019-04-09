@@ -1,58 +1,47 @@
-var port = <%= $config['proxy_port'] %>;
-var wsUri = "ws://127.0.0.1:" + port + "/ws";
-var output;
+(function(){
+  var port = <%= $config['proxy_port'] %>;
+  var wsUri = "ws://127.0.0.1:" + port + "/ws";
 
-function init()
-{
-  output = document.getElementById("output");
-  testWebSocket();
-}
+  function init() {
+    testWebSocket();
+  }
 
-function testWebSocket()
-{
-  websocket = new WebSocket(wsUri);
-  websocket.onopen = function(evt) { onOpen(evt) };
-  websocket.onclose = function(evt) { onClose(evt) };
-  websocket.onmessage = function(evt) { onMessage(evt) };
-  websocket.onerror = function(evt) { onError(evt) };
-}
+  function testWebSocket() {
+    websocket = new WebSocket(wsUri);
+    websocket.onopen = function(evt) { onOpen(evt) };
+    websocket.onclose = function(evt) { onClose(evt) };
+    websocket.onmessage = function(evt) { onMessage(evt) };
+    websocket.onerror = function(evt) { onError(evt) };
+  }
 
-function onOpen(evt)
-{
-  writeToScreen("CONNECTED");
-  doSend("WebSocket rocks");
-  doSend("Hello");
-}
+  function onOpen(evt) {
+    writeToScreen("CONNECTED");
+    doSend("WebSocket rocks");
+    doSend("Hello");
+  }
 
-function onClose(evt)
-{
-  writeToScreen("DISCONNECTED");
-}
+  function onClose(evt) {
+    writeToScreen("DISCONNECTED");
+  }
 
-function onMessage(evt)
-{
-  writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
-  websocket.close();
-}
+  function onMessage(evt) {
+    var msg = JSON.parse(evt.data);
+    if (msg.type == 'el')
+    websocket.close();
+  }
 
-function onError(evt)
-{
-  writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
-}
+  function onError(evt) {
+    writeToScreen(evt.data);
+  }
 
-function doSend(message)
-{
-  writeToScreen("SENT: " + message);
-  websocket.send(message);
-}
+  function doSend(message) {
+    websocket.send(message);
+  }
 
-function writeToScreen(message)
-{
-  var pre = document.createElement("p");
-  pre.style.wordWrap = "break-word";
-  pre.innerHTML = message;
-  output.appendChild(pre);
-}
+  function writeToScreen(message) {
+    console.log(message)
+  }
 
-window.addEventListener("load", init, false);
+  window.addEventListener("load", init, false);
+})()
 
