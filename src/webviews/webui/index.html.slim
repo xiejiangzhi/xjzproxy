@@ -8,24 +8,30 @@ html
     title XJZ Proxy
 
     script type='text/javascript' src='/static/jquery.min.js'
-    link rel='stylesheet' href='/static/pure.min.css'
+    script type='text/javascript' src='/static/popper.min.js'
+    script type='text/javascript' src='/static/bootstrap.min.js'
+    link rel='stylesheet' href='/static/bootstrap.min.css'
 
     script type='text/javascript' = render 'webui/index.js'
     style = render 'webui/index.css'
 
   body
-    .pure-g.headers
-      .pure-u-1-4
-        .block.conf Proxy Config
+    ul.nav.nav-tabs.nav-fill role="tablist"
+      li.nav-item
+        a.nav-link.active href='#t_proxy_config' role='tab' data-toggle='tab' aria-controls="t_proxy_config" aria-selected="false" Proxy
 
-      .pure-u-1-4
-        .block.req_res Request/Response
+      li.nav-item
+        a.nav-link href='#t_history' role='tab' data-toggle='tab' aria-controls="t_history" aria-selected="false" History
 
-      .pure-u-1-4
-        .block.doc Document
+      li.nav-item
+        a.nav-link href='#t_document' role='tab' data-toggle='tab' aria-controls="t_document" aria-selected="false" Document
 
-      .pure-u-1-4
-        .block.report Report
+      li.nav-item
+        a.nav-link href='#t_report' role='tab' data-toggle='tab' aria-controls="t_report" aria-selected="false" Report
 
-    .pure-g.content
-      .pure-u-1-1 body
+    .tab-content
+      #t_proxy_config.tab-pane.fade.show.active conf
+      #t_proxy_status.tab-pane.fade.show.active status
+      #t_history.tab-pane.fade history
+      #t_document.tab-pane.fade document
+      #t_report.tab-pane.fade report
