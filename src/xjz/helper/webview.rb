@@ -54,9 +54,8 @@ module Xjz
       end
 
       def render(name, new_vars = {})
-        path = name.split('/')
-        path[-1] = "_#{path[-1]}"
-        path = path.join('/')
+        dir, name = File.split(name)
+        path = [dir, "_#{name}"].join(File::SEPARATOR)
         Helper::Webview.render(
           path, vars.merge(new_vars.stringify_keys), @helper_modules
         )

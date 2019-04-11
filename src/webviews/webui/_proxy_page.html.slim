@@ -1,0 +1,58 @@
+- server = $config.shared_data.app.server
+- if server.proxy_run?
+  .container
+    .row
+      .col-3 Proxy URL
+      .col-7
+        a href=server.proxy_url = server.proxy_url
+      .col-2
+        a.btn.btn-light href='#' copy
+
+    .row
+      .col-3 Proxy Root CA URL
+      .col-7
+        - url = "#{server.proxy_url}/root_ca.crt"
+        a href=url = url
+      .col-2
+        a.btn.btn-light href='#' copy
+
+    .row.justify-content-center
+      button.btn.btn-primary.btn-lg Stop
+- else
+  form.container
+    .row.form-group
+      label.col-3.col-form-label Proxy Port
+      .col-7
+        input.form-control type='number' value=$config['proxy_port']
+
+    .row.form-group
+      label.col-3.col-form-label Root CA
+      .col-7
+        input.form-control type='file' value=nil
+
+    .row.form-group
+      label.col-3.col-form-label Private Key
+      .col-7
+        input.form-control type='file' value=nil
+
+    .row.form-group
+      label.col-3.col-form-label Proxy Mode
+      .col-7
+        - %w{project all whitelist blacklist}.each do |mode|
+          - name = "proxy_mode_#{mode}"
+          .form-check.form-check-inline
+            input.form-check-input type='radio' name=name id=name
+            label.form-check-label for=name = mode.titleize
+
+    .row.form-group
+      label.col-3.col-form-label Whitelist
+
+    .row.form-group
+      label.col-3.col-form-label Blacklist
+
+    .row.form-group
+      label.col-3.col-form-label Projects
+
+    .row.justify-content-center
+      button.btn.btn-primary.btn-lg Start
+

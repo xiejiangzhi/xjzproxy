@@ -33,6 +33,15 @@ module Xjz
       @proxy_thread = nil
     end
 
+    def proxy_run?
+      @proxy_thread.alive?
+    end
+
+    def proxy_url
+      addr = proxy_socket.local_address
+      "http://#{addr.ip_address}:#{addr.ip_port}"
+    end
+
     private
 
     def loop_server(server_sock, name = '')

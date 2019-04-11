@@ -1,4 +1,4 @@
 #! /usr/bin/env bash
 
-BUNDLE_GEMFILE=Gemfile.dev APP_ENV=dev ./boot
+BUNDLE_GEMFILE=Gemfile.dev APP_ENV=dev OPEN_BROWSER='false' ./boot
 
