@@ -22,6 +22,7 @@ gem 'tilt', '~> 2.0.9'
 gem 'slim', '~> 4.0.1'
 gem 'websocket', '~> 1.2.8'
 gem 'sassc', '~> 2.0.1'
+gem 'launchy', '~> 2.4.3'
 
 # Other
 gem 'bootsnap', '~> 1.4.2', require: false

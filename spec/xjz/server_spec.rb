@@ -1,13 +1,13 @@
-RSpec.describe Xjz::ProxyServer do
+RSpec.describe Xjz::Server do
   describe 'Start' do
-    let(:server) { Xjz::ProxyServer.new }
+    let(:server) { Xjz::Server.new }
 
     after :each do
-      server.stop
+      server.stop_proxy
     end
 
     it 'should auto fetch first request' do
-      server.start
+      server.start_proxy
       expect(server.app).to receive(:call) do |env|
         expect(env.delete('rack.errors')).to be_a(StringIO)
         expect(env.delete('rack.hijack')).to be_a(Proc)
@@ -19,7 +19,7 @@ RSpec.describe Xjz::ProxyServer do
           "HTTP_HOST" => "xjz.pw",
           "PATH_INFO" => "/",
           "QUERY_STRING" => '',
-          "REMOTE_ADDR" => "::ffff:127.0.0.1",
+          "REMOTE_ADDR" => "127.0.0.1",
           "REQUEST_METHOD" => "GET",
           "REQUEST_URI" => "/",
           "SCRIPT_NAME" => "",
