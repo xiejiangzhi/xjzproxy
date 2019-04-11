@@ -45,9 +45,9 @@ module Xjz
       when %r{\A/static/.+(js|css|png)\Z}
         path = File.join($root, 'src', req.path)
         content_type = case path
-        when 'js' then 'text/javascript'
-        when 'css' then 'text/css'
-        when 'png' then 'image/png'
+        when /js$/ then 'text/javascript'
+        when /css$/ then 'text/css'
+        when /png$/ then 'image/png'
         end
         if File.exist?(path)
           [{ 'content-type' => content_type }.compact, [File.read(path)], 200]

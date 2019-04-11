@@ -46,6 +46,7 @@ module Xjz
 
     def perform
       if init_connect
+        send_msg('hello', "I'm XjzProxy server")
         loop_data
         true
       else
@@ -62,9 +63,9 @@ module Xjz
       end
     end
 
-    def send_msg(msg)
+    def send_msg(type, data = nil)
       push_outbuf WebSocket::Frame::Outgoing::Server.new(
-        version: ws_handshake.version, data: msg.to_s, type: :text
+        version: ws_handshake.version, data: { type: type, data: data }.to_json, type: :text
       ).to_s
     end
 

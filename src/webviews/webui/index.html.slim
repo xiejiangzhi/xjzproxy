@@ -12,25 +12,25 @@ html
     script type='text/javascript' src='/static/bootstrap.min.js'
     link rel='stylesheet' href='/static/bootstrap.min.css'
 
+    script type='text/javascript' src='/static/xjz_websocket.js'
+    script type='text/javascript' src='/static/xjz_view.js'
+
     script type='text/javascript' = render 'webui/index.js'
     style = render 'webui/index.css'
 
   body
     ul.nav.nav-tabs.nav-fill role="tablist"
-      li.nav-item
-        a.nav-link.active href='#t_proxy_config' role='tab' data-toggle='tab' aria-controls="t_proxy_config" aria-selected="false" Proxy
-
-      li.nav-item
-        a.nav-link href='#t_history' role='tab' data-toggle='tab' aria-controls="t_history" aria-selected="false" History
-
-      li.nav-item
-        a.nav-link href='#t_document' role='tab' data-toggle='tab' aria-controls="t_document" aria-selected="false" Document
-
-      li.nav-item
-        a.nav-link href='#t_report' role='tab' data-toggle='tab' aria-controls="t_report" aria-selected="false" Report
+      - tab_names = { proxy_config: 'Proxy', history: 'History', document: 'Document', report: 'Report' }
+      - tab_names.each_with_index do |kv, i|
+        - tname = "t_#{kv.first}"
+        li.nav-item
+          a.nav-link class=(i == 0 ? 'active' : '') href="##{tname}" role='tab' data-toggle='tab' aria-controls=tname aria-selected="false" xjz-id=tname = kv.last
 
     .tab-content
-      #t_proxy_config.tab-pane.fade.show.active = render 'webui/proxy_page.html'
-      #t_history.tab-pane.fade = render 'webui/history_page.html'
-      #t_document.tab-pane.fade  = render 'webui/document_page.html'
-      #t_report.tab-pane.fade = render 'webui/report_page.html'
+      - tab_names = { proxy_config: 'proxy', history: 'history', document: 'document', report: 'report' }
+      - tab_names.each_with_index do |kv, i|
+        - tname = "t_#{kv.first}"
+        - page_name = "webui/#{kv.last}_page.html"
+        .tab-pane.fade id=tname class=(i == 0 ? 'show active' : '') = render page_name
+        
+    .alerts.fixed-bottom#alerts

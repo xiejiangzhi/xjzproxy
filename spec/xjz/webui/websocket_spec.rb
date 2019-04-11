@@ -64,9 +64,10 @@ RSpec.describe Xjz::WebUI::WebSocket do
       expect(events.length).to eql(2)
       expect(events[1][0]).to eql(:message)
       expect(events[1][1].data).to eql('hello123')
-      subject.send_msg('world 321')
+      expect(recv_msg.data).to eql({ type: 'hello', data: "I'm XjzProxy server" }.to_json)
+      subject.send_msg('hello', 'world 321')
       sleep 0.1
-      expect(recv_msg.data).to eql('world 321')
+      expect(recv_msg.data).to eql({ type: 'hello', data: 'world 321' }.to_json)
       expect(recv_msg).to be_nil
       client.close
       sleep 0.1
@@ -78,11 +79,14 @@ RSpec.describe Xjz::WebUI::WebSocket do
     it 'should send and receive data when has multiple threads' do
       msgs = 20.times.map { |i| "msg #{i}" }
       10.times { |i| Thread.new { send_msg(msgs[i]) } }
-      10.times { |i| Thread.new { subject.send_msg(msgs[19 - i]) } }
+      10.times { |i| Thread.new { subject.send_msg('v', msgs[19 - i]) } }
       sleep 0.1
       expect(events[1..-1].map { |e, f| [e, f.data] }.sort).to \
         eql(msgs[0..9].map { |m| [:message, m] })
-      expect(11.times.map { recv_msg&.data }.sort_by(&:to_s)).to eql([nil] + msgs[10..19])
+      expect(12.times.map { recv_msg&.data }.sort_by(&:to_s)).to eql(
+        [nil] +  [{ type: "hello", data: "I'm XjzProxy server" }.to_json] +
+        msgs[10..19].map { |v| { type: 'v', data: v }.to_json }
+      )
     end
   end
 end

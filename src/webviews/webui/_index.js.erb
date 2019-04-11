@@ -1,47 +1,7 @@
-(function(){
+$(document).ready(function() {
   var port = <%= $config['proxy_port'] %>;
-  var wsUri = "ws://127.0.0.1:" + port + "/ws";
-
-  function init() {
-    testWebSocket();
-  }
-
-  function testWebSocket() {
-    websocket = new WebSocket(wsUri);
-    websocket.onopen = function(evt) { onOpen(evt) };
-    websocket.onclose = function(evt) { onClose(evt) };
-    websocket.onmessage = function(evt) { onMessage(evt) };
-    websocket.onerror = function(evt) { onError(evt) };
-  }
-
-  function onOpen(evt) {
-    writeToScreen("CONNECTED");
-    doSend("WebSocket rocks");
-    doSend("Hello");
-  }
-
-  function onClose(evt) {
-    writeToScreen("DISCONNECTED");
-  }
-
-  function onMessage(evt) {
-    var msg = JSON.parse(evt.data);
-    if (msg.type == 'el')
-    websocket.close();
-  }
-
-  function onError(evt) {
-    writeToScreen(evt.data);
-  }
-
-  function doSend(message) {
-    websocket.send(message);
-  }
-
-  function writeToScreen(message) {
-    console.log(message)
-  }
-
-  window.addEventListener("load", init, false);
-})()
+  var ws_url = "ws://127.0.0.1:" + port + "/ws";
+  var xjz_view = new XjzView(ws_url, 'body');
+  window.xjz_view = xjz_view;
+})
 
