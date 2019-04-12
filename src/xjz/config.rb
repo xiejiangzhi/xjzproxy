@@ -39,7 +39,7 @@ module Xjz
 
     def shared_data
       @shared_data ||= build_obj(
-        app: build_obj([:server], readonly: false),
+        app: build_obj([:server, :webui], readonly: false),
         webui: build_obj([:ws], readonly: false)
       )
     end

@@ -44,7 +44,7 @@ RSpec.describe Xjz::Resolver::WebUI do
   end
 
   describe 'HTTP' do
-    it 'GET / should return index page' do
+    it 'GET / should return index page', server: true do
       client.reply_data = proc { |msg, io| io.close }
       subject.perform
       http_parser << client.rdata.join
@@ -100,10 +100,11 @@ RSpec.describe Xjz::Resolver::WebUI do
     end
   end
 
-  describe 'WebSocket' do
+  describe 'WebSocket', server: true do
     let(:wsc) { WebSocket::Handshake::Client.new(url: 'ws://127.0.0.1/ws') }
 
     it 'GET /ws should handle websocket' do
+      expect($config.shared_data.app.webui).to receive(:watch).with(kind_of(Xjz::WebUI::WebSocket))
       req.env['PATH_INFO'] = '/ws'
       req.env['HTTP_UPGRADE'] = 'websocket'
       req.env['HTTP_CONNECTION'] = 'upgrade'

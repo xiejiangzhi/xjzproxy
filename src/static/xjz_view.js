@@ -21,19 +21,19 @@
     onMessage: function(type, data){
       switch (type) {
       case 'el.append':
-        $(data.selector).append(data.el);
+        $(data.selector).append(data.html);
         break;
       case 'el.after':
-        $(data.selector).after(data.el);
+        $(data.selector).after(data.html);
         break;
-      case 'el.update':
-        $(data.selector).replaceWith(data.el);
+      case 'el.html':
+        $(data.selector).html(data.html);
         break;
       case 'el.remove':
         $(data.selector).remove();
         break;
       case 'alert':
-        $('#alerts').append(data.el);
+        $('#alerts').append(data.html);
         break;
       case 'hello':
         break;
@@ -51,7 +51,10 @@
     },
 
     sendElemEvent: function(type, el) {
-      this.ws.sendMsg('el.' + type, { id: $(el).attr('xjz-id') }) 
+      var xjz_id = $(el).attr('xjz-id');
+      if (xjz_id && xjz_id != '') {
+        this.ws.sendMsg(xjz_id + '.' + type)
+      }
     }
   }
 

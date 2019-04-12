@@ -38,4 +38,25 @@ RSpec.configure do |config|
 
     FakeIO.clear
   end
+
+  config.before(:each, server: true) do
+    server = Xjz::Server.new
+    server.start
+    $config.shared_data.app.server = server
+    $config.shared_data.app.webui = Xjz::WebUI.new(server)
+  end
+  config.after(:each, server: true) do
+    $config.shared_data.app.server.stop
+  end
+
+  config.before(:each, log: false) do
+    Xjz::Logger.instance.instance_eval do
+      @logger.level = Logger::FATAL
+    end
+  end
+  config.after(:each, log: false) do
+    Xjz::Logger.instance.instance_eval do
+      @logger.level = Logger::ERROR
+    end
+  end
 end

@@ -111,7 +111,7 @@ module Xjz
     def read_frames
       loop do
         frame = ws_parser.next
-        break unless frame
+        break unless frame && frame.data.present?
         emit(:message, [frame])
       end
     end

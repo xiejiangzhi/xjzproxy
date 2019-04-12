@@ -4,14 +4,14 @@
     .row
       .col-3 Proxy URL
       .col-7
-        a href=server.proxy_url = server.proxy_url
+        a href="http://#{server.proxy_addr}" = "http://#{server.proxy_addr}"
       .col-2
         a.btn.btn-light href='#' copy
 
     .row
       .col-3 Proxy Root CA URL
       .col-7
-        - url = "#{server.proxy_url}/root_ca.crt"
+        - url = "http://#{server.proxy_addr}/root_ca.crt"
         a href=url = url
       .col-2
         a.btn.btn-light href='#' copy

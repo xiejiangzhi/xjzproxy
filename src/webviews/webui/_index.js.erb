@@ -1,6 +1,5 @@
 $(document).ready(function() {
-  var port = <%= $config['proxy_port'] %>;
-  var ws_url = "ws://127.0.0.1:" + port + "/ws";
+  var ws_url = 'ws://<%= $config.shared_data.app.server.ui_addr %>/ws';
   var xjz_view = new XjzView(ws_url, 'body');
   window.xjz_view = xjz_view;
 })

@@ -24,11 +24,11 @@ module Xjz
     end
 
     def open(url)
-      return if try_open_by_chrome(url)
-      return if try_open_by_browser(url)
+      return true if try_open_by_chrome(url)
+      return true if try_open_by_browser(url)
 
-      raise "You must have either electron or google-chrome installed"\
-        " and accesible via your path."
+      Logger[:auto].error { "You must have google-chrome installed and accesible via your path." }
+      false
     end
 
     def system_name

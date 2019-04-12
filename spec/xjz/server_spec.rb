@@ -1,13 +1,8 @@
 RSpec.describe Xjz::Server do
-  describe 'Start' do
-    let(:server) { Xjz::Server.new }
-
-    after :each do
-      server.stop_proxy
-    end
+  describe 'Start', server: true do
+    let(:server) { $config.shared_data.app.server }
 
     it 'should auto fetch first request' do
-      server.start_proxy
       expect(server.app).to receive(:call) do |env|
         expect(env.delete('rack.errors')).to be_a(StringIO)
         expect(env.delete('rack.hijack')).to be_a(Proc)

@@ -41,6 +41,8 @@ module Xjz
           stop_wait_cb: proc { stop_copy }
         )
       end
+    rescue EOFError
+      false
     end
 
     def self.parse_response(conn, &block)
