@@ -34,7 +34,7 @@ module Xjz
       when '/root_ca.crt'
         msg_download_res(Resolver::SSL.cert_manager.root_ca.to_pem, 'xjzproxy_root_ca.crt')
       when '/'
-        body = Helper::Webview.render('webui/index.html', history: Tracker.instance.history)
+        body = WebUI::RenderHelper.render('webui/index.html')
         [{}, [body], 200]
       when '/ws'
         if req.upgrade_flag == 'websocket'
@@ -75,7 +75,6 @@ module Xjz
         {
           'Content-Type' => 'application/octet-stream; charset=utf-8',
           'Content-Disposition' => %Q{attachment; filename="#{filename}"}
-
         },
         [msg], 200
       ]

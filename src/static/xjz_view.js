@@ -11,11 +11,11 @@
   
   XjzView.prototype = {
     onError: function() {
-      console.log("Error")
+      window.close()
     },
 
     onClose: function() {
-      console.log("Close")
+      window.close()
     },
 
     onMessage: function(type, data){
@@ -44,16 +44,24 @@
 
     initView: function(evt) {
       console.log("Init View", evt)
-      var that = this;
-      this.$container.on('click change', '[xjz-id]', function(evt) {
-        that.sendElemEvent(evt.type, evt.currentTarget);
-      })
+      this.$container.on('click', '[xjz-id]', this.formatEvent(function(evt, xjz_id) {
+        this.ws.sendMsg(xjz_id + '.' + evt.type)
+      }))
+      this.$container.on('change', '[xjz-id]', this.formatEvent(function(evt, xjz_id, $el) {
+        this.ws.sendMsg(xjz_id + '.' + evt.type, { value: $el.val() } )
+      }))
     },
 
-    sendElemEvent: function(type, el) {
-      var xjz_id = $(el).attr('xjz-id');
-      if (xjz_id && xjz_id != '') {
-        this.ws.sendMsg(xjz_id + '.' + type)
+    formatEvent: function(cb) {
+      var that = this;
+      return function(evt) {
+        var $el = $(evt.currentTarget);
+        var xjz_id = $el.attr('xjz-id');
+        if (xjz_id && xjz_id != '') {
+          cb.apply(that, [evt, xjz_id, $el])
+        } else {
+          console.error("Invalid element", evt)
+        }
       }
     }
   }

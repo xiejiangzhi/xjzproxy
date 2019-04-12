@@ -15,7 +15,6 @@ module Xjz
     def on_message(frame)
       msg = JSON.parse(frame.data)
       type, data = msg['type'], msg['data']
-      Logger[:auto].debug { "Recv UI message #{type} #{data.inspect}" }
 
       msg = Message.new(type, data, self)
       action_router.call(msg).tap do |r|

@@ -1,0 +1,20 @@
+- server = $config.shared_data.app.server
+.container
+  .row
+    .col-3 Proxy URL
+    .col-7
+      a href="http://#{server.proxy_addr}" = "http://#{server.proxy_addr}"
+    .col-2
+      a.btn.btn-light href='#' copy
+
+  .row
+    .col-3 Proxy Root CA URL
+    .col-7
+      - url = "http://#{server.proxy_addr}/root_ca.crt"
+      a href=url = url
+    .col-2
+      a.btn.btn-light href='#' copy
+
+  .row.justify-content-center
+    button.btn.btn-primary.btn-lg xjz-id='proxy.stop' Stop
+

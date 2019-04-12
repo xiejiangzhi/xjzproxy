@@ -24,7 +24,11 @@ html
       - tab_names.each_with_index do |kv, i|
         - tname = "t_#{kv.first}"
         li.nav-item
-          a.nav-link class=(i == 0 ? 'active' : '') href="##{tname}" role='tab' data-toggle='tab' aria-controls=tname aria-selected="false" xjz-id=tname = kv.last
+          a.nav-link[
+            class=(i == 0 ? 'active' : '') href="##{tname}"
+            role='tab' data-toggle='tab' aria-controls=tname aria-selected="false"
+            xjz-id=tname
+          ] = kv.last
 
     .tab-content
       - tab_names = { proxy_config: 'proxy', history: 'history', document: 'document', report: 'report' }

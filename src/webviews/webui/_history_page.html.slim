@@ -1,1 +1,19 @@
-p hhh
+.row
+  .col-3 style='border-right: 1px solid'
+    - history_group_each do |host, rts|
+      - rt_id = "rt-#{host}".gsub(/[^\w]+/i, '_')
+
+      .card
+        .card-header[
+          data-toggle='collapse' data-target="##{rt_id}" aria-expanded='false' aria-controls=rt_id 
+        ] = host
+
+      .collapse id=rt_id
+        .card-body
+          .list-group
+            - rts.each do |rt|
+              - req = rt.request
+              - res = rt.response
+              a.list-group-item.list-group-item-action = req.path
+
+  .col-9

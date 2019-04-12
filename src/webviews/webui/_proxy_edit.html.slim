@@ -1,0 +1,43 @@
+form.container
+  .row.form-group
+    label.col-3.col-form-label Proxy Port
+    .col-7
+      input.form-control type='number' value=$config['proxy_port'] xjz-id='proxy.port'
+
+  .row.form-group
+    label.col-3.col-form-label Root CA
+    .col-7
+      input.form-control type='file' value=nil xjz-id='proxy.root_ca'
+
+  .row.form-group
+    label.col-3.col-form-label Private Key
+    .col-7
+      input.form-control type='file' value=nil xjz-id='proxy.pkey'
+
+  .row.form-group
+    label.col-3.col-form-label Proxy Mode
+    .col-7
+      - %w{projects all whitelist blacklist}.each do |mode|
+        - name = "proxy_mode_#{mode}"
+        .form-check.form-check-inline
+          - if mode == $config['proxy_mode']
+            input.form-check-input[
+              type='radio' name='proxy_mode' id=name value=mode
+              xjz-id='proxy.mode' checked=true
+            ]
+          - else
+            input.form-check-input type='radio' name='proxy_mode' id=name xjz-id='proxy.mode' value=mode
+          label.form-check-label for=name = mode.titleize
+
+  .row.form-group
+    label.col-3.col-form-label Whitelist
+
+  .row.form-group
+    label.col-3.col-form-label Blacklist
+
+  .row.form-group
+    label.col-3.col-form-label Projects
+
+  .row.justify-content-center
+    button.btn.btn-primary.btn-lg xjz-id='proxy.start' Start
+
