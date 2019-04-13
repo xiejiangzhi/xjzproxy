@@ -1,1 +1,8 @@
-p document
+.row
+  .col-3 style='border-right: 1px solid'
+    ul.list-group
+    - $config['.api_projects'].each do |ap|
+      li.list-group-item xjz-id="document.ap.#{ap.object_id}" = ap.repo_path
+
+  .col-9#document_detail
+

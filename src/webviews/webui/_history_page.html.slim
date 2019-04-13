@@ -17,7 +17,7 @@
               - req = rt.request
               - res = rt.response
               a.list-group-item.list-group-item-action xjz-id="history.req.#{req.object_id}" = "#{req.http_method.upcase} #{req.path}"
-              span = "#{rt.action_list[0][1][0].strftime("%H:%M:%S.%L")}"
-              span = "#{rt.seconds.round(3)}s"
+              span = "#{rt.start_at.strftime("%H:%M:%S.%L")}"
+              span = "#{rt.cost.round(3)}s"
 
   .col-9#history_detail

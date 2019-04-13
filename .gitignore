@@ -10,3 +10,4 @@ config/*.pem
 *.swp
 
 .xjzapi
+xjzapidoc.md

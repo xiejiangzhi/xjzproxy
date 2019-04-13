@@ -2,7 +2,9 @@
 
 <%= api['desc'] %>
 
+% if project.grpc
 [GRPC Info](#<%= api['path'] %>)
+% end
 
 % if api['labels'].present?
 **Labels**

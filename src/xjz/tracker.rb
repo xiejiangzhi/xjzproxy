@@ -56,9 +56,17 @@ module Xjz
       @response = response
     end
 
-    def seconds
+    def start_at
+      action_list[0][1].first
+    end
+
+    def end_at
+      action_list[-1][1].last
+    end
+
+    def cost
       return 0 if action_list.length < 2
-      action_list[-1][1].last - action_list[0][1].first
+      end_at - start_at
     end
   end
 end

@@ -1,1 +1,27 @@
-p Report
+- tracker = Xjz::Tracker.instance
+- total = tracker.history.length
+.container
+  .row
+    .col-3 Requests
+    .col-9 = total
+
+  .row
+    .col-3 Avg Cost
+    - ms = total > 0 ? ((tracker.history.map(&:cost).sum / total) * 1000).to_i : 0
+    .col-9 = "#{ms} ms"
+
+  .row
+    .col-3 Min Cost
+    - ms = (tracker.history.map(&:cost).min || 0) * 1000
+    .col-9 = "#{ms} ms"
+
+  .row
+    .col-3 Max Cost
+    - ms = (tracker.history.map(&:cost).max || 0) * 1000
+    .col-9 = "#{ms} ms"
+
+  - [1, 3, 5, 15, 30].each do |seconds|
+    .row
+      .col-3 Max Request in #{seconds} sec
+      .col-9 = "#{max_reqs_in_sec(seconds)} Requests"
+

@@ -40,7 +40,9 @@ RSpec.describe Xjz::Tracker do
       )
       expect(req_tracker.request).to eql('req')
       expect(req_tracker.response).to eql('res')
-      expect(req_tracker.seconds).to eql(5.5123)
+      expect(req_tracker.cost).to eql(5.5123)
+      expect(req_tracker.start_at).to eql(time - 1)
+      expect(req_tracker.end_at).to eql(time + 4.5123)
     end
 
     it 'should not track start if auto_start is false' do

@@ -20,7 +20,7 @@ html
 
   body
     ul.nav.nav-tabs.nav-fill role="tablist"
-      - tab_names = { proxy_config: 'Proxy', history: 'History', document: 'Document', report: 'Report' }
+      - tab_names = { proxy: 'Proxy', history: 'History', document: 'Document', report: 'Report' }
       - tab_names.each_with_index do |kv, i|
         - tname = "t_#{kv.first}"
         li.nav-item
@@ -31,7 +31,7 @@ html
           ] = kv.last
 
     .tab-content
-      - tab_names = { proxy_config: 'proxy', history: 'history', document: 'document', report: 'report' }
+      - tab_names = { proxy: 'proxy', history: 'history', document: 'document', report: 'report' }
       - tab_names.each_with_index do |kv, i|
         - tname = "t_#{kv.first}"
         - page_name = "webui/#{kv.last}_page.html"
