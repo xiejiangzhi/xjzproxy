@@ -12,7 +12,7 @@ RSpec.describe Xjz::WebUI::ActionRouter do
 
   describe '#call' do
     def new_msg(type, data)
-      OpenStruct.new(r: [], type: type, data: type)
+      OpenStruct.new(r: [], type: type, data: type, match_data: nil)
     end
 
     before :each do
@@ -21,7 +21,7 @@ RSpec.describe Xjz::WebUI::ActionRouter do
           event('wait') { r << :p0 }
         end
         event('click.start') { r << :p1 }
-        event(/^click.stop$/) { r << :p2 }
+        event(/^click.(stop)$/) { r << :p2 }
       end
       subject.namespace(/report/) do
         event('invalid') { r << :r1 }
@@ -41,6 +41,9 @@ RSpec.describe Xjz::WebUI::ActionRouter do
       expect {
         expect(subject.call(msg)).to eql(true)
       }.to change { msg.r }.to([:p2])
+      expect(msg.match_data).to be_a(MatchData)
+      expect(msg.match_data[0]).to eql('click.stop')
+      expect(msg.match_data[1]).to eql('stop')
 
       msg = new_msg('report.valid', 123)
       expect {

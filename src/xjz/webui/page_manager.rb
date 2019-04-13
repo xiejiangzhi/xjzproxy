@@ -26,6 +26,7 @@ module Xjz
 
     class Message
       attr_reader :type, :data, :page_manager
+      attr_accessor :match_data
 
       def initialize(type, data, page_manager)
         @type, @data = type, data
@@ -36,8 +37,8 @@ module Xjz
         page_manager.websocket.send_msg(type, data)
       end
 
-      def render(name, data = {})
-        Helper::Webview.render(name, {})
+      def render(*args)
+        WebUI::RenderHelper.render(*args)
       end
     end
   end

@@ -74,7 +74,8 @@ module Xjz
       [
         {
           'Content-Type' => 'application/octet-stream; charset=utf-8',
-          'Content-Disposition' => %Q{attachment; filename="#{filename}"}
+          'Content-Disposition' => %Q{attachment; filename="#{filename}"},
+          "Connection" => 'close'
         },
         [msg], 200
       ]

@@ -42,9 +42,11 @@ module Xjz
       events.each do |matcher, performer|
         # binding.pry if $a == 1
         if String === matcher && _sub_str.start_with?(matcher)
+          env_obj.match_data = nil
           r = run_performer(performer, env_obj, _sub_str[(matcher.length)..-1])
           return r if r
-        elsif Regexp === matcher && matcher.match?(_sub_str)
+        elsif Regexp === matcher && m = matcher.match(_sub_str)
+          env_obj.match_data = m
           r = run_performer(performer, env_obj)
           return r if r
         end

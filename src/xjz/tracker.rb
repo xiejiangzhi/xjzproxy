@@ -16,6 +16,10 @@ module Xjz
       @history = []
     end
 
+    def clear_all
+      @history = []
+    end
+
     def track_req(*args)
       RequestTracker.new(*args).tap { |rt| @history << rt }
     end

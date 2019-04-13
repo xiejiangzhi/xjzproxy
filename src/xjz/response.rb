@@ -1,3 +1,5 @@
+require 'zlib'
+
 module Xjz
   class Response
     attr_reader :raw_headers, :raw_body
@@ -30,6 +32,25 @@ module Xjz
       @body ||= case raw_body
       when Array then raw_body.join
       else raw_body.to_s
+      end
+    end
+
+    def content_type
+      @content_type ||= (HTTPHelper.get_header(h1_headers, 'content-type') || 'text/plain').downcase
+    end
+
+    def content_encoding
+      @content_encoding ||= (HTTPHelper.get_header(h1_headers, 'content-encoding') || 'identity').downcase
+    end
+
+    def decoded_body
+      @decoded_body ||= case content_encoding
+      when 'gzip'
+        ActiveSupport::Gzip.decompress(body)
+      when 'deflate'
+        Zlib::Inflate.inflate(body)
+      else
+        body
       end
     end
 
