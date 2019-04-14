@@ -1,7 +1,7 @@
 module Xjz
   WebUI::ActionRouter.register do
     namespace 'document' do
-      event(/^ap\.(?<ap_id>\d+)\.click$/) do
+      event(/^detail_btn\.(?<ap_id>\d+)\.click$/) do
         ap_id = match_data['ap_id'].to_i
         ap = $config['.api_projects'].find { |obj| obj.object_id == ap_id }
         markdown_str = Xjz::ApiProject::DocRenderer.new(ap).render
@@ -12,7 +12,7 @@ module Xjz
         send_msg(
           'el.html',
           selector: '#document_detail',
-          html: render('webui/_document_detail.html', doc_html: doc_html)
+          html: render('webui/document/detail.html', doc_html: doc_html)
         )
       end
     end

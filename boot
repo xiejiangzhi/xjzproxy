@@ -11,7 +11,7 @@ webui = $config.shared_data.app.webui = Xjz::WebUI.new(server)
 webui.start if ENV['OPEN_BROWSER'] != 'false'
 
 begin
-  server.ui_thread.join
+  webui.window.join
   server.stop
 rescue Interrupt
   server.stop

@@ -65,4 +65,11 @@ RSpec.describe Xjz::Tracker do
     expect(Xjz::Tracker.instance).to receive(:track_req).with('req', auto_start: false)
     Xjz::Tracker.track_req('req', auto_start: false)
   end
+
+  it '.clean_all should clean all history' do
+    tracker.track_req('req')
+    expect {
+      tracker.clean_all
+    }.to change(tracker, :history).to([])
+  end
 end

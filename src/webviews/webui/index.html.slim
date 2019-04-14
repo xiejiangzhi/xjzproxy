@@ -34,7 +34,7 @@ html
       - tab_names = { proxy: 'proxy', history: 'history', document: 'document', report: 'report' }
       - tab_names.each_with_index do |kv, i|
         - tname = "t_#{kv.first}"
-        - page_name = "webui/#{kv.last}_page.html"
+        - page_name = "webui/#{kv.last}/index.html"
         .tab-pane.fade id=tname class=(i == 0 ? 'show active' : '') = render page_name
         
     .alerts.fixed-bottom#alerts

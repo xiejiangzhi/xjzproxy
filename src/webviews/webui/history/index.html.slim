@@ -1,6 +1,6 @@
 .row
   .col-3 style='border-right: 1px solid'
-    a.btn.btn-light xjz-id='history.clear_all' Clear
+    a.btn.btn-light xjz-id='history.clean_all' Clean
 
     - history_group_each do |host, rts|
       - rt_id = "rt-#{host}".gsub(/[^\w]+/i, '_')
@@ -16,7 +16,9 @@
             - rts.each do |rt|
               - req = rt.request
               - res = rt.response
-              a.list-group-item.list-group-item-action xjz-id="history.req.#{req.object_id}" = "#{req.http_method.upcase} #{req.path}"
+              a.list-group-item.list-group-item-action[
+                xjz-id="history.detail.#{rt.object_id}"
+              ]= "#{req.http_method.upcase} #{req.path}"
               span = "#{rt.start_at.strftime("%H:%M:%S.%L")}"
               span = "#{rt.cost.round(3)}s"
 

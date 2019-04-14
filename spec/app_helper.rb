@@ -63,4 +63,8 @@ RSpec.configure do |config|
       @logger.level = Logger::ERROR
     end
   end
+
+  config.before(:each, webpage: true) do
+    allow($config.shared_data.app).to receive(:server).and_return(Xjz::Server.new)
+  end
 end

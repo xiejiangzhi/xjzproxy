@@ -34,6 +34,11 @@ module Xjz
       @app_process = nil
     end
 
+    def join
+      return unless app_process && app_process.alive?
+      Process.wait(app_process.pid)
+    end
+
     private
 
     def exec_cmd(cmd)

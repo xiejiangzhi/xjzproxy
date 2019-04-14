@@ -4,10 +4,10 @@
 h4 Request
 .request
   h5 General
-  = render('webui/key_val.html', data: { method: req.http_method, url: req.url })
+  = render('webui/_key_val.html', data: { method: req.http_method, url: req.url })
 
   h5 Header
-  = render('webui/key_val.html', data: req.headers)
+  = render('webui/_key_val.html', data: req.headers)
 
   h5 Body
   .container = Rack::Utils.escape_html(req.body)
@@ -19,7 +19,7 @@ h4 Request
   h4 Response
   .response
     h5 Header
-    = render('webui/key_val.html', data: res.raw_headers)
+    = render('webui/_key_val.html', data: res.raw_headers)
 
     h5 Body
     .container

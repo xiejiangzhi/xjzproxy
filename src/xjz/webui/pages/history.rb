@@ -1,22 +1,22 @@
 module Xjz
   WebUI::ActionRouter.register do
     namespace 'history' do
-      event(/^req\.(?<req_id>\d+)\.click$/) do
+      event(/^detail\.(?<req_id>\d+)\.click$/) do
         req_id = match_data['req_id'].to_i
-        rt = Tracker.instance.history.find { |h| h.request.object_id == req_id }
+        rt = Tracker.instance.history.find { |h| h.object_id == req_id }
         send_msg(
           'el.html',
           selector: '#history_detail',
-          html: render('webui/_history_detail.html', request_tracker: rt)
+          html: render('webui/history/detail.html', request_tracker: rt)
         )
       end
 
-      event 'clear_all' do
-        Tracker.instance.clear_all
+      event 'clean_all.click' do
+        Tracker.instance.clean_all
         send_msg(
           'el.html',
           selector: '#t_history',
-          html: render('webui/_history_page.html')
+          html: render('webui/history/index.html')
         )
       end
     end

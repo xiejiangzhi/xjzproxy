@@ -8,5 +8,6 @@ root="$(pwd)"
 go get github.com/zserge/webview
 cd lib/webview
 # output lib/webview/webview
+rm -f ./webview
 go build
 

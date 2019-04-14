@@ -16,7 +16,7 @@ module Xjz
       @history = []
     end
 
-    def clear_all
+    def clean_all
       @history = []
     end
 

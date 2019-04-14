@@ -4,7 +4,7 @@ module Xjz
     end
 
     event 't_report.click' do
-      send_msg('el.html', selector: '#t_report', html: render('webui/_report_page.html'))
+      send_msg('el.html', selector: '#t_report', html: render('webui/report/index.html'))
     end
   end
 end
