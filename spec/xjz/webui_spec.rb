@@ -26,4 +26,11 @@ RSpec.describe Xjz::WebUI, server: true do
       expect(subject.websocket).to eql('ws')
     end
   end
+
+  describe "#emit_message" do
+    it 'should call page_manager#emit_message' do
+      expect(subject.page_manager).to receive(:emit_message).with('server.a', 123)
+      subject.emit_message('a', 123)
+    end
+  end
 end

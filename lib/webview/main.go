@@ -8,34 +8,51 @@ import "fmt"
 import "os"
 import "strings"
 
-func EvalCallback(w webview.WebView, name string, data string) {
-  data = strings.ReplaceAll(data, "'", "\\'")
+func EvalCallback(w webview.WebView, name string, value string, userdata string) {
+  value = strings.ReplaceAll(value, "'", "\\'")
+  userdata = strings.ReplaceAll(userdata, "'", "\\'")
+
 	w.Eval(fmt.Sprintf(`
     (function(){
       if (!window.rpc) { return }
       var cb = window.rpc.%s_cb
       if (!cb) { return }
-      cb('%s')
+      cb('%s', '%s')
     })()
-  `, name, data))
+  `, name, value, userdata))
 }
 
 func handleRPC(w webview.WebView, data string) {
+  s := strings.SplitN(data, ",", 2)
+  action, userdata := s[0], s[1]
+
 	switch {
-	case data == "close":
+	case action == "close":
 		w.Terminate()
-	case data == "fullscreen":
+	case action == "fullscreen":
 		w.SetFullscreen(true)
-	case data == "unfullscreen":
+	case action == "unfullscreen":
 		w.SetFullscreen(false)
-  case data == "openfile":
-    path := w.Dialog(webview.DialogTypeOpen, 0, "Select a file", "")
-    EvalCallback(w, "openfile", path)
-	case data == "opendir":
-    path := w.Dialog(webview.DialogFlagDirectory, 0, "Select a directory", "")
-    EvalCallback(w, "opendir", path)
+  case action == "open":
+    path := w.Dialog(
+      webview.DialogTypeOpen, webview.DialogFlagFile & webview.DialogFlagDirectory,
+      "Select a file or directory", "")
+    EvalCallback(w, action, path, userdata)
+  case action == "openfile":
+    path := w.Dialog(
+      webview.DialogTypeOpen, webview.DialogFlagFile,
+      "Select a file", "")
+    EvalCallback(w, action, path, userdata)
+	case action == "opendir":
+    path := w.Dialog(
+      webview.DialogTypeOpen, webview.DialogFlagDirectory,
+      "Select a directory", "")
+    EvalCallback(w, action, path, userdata)
+  default:
+    EvalCallback(w, "error", action, userdata)
   }
 }
+
 func main() {
   urlPtr := flag.String("url", "", "App URL")
   titlePtr := flag.String("title", "XJZProxy", "App title")

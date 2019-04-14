@@ -32,9 +32,9 @@
       case 'el.remove':
         $(data.selector).remove();
         break;
-      case 'alert':
-        $('#alerts').append(data.html);
-        break;
+      // case 'alert':
+      //   $('#alerts').append(data.html);
+      //   break;
       case 'hello':
         break;
       default: 
@@ -44,15 +44,47 @@
 
     initView: function(evt) {
       console.log("Init View", evt)
-      this.$container.on('click', '[xjz-id]', this.formatEvent(function(evt, xjz_id) {
-        this.ws.sendMsg(xjz_id + '.' + evt.type)
-      }))
-      this.$container.on('change', '[xjz-id]', this.formatEvent(function(evt, xjz_id, $el) {
-        this.ws.sendMsg(xjz_id + '.' + evt.type, { value: $el.val() } )
-      }))
+
+      this.initEvents();
+      this.initRPC();
     },
 
-    formatEvent: function(cb) {
+    initEvents: function() {
+      this.$container.on('click', '[xjz-id]', this.formatEventCallback(function(evt, xjz_id) {
+        this.ws.sendMsg(xjz_id + '.' + evt.type)
+      }))
+      this.$container.on('change', '[xjz-id]', this.formatEventCallback(function(evt, xjz_id, $el) {
+        this.ws.sendMsg(xjz_id + '.' + evt.type, { value: $el.val() } )
+      }))
+      this.$container.on('click', '[xjz-rpc]', this.formatEventCallback(function(evt, xjz_id, $el) {
+        var rpc_data = $el.attr('xjz-rpc') + ',' + xjz_id;
+        console.log("Invoke RPC '" + rpc_data + "'");
+        window.external.invoke(rpc_data);
+      }))
+
+      // this.$container.on('click', '#app_header .nav-item', function(evt) {
+      //   console.log('asdf')
+      //   debugger
+      // })
+    },
+
+    initRPC: function() {
+      var update_input_val_by_xjz_id = this.newRPCCallback(function(value, xjz_id) {
+        if (!value || value == '') { return }
+        $("[xjz-id='" + xjz_id + "']").val(value).change();
+      })
+
+      window.rpc = {
+        openfile_cb: update_input_val_by_xjz_id,
+        opendir_cb: update_input_val_by_xjz_id,
+        open_cb: update_input_val_by_xjz_id,
+        error: function(action, user_data) {
+          console.error("Invalid action: '" + action + "' with userdata '" + user_data + "'")
+        }
+      }
+    },
+
+    formatEventCallback: function(cb) {
       var that = this;
       return function(evt) {
         var $el = $(evt.currentTarget);
@@ -62,6 +94,14 @@
         } else {
           console.error("Invalid element", evt)
         }
+      }
+    },
+
+    newRPCCallback: function(cb) {
+      var that = this;
+      return function(val, user_data) {
+        console.log("RPC callback '" + val + "' with data '" + user_data + "'");
+        cb.apply(that, [val, user_data]);
       }
     }
   }

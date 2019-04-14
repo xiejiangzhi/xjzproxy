@@ -14,8 +14,10 @@ module Xjz
 
     def on_message(frame)
       msg = JSON.parse(frame.data)
-      type, data = msg['type'], msg['data']
+      emit_message(*msg.values_at('type', 'data'))
+    end
 
+    def emit_message(type, data)
       msg = Message.new(type, data, self)
       action_router.call(msg).tap do |r|
         Logger[:auto].warn { "Cannot handle message type #{type}" } unless r

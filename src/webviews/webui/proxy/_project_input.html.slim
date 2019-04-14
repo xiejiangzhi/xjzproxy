@@ -1,0 +1,8 @@
+- id = "#{type}-#{index}"
+.input-group style='margin-top: 10px;'
+  input.form-control[
+    type='text' value=val readonly=true id=id
+    xjz-rpc='open' xjz-id="proxy.#{type}.#{index}"
+  ]
+  label.input-group-append for=id
+    span.input-group-text Browser

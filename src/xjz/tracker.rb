@@ -21,7 +21,10 @@ module Xjz
     end
 
     def track_req(*args)
-      RequestTracker.new(*args).tap { |rt| @history << rt }
+      RequestTracker.new(*args).tap do |rt|
+        @history << rt
+        $config.shared_data.app.webui.emit_message('new_request', rt)
+      end
     end
   end
 

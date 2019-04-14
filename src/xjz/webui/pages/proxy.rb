@@ -3,12 +3,12 @@ module Xjz
     namespace 'proxy' do
       event 'start.click' do
         $config.shared_data.app.server.start_proxy
-        send_msg('el.html', selector: '#t_proxy', html: render('webui/proxy/index.html'))
+        send_msg('el.html', selector: '#f_proxy', html: render('webui/proxy/index.html'))
       end
 
       event 'stop.click' do
         $config.shared_data.app.server.stop_proxy
-        send_msg('el.html', selector: '#t_proxy', html: render('webui/proxy/index.html'))
+        send_msg('el.html', selector: '#f_proxy', html: render('webui/proxy/index.html'))
       end
 
       event 'port.change' do

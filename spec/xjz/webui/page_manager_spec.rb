@@ -54,4 +54,17 @@ RSpec.describe Xjz::WebUI::PageManager do
       expect(subject.on_message(sframe.next)).to eql(r)
     end
   end
+
+  describe '#emit_message' do
+    it 'should emit message to action_router' do
+      t = Time.now
+      expect(subject.action_router).to receive(:call) do |msg_obj|
+        expect(msg_obj.type).to eql('ready')
+        expect(msg_obj.data).to eql(t)
+        expect(msg_obj).to be_respond_to(:send_msg)
+        123321
+      end
+      expect(subject.emit_message('ready', t)).to eql(123321)
+    end
+  end
 end

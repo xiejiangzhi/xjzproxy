@@ -1,6 +1,5 @@
 .row
   .col-3 style='border-right: 1px solid'
-    a.btn.btn-light xjz-id='history.clean_all' Clean
 
     - history_group_each do |host, rts|
       - rt_id = "rt-#{host}".gsub(/[^\w]+/i, '_')

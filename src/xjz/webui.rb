@@ -28,6 +28,11 @@ module Xjz
       page_manager.watch(websocket)
     end
 
+    def emit_message(type, data)
+      return false unless page_manager
+      page_manager.emit_message("server.#{type}", data)
+    end
+
     private
 
     def wait_server_ready

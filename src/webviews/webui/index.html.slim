@@ -19,22 +19,47 @@ html
     style = render 'webui/index.css'
 
   body
-    ul.nav.nav-tabs.nav-fill role="tablist"
-      - tab_names = { proxy: 'Proxy', history: 'History', document: 'Document', report: 'Report' }
-      - tab_names.each_with_index do |kv, i|
-        - tname = "t_#{kv.first}"
-        li.nav-item
-          a.nav-link[
-            class=(i == 0 ? 'active' : '') href="##{tname}"
-            role='tab' data-toggle='tab' aria-controls=tname aria-selected="false"
-            xjz-id=tname
-          ] = kv.last
+    - current_tab = :proxy
+    - feature_names = { proxy: 'Proxy', history: 'History', document: 'Document', report: 'Report' }
+    header#app_header.navbar.navbar-expand.navbar-light.bg-light
+      a.navbar-brand  XJZProxy
+      .navbar-collapse
+        ul.navbar-nav.list-group.mr-auto role='tablist'
+          - feature_names.each do |name, title|
+            - fname = "f_#{name}"
+            - tid = "#{fname}_tab"
+            - is_active = (name == current_tab)
+            li.nav-item
+              a.nav-link [
+                id=tid class=(is_active ? 'active' : '') href="##{fname}" xjz-id=tid
+                role='tab' data-toggle='list'
+              ] = title
+        
+        form.form-inline
+          - tracker = Xjz::Tracker.instance
+          - total_reqs = tracker.history.count
+          a.disabled.mr-2
+            strong#navbar_total_requests = total_reqs
+            |  Requests
 
-    .tab-content
-      - tab_names = { proxy: 'proxy', history: 'history', document: 'document', report: 'report' }
-      - tab_names.each_with_index do |kv, i|
-        - tname = "t_#{kv.first}"
-        - page_name = "webui/#{kv.last}/index.html"
-        .tab-pane.fade id=tname class=(i == 0 ? 'show active' : '') = render page_name
+          span.mr-2 | 
+
+          a.disabled.mr-2
+            - ms = total_reqs > 0 ? ((tracker.history.map(&:cost).sum / total_reqs) * 1000).to_i : 0
+            strong#navbar_total_requests = ms
+            |  ms/req
+
+          span.mr-2 | 
+
+          a.btn.btn-warning.nav-text. xjz-id='history.clean_all' Reset
+
+    #app_body.tab-content
+      - feature_names.each do |name, _|
+        - fname = "f_#{name}"
+        - page_name = "webui/#{name}/index.html"
+        - is_active = (name == current_tab)
+        - css_class = (is_active ? 'show active' : '')
+        .tab-pane.fade id=fname class="#{fname} #{css_class}" role='tabpanel'
+          = render page_name
         
     .alerts.fixed-bottom#alerts
