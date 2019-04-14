@@ -16,7 +16,7 @@ module Xjz
 
     def parse(raw_data)
       %w{project types partials responses plugins apis}.each_with_object(
-        'types' => ApiProject::DataType.default_types
+        'types' => ApiProject::DataType.default_types.dup
       ) do |key, r|
         val = raw_data[key]
         r[key] ||= {}

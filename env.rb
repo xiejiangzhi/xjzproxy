@@ -26,3 +26,4 @@ require 'shellwords'
 puts Time.now - t
 
 $LOAD_PATH.unshift File.join($root, 'src')
+$LOAD_PATH.unshift File.join($root, 'lib')

@@ -86,6 +86,7 @@ class FakeIO
         define_singleton_method(m) do |*args|
           om.call(*args).tap do
             fio.wdata << args.first
+            flush
             fio.target&.on_msg(ssl: true)
           end
         end
@@ -118,6 +119,7 @@ class FakeIO
       def #{m}(*args)
         io.method(__method__).call(*args).tap do |r|
           wdata << args.first
+          io.flush
           target&.on_msg
         end
       end

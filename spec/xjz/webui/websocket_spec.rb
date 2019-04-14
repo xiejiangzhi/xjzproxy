@@ -50,6 +50,7 @@ RSpec.describe Xjz::WebUI::WebSocket do
 
     def send_msg(msg)
       client << WebSocket::Frame::Outgoing::Client.new(version: wsc.version, data: msg, type: :text)
+      client.flush
     end
 
     def recv_msg
@@ -69,6 +70,7 @@ RSpec.describe Xjz::WebUI::WebSocket do
       sleep 0.1
       expect(recv_msg.data).to eql({ type: 'hello', data: 'world 321' }.to_json)
       expect(recv_msg).to be_nil
+      subject.conn.flush
       client.close
       sleep 0.1
       expect(recv_msg).to be_nil
@@ -84,7 +86,7 @@ RSpec.describe Xjz::WebUI::WebSocket do
       expect(events[1..-1].map { |e, f| [e, f.data] }.sort).to \
         eql(msgs[0..9].map { |m| [:message, m] })
       expect(12.times.map { recv_msg&.data }.sort_by(&:to_s)).to eql(
-        [nil] +  [{ type: "hello", data: "I'm XjzProxy server" }.to_json] +
+        [nil] + [{ type: "hello", data: "I'm XjzProxy server" }.to_json] +
         msgs[10..19].map { |v| { type: 'v', data: v }.to_json }
       )
     end

@@ -34,9 +34,13 @@ RSpec.configure do |config|
       remote.close rescue nil
       client.close rescue nil
       server.shutdown rescue nil
+      server.close
     end
 
     FakeIO.clear
+    Thread.list.each do |t|
+      t.kill if t != Thread.current
+    end
   end
 
   config.before(:each, server: true) do

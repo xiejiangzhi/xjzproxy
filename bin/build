@@ -1,0 +1,12 @@
+#! /usr/bin/env bash
+
+set -ex
+
+root="$(pwd)"
+
+# build webview
+go get github.com/zserge/webview
+cd lib/webview
+# output lib/webview/webview
+go build
+

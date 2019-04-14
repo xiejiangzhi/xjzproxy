@@ -8,6 +8,14 @@ config/*.pem
 /spec/examples.txt
 
 *.swp
+*.log
 
 .xjzapi
 xjzapidoc.md
+
+# C extensions
+# /lib/**/*.bundle
+# /lib/**/Makefile
+# /lib/**/*.o
+
+/lib/webview/webview

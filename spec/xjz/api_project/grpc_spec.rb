@@ -98,10 +98,10 @@ RSpec.describe Xjz::ApiProject::GRPC do
 
       m = Class.new { include GRPC::GenericService }
       subject.grpc.const_set("GxxxxService", m)
-      expect(subject.services.map(&:name)).to eql([
+      expect(subject.services.map(&:name).sort).to eql([
         "Xjz::ApiProject::GRPCParser::ParsedModule_#{id}::Hw::Greeter::Service",
         "Xjz::ApiProject::GRPCParser::ParsedModule_#{id}::GxxxxService"
-      ])
+      ].sort)
     end
   end
 

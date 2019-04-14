@@ -2,6 +2,8 @@ module Xjz
   class Resolver::WebUI
     attr_reader :req, :template_dir, :api_project
 
+    NOT_FOUND_RES = [{'Connection' => 'close'}, ["Not Found"], 404]
+
     def initialize(req, ap = nil)
       @api_project = ap
       @req = req
@@ -54,10 +56,10 @@ module Xjz
         if File.exist?(path)
           [{ 'content-type' => content_type }.compact, [File.read(path)], 200]
         else
-          [{}, ["Not Found"], 404]
+          NOT_FOUND_RES
         end
       else
-        [{}, ["Not Found"], 404]
+        NOT_FOUND_RES
       end
 
       if headers && body && status

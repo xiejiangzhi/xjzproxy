@@ -85,7 +85,7 @@ module Xjz
       loop do
         break if conn.closed?
         writeables << conn if writeables.empty? && @out_buffer.present?
-        rs, ws = IO.select(readables, writeables, nil, 0.1)
+        rs, ws = IO.select(readables, writeables, nil, 0.05)
         if rs.present?
           r = IOHelper.read_nonblock(conn) do |data|
             ws_parser << data

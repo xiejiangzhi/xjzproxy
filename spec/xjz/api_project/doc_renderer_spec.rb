@@ -90,7 +90,7 @@ RSpec.describe Xjz::ApiProject::DocRenderer do
     end
 
     it '#render_data should render json data of current project for partials' do
-      types = ap.data['types']
+      types = subject.project.data['types']
       allow(types['integer']).to receive(:generate).and_return(123)
       allow(types['string']).to receive(:generate).and_return('ssstring')
       allow(types['avatar']).to receive(:generate).and_return('https://xxx.com/path/to/1.png')
@@ -105,7 +105,7 @@ RSpec.describe Xjz::ApiProject::DocRenderer do
     end
 
     it '#render_data should render json data of current project for apis' do
-      types = ap.data['types']
+      types = subject.project.data['types']
       allow(types['integer']).to receive(:generate).and_return(123)
       allow(types['string']).to receive(:generate).and_return('ssstring')
       allow(types['avatar']).to receive(:generate).and_return('https://xxx.com/path/to/1.png')

@@ -6,6 +6,7 @@ RSpec.describe Xjz::ApiProject::Parser do
     it 'should convert to DataTypes' do
       r = subject.parse(raw_data)['types']
       r.each { |name, dt| expect(dt).to be_a(Xjz::ApiProject::DataType) }
+      expect(r.object_id).to_not eql(Xjz::ApiProject::DataType.default_types.object_id)
       expect(r['status'].raw_data).to eql(raw_data['types']['status'])
       expect(r['avatar'].raw_data).to eql(raw_data['types']['avatar'])
     end
