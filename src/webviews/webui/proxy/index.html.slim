@@ -1,5 +1,10 @@
-- server = $config.shared_data.app.server
-- if server.proxy_run?
-  = render 'webui/proxy/status.html'
-- else
+
+form.container
+  - if proxy_run?
+    = render 'webui/proxy/status.html'
+  - else
+    = render 'webui/proxy/edit_server.html'
+
+  hr
+
   = render 'webui/proxy/edit.html'

@@ -13,6 +13,14 @@ module Xjz
       end
     end
 
+    def server
+      $config.shared_data.app.server
+    end
+
+    def proxy_run?
+      server.proxy_run?
+    end
+
     def escape_html(str)
       Rack::Utils.escape_html(str)
     end

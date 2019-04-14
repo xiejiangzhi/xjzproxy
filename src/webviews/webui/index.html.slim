@@ -21,7 +21,7 @@ html
   body
     - current_tab = :proxy
     - feature_names = { proxy: 'Proxy', history: 'History', document: 'Document', report: 'Report' }
-    header#app_header.navbar.navbar-expand.navbar-light.bg-light
+    header#app_header.navbar.navbar-expand.navbar-light.bg-light.sticky-top
       a.navbar-brand  XJZProxy
       .navbar-collapse
         ul.navbar-nav.list-group.mr-auto role='tablist'
@@ -38,22 +38,32 @@ html
         form.form-inline
           - tracker = Xjz::Tracker.instance
           - total_reqs = tracker.history.count
+
+          .custom-control.custom-switch
+            input.custom-control-input[
+              type="checkbox" id='proxy_status_switch' checked=proxy_run? xjz-id='proxy.status'
+            ]
+            label class="custom-control-label" for="proxy_status_switch"
+
+          = render 'webui/proxy/_status_text.html', proxy_alive: proxy_run?
+          
+
+          span.mr-2 | 
+
           a.disabled.mr-2
             strong#navbar_total_requests = total_reqs
             |  Requests
 
           span.mr-2 | 
 
-          a.disabled.mr-2
+          a.disabled.mr-3
             - ms = total_reqs > 0 ? ((tracker.history.map(&:cost).sum / total_reqs) * 1000).to_i : 0
             strong#navbar_total_requests = ms
             |  ms/req
 
-          span.mr-2 | 
-
           a.btn.btn-warning.nav-text. xjz-id='history.clean_all' Reset
 
-    #app_body.tab-content
+    #app_body.tab-content.py-4
       - feature_names.each do |name, _|
         - fname = "f_#{name}"
         - page_name = "webui/#{name}/index.html"

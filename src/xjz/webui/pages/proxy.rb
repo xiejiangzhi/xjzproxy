@@ -1,14 +1,16 @@
 module Xjz
   WebUI::ActionRouter.register do
     namespace 'proxy' do
-      event 'start.click' do
-        $config.shared_data.app.server.start_proxy
-        send_msg('el.html', selector: '#f_proxy', html: render('webui/proxy/index.html'))
-      end
+      event 'status.change' do
+        if data['value']
+          $config.shared_data.app.server.start_proxy
+        else
+          $config.shared_data.app.server.stop_proxy
+        end
 
-      event 'stop.click' do
-        $config.shared_data.app.server.stop_proxy
         send_msg('el.html', selector: '#f_proxy', html: render('webui/proxy/index.html'))
+        proxy_status = render('webui/proxy/_status_text.html',)
+        send_msg('el.replace', selector: '#navbar_proxy_status_text', html: proxy_status)
       end
 
       event 'port.change' do

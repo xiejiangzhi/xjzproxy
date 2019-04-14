@@ -29,6 +29,9 @@
       case 'el.html':
         $(data.selector).html(data.html);
         break;
+      case 'el.replace':
+        $(data.selector).replaceWith(data.html);
+        break;
       case 'el.remove':
         $(data.selector).remove();
         break;
@@ -50,12 +53,26 @@
     },
 
     initEvents: function() {
-      this.$container.on('click', '[xjz-id]', this.formatEventCallback(function(evt, xjz_id) {
-        this.ws.sendMsg(xjz_id + '.' + evt.type)
-      }))
-      this.$container.on('change', '[xjz-id]', this.formatEventCallback(function(evt, xjz_id, $el) {
-        this.ws.sendMsg(xjz_id + '.' + evt.type, { value: $el.val() } )
-      }))
+      this.$container.on(
+        'click', '[xjz-id][xjz-bind~=click], a[xjz-id], button[xjz-id], .btn[xjz-id]',
+        this.formatEventCallback(function(evt, xjz_id) {
+          this.ws.sendMsg(xjz_id + '.' + evt.type)
+        })
+      )
+
+      this.$container.on(
+        'change', '[xjz-id][xjz-bind~=change], input[xjz-id], textarea[xjz-id], select[xjz-id]',
+        this.formatEventCallback(function(evt, xjz_id, $el) {
+          var el = $el[0]
+          var val = $el.attr('xjz-value');
+          if (val && val != ''){
+            // nothing
+          } else if (el.type == 'checkbox' || el.type == 'radio') { val = el.checked }
+          else { val = $el.val() }
+          this.ws.sendMsg(xjz_id + '.' + evt.type, { value: val } )
+        })
+      )
+
       this.$container.on('click', '[xjz-rpc]', this.formatEventCallback(function(evt, xjz_id, $el) {
         var rpc_data = $el.attr('xjz-rpc') + ',' + xjz_id;
         console.log("Invoke RPC '" + rpc_data + "'");

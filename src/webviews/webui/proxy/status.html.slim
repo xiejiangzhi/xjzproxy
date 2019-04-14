@@ -1,20 +1,22 @@
 - server = $config.shared_data.app.server
-.container
-  .row
-    .col-3 Proxy URL
-    .col-7
-      a href="http://#{server.proxy_addr}" = "http://#{server.proxy_addr}"
-    .col-2
-      a.btn.btn-light href='#' copy
+.row.form-group
+  label.col-3.col-form-label Proxy URL
+  .col-7.input-group
+    a.form-control href="http://#{server.proxy_addr}" = "http://#{server.proxy_addr}"
+    a.input-group-append href='#'
+      span.input-group-text Copy
 
-  .row
-    .col-3 Proxy Root CA URL
-    .col-7
-      - url = "http://#{server.proxy_addr}/root_ca.crt"
-      a href=url = url
-    .col-2
-      a.btn.btn-light href='#' copy
+.row.form-group
+  label.col-3.col-form-label Proxy Root CA URL
+  .col-7.input-group
+    - url = "http://#{server.proxy_addr}/root_ca.crt"
+    a.form-control href=url = url
+    a.input-group-append href='#'
+      span.input-group-text Copy
 
-  .row.justify-content-center
-    button.btn.btn-primary.btn-lg xjz-id='proxy.stop' Stop
+.row.form-group
+  label.col-3.col-form-label Private Key
+  .col-7
+    input.form-control type='text' value='Default' readonly=true
+
 

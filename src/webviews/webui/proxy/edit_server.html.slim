@@ -1,0 +1,27 @@
+- is_proxy_alive = $config.shared_data.app.server.proxy_run?
+
+.row.form-group
+  label.col-3.col-form-label Proxy Port
+  .col-7
+    input.form-control type='number' value=$config['proxy_port'] xjz-id='proxy.port' disabled=is_proxy_alive
+
+.row.mb-2
+  label.col-3.col-form-label Root CA
+  .col-7.input-group
+    - id = 'proxy-root_ca'
+    input.form-control[
+      type='text' value='Default' readonly=true id=id
+      xjz-id='proxy.root_ca' xjz-rpc='openfile' 
+    ]
+    label.input-group-append for=id
+      span.input-group-text Browser
+.row.mb-2
+  label.col-3.col-form-label Private Key
+  .col-7.input-group
+    - id = 'proxy-pkey'
+    input.form-control[
+      type='text' value='Default' readonly=true id=id
+      xjz-id='proxy.pkey' xjz-rpc='openfile'
+    ]
+    label.input-group-append for=id
+      span.input-group-text Browser

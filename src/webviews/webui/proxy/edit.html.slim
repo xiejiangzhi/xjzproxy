@@ -1,68 +1,35 @@
-form.container
-  .row.form-group
-    label.col-3.col-form-label Proxy Port
-    .col-7
-      input.form-control type='number' value=$config['proxy_port'] xjz-id='proxy.port'
+.row.form-group
+  label.col-3.col-form-label Proxy Mode
+  .col-7
+    - %w{projects all whitelist blacklist}.each do |mode|
+      - name = "proxy_mode_#{mode}"
+      .form-check.form-check-inline
+        input.form-check-input[
+          type='radio' name='proxy_mode' id=name
+          xjz-value=mode xjz-id='proxy.mode' checked=(mode == $config['proxy_mode'])
+        ]
+        label.form-check-label for=name = mode.titleize
 
-  .row.form-group
-    label.col-3.col-form-label Root CA
-    .col-7.input-group
-      - id = 'proxy-root_ca'
-      input.form-control[
-        type='text' value='Default' readonly=true id=id
-        xjz-id='proxy.root_ca' xjz-rpc='openfile'
-      ]
-      label.input-group-append for=id
-        span.input-group-text Browser
-
-  .row.form-group
-    label.col-3.col-form-label Private Key
-    .col-7.input-group
-      - id = 'proxy-pkey'
-      input.form-control[
-        type='text' value='Default' readonly=true id=id
-        xjz-id='proxy.pkey' xjz-rpc='openfile'
-      ]
-      label.input-group-append for=id
-        span.input-group-text Browser
-
-  .row.form-group
-    label.col-3.col-form-label Proxy Mode
-    .col-7
-      - %w{projects all whitelist blacklist}.each do |mode|
-        - name = "proxy_mode_#{mode}"
-        .form-check.form-check-inline
-          - if mode == $config['proxy_mode']
-            input.form-check-input[
-              type='radio' name='proxy_mode' id=name value=mode
-              xjz-id='proxy.mode' checked=true
-            ]
-          - else
-            input.form-check-input type='radio' name='proxy_mode' id=name xjz-id='proxy.mode' value=mode
-          label.form-check-label for=name = mode.titleize
-
-  .row.form-group
-    label.col-3.col-form-label Whitelist
-    .col-7
-      - $config['host_whitelist'].each_with_index do |host, i|
-        = render 'webui/proxy/_host_input.html', type: 'whost', index: i, val: host
-      = render 'webui/proxy/_host_input.html', type: 'whost', index: 'last', val: ''
+.row.form-group
+  label.col-3.col-form-label Whitelist
+  .col-7
+    - $config['host_whitelist'].each_with_index do |host, i|
+      = render 'webui/proxy/_host_input.html', type: 'whost', index: i, val: host
+    = render 'webui/proxy/_host_input.html', type: 'whost', index: 'last', val: ''
 
 
-  .row.form-group
-    label.col-3.col-form-label Blacklist
-    .col-7
-      - $config['host_blacklist'].each_with_index do |host, i|
-        = render 'webui/proxy/_host_input.html', type: 'bhost', index: i, val: host
-      = render 'webui/proxy/_host_input.html', type: 'bhost', index: 'last', val: ''
+.row.form-group
+  label.col-3.col-form-label Blacklist
+  .col-7
+    - $config['host_blacklist'].each_with_index do |host, i|
+      = render 'webui/proxy/_host_input.html', type: 'bhost', index: i, val: host
+    = render 'webui/proxy/_host_input.html', type: 'bhost', index: 'last', val: ''
 
-  .row.form-group
-    label.col-3.col-form-label Projects
-    .col-7
-      - $config['projects'].each_with_index do |path, i|
-        = render 'webui/proxy/_project_input.html', type: 'project', index: i, val: path
-      = render 'webui/proxy/_project_input.html', type: 'project', index: 'last', val: ''
+hr
 
-  .row.justify-content-center
-    button.btn.btn-primary.btn-lg xjz-id='proxy.start' Start
-
+.row.form-group
+  label.col-3.col-form-label Projects
+  .col-7
+    - $config['projects'].each_with_index do |path, i|
+      = render 'webui/proxy/_project_input.html', type: 'project', index: i, val: path
+    = render 'webui/proxy/_project_input.html', type: 'project', index: 'last', val: ''
