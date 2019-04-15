@@ -8,8 +8,10 @@ html
     title XJZ Proxy
 
     script type='text/javascript' src='/static/jquery.min.js'
-    script type='text/javascript' src='/static/popper.min.js'
     script type='text/javascript' src='/static/bootstrap.min.js'
+    script type='text/javascript' src='/static/noty.min.js'
+    script type='text/javascript' src='/static/clipboard.min.js'
+    link rel='stylesheet' href='/static/noty.min.css'
     link rel='stylesheet' href='/static/bootstrap.min.css'
 
     script type='text/javascript' src='/static/xjz_websocket.js'
@@ -71,5 +73,3 @@ html
         - css_class = (is_active ? 'show active' : '')
         .tab-pane.fade id=fname class="#{fname} #{css_class}" role='tabpanel'
           = render page_name
-        
-    .alerts.fixed-bottom#alerts

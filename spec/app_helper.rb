@@ -24,6 +24,13 @@ end
 
 WebMock.disable_net_connect!
 
+$server = Xjz::Server.new
+$server.start
+$webui = Xjz::WebUI.new($server)
+
+$config.shared_data.app.server = $server
+$config.shared_data.app.webui = $webui
+
 RSpec.configure do |config|
   config.include Support::TimeHelper
   config.include Support::NetworkHelper
@@ -41,16 +48,7 @@ RSpec.configure do |config|
     Thread.list.each do |t|
       t.kill if t != Thread.current
     end
-  end
-
-  config.before(:each, server: true) do
-    server = Xjz::Server.new
-    server.start
-    $config.shared_data.app.server = server
-    $config.shared_data.app.webui = Xjz::WebUI.new(server)
-  end
-  config.after(:each, server: true) do
-    $config.shared_data.app.server.stop
+    $server.proxy_thread_pool.kill
   end
 
   config.before(:each, log: false) do
@@ -62,9 +60,5 @@ RSpec.configure do |config|
     Xjz::Logger.instance.instance_eval do
       @logger.level = Logger::ERROR
     end
-  end
-
-  config.before(:each, webpage: true) do
-    allow($config.shared_data.app).to receive(:server).and_return(Xjz::Server.new)
   end
 end

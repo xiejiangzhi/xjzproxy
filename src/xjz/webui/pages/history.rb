@@ -13,8 +13,7 @@ module Xjz
 
       event 'clean_all.click' do
         Tracker.instance.clean_all
-        total_reqs = Xjz::Tracker.instance.history.count
-        send_msg('el.html', selector: '#navbar_total_requests', html: total_reqs)
+        send_msg('el.html', selector: '#navbar_total_requests', html: 0)
         send_msg(
           'el.html',
           selector: '#f_history',

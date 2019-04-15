@@ -20,6 +20,29 @@ module Xjz
       event 'mode.change' do
         $config['proxy_mode'] = data['value']
       end
+
+      event 'host_whitelist.change' do
+        $config['host_whitelist'] = data['value'].to_s.strip.lines.map(&:strip)
+      end
+
+      event(/^project\.(?<path_id>\d+)\.del_btn\.click$/) do
+        path_id = match_data[:path_id].to_i
+        path = $config['projects'].find { |path| path.object_id == path_id }
+        $config['projects'].delete path
+        $config['.api_projects'].delete_if { |ap| ap.repo_path == path }
+        send_msg('el.remove', selector: "#proxy_project_#{path_id}")
+      end
+
+      event 'new_project.change' do
+        path = data['value']
+        $config['projects'] << path
+        $config['.api_projects'] << ApiProject.new(path)
+        send_msg(
+          'el.append',
+          selector: "#proxy_project_list",
+          html: render('webui/proxy/_project_item.html', path: path)
+        )
+      end
     end
   end
 end

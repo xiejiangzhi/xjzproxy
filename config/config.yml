@@ -21,18 +21,10 @@ default: &default
     - ../xjzapidoc_examples/example3
 
   # proxy_mode: all # proxy any host
-  proxy_mode: projects # only proxy projects, directly forward for other hosts
-  # proxy_mode: whitelist # projects + whitelist
-  # proxy_mode: blacklist # projects + blacklist
+  proxy_mode: whitelist # proxy projects and filter by rules
 
   host_whitelist:
-    - xjz.pw
-
-  host_blanklist:
-    - hello.com
-
-  webui_whitelist:
-    - 127.0.0.1
+    - xjz.pw # proxy host with prefix +
 
 dev:
   <<: *default
@@ -52,9 +44,8 @@ test:
   projects:
     - ./spec/files/project.yml
 
-  proxy_mode: projects
+  proxy_mode: whitelist
   host_whitelist: [ xjz.com ]
-  host_blacklist: [ hello.com ]
 
   template_dir: ./spec/files/webviews
 

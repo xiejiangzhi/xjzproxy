@@ -13,7 +13,6 @@ module Xjz
       projects: [:optional, NilClass, [[String]] ],
       proxy_mode: String,
       host_whitelist: [:optional, NilClass, [[String]] ],
-      host_blacklist: [:optional, NilClass, [[String]] ],
       template_dir: [:optional, NilClass, String]
     }.stringify_keys
 
@@ -39,7 +38,7 @@ module Xjz
 
     def shared_data
       @shared_data ||= build_obj(
-        app: build_obj([:server, :webui], readonly: false),
+        app: build_obj([:server, :webui, :cert_manager], readonly: false),
         webui: build_obj([:ws], readonly: false)
       )
     end
@@ -55,7 +54,6 @@ module Xjz
     def data
       @data ||= raw_data.slice(*SCHEMA.keys).deep_dup.tap do |r|
         r['host_whitelist'] ||= []
-        r['host_blacklist'] ||= []
         r['logger_level'] ||= {}
         r['alpn_protocols'] ||= %w{h2 http/1.1}
       end

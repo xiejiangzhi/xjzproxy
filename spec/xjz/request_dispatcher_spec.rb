@@ -59,25 +59,6 @@ RSpec.describe Xjz::RequestDispatcher do
       $config['proxy_mode'] = 'projects'
     end
 
-    describe 'projects mode' do
-      before :each do
-        $config['proxy_mode'] = 'projects'
-      end
-
-      it 'should forward if host is not in projects' do
-        init_checker(fr, 2)
-        subject.call(env)
-        env['HTTP_HOST'] = 'xjz.com'
-        subject.call(env)
-      end
-
-      it 'should process if host is a api project' do
-        init_checker(h1r, 1, $config['.api_projects'][0])
-        env['HTTP_HOST'] = 'xjz.pw'
-        subject.call(env)
-      end
-    end
-
     describe 'whitelist mode' do
       before :each do
         $config['proxy_mode'] = 'whitelist'
@@ -101,27 +82,6 @@ RSpec.describe Xjz::RequestDispatcher do
         init_checker(fr)
         env['HTTP_HOST'] = 'xjz123.com'
         env['REQUEST_METHOD'] = 'post'
-        subject.call(env)
-      end
-    end
-
-    describe 'blacklist mode' do
-      before :each do
-        $config['proxy_mode'] = 'blacklist'
-      end
-
-      it 'should forward conn if host in blacklist' do
-        init_checker(fr)
-        env['HTTP_HOST'] = 'hello.com'
-        subject.call(env)
-      end
-
-      it 'should process other host' do
-        init_checker(h1r)
-        init_checker(h1r, 1, $config['.api_projects'][0])
-        env['HTTP_HOST'] = 'xjz123.com'
-        subject.call(env)
-        env['HTTP_HOST'] = 'xjz.pw'
         subject.call(env)
       end
     end

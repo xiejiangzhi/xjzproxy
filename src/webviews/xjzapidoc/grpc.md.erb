@@ -3,7 +3,7 @@
 **Input `<%= input_name %>`**
 
 % if rpc_input
-<%= render 'xjzapidoc/data.md', data: rpc_input %>
+<%= render 'xjzapidoc/_data.md', data: rpc_input %>
 % else
 None
 % end
@@ -12,7 +12,7 @@ None
 **Output `<%= output_name %>`**
 
 % if rpc_output
-<%= render 'xjzapidoc/data.md', data: rpc_output %>
+<%= render 'xjzapidoc/_data.md', data: rpc_output %>
 % else
 None
 % end

@@ -1,35 +1,36 @@
+- proxy_mode = $config['proxy_mode']
 .row.form-group
   label.col-3.col-form-label Proxy Mode
   .col-7
-    - %w{projects all whitelist blacklist}.each do |mode|
+    - %w{all whitelist}.each do |mode|
       - name = "proxy_mode_#{mode}"
       .form-check.form-check-inline
         input.form-check-input[
           type='radio' name='proxy_mode' id=name
-          xjz-value=mode xjz-id='proxy.mode' checked=(mode == $config['proxy_mode'])
+          data-target='#proxy_host_whitelist' xjz-action='collapse'
+          data-args=escape_json(mode == 'all' ? [:hide] : [:show])
+          data-value=mode xjz-id='proxy.mode' checked=(mode == proxy_mode)
         ]
         label.form-check-label for=name = mode.titleize
 
-.row.form-group
+.row.form-group.collapse.fade#proxy_host_whitelist class=(proxy_mode == 'whitelist' ? 'show' : '')
   label.col-3.col-form-label Whitelist
   .col-7
-    - $config['host_whitelist'].each_with_index do |host, i|
-      = render 'webui/proxy/_host_input.html', type: 'whost', index: i, val: host
-    = render 'webui/proxy/_host_input.html', type: 'whost', index: 'last', val: ''
-
-
-.row.form-group
-  label.col-3.col-form-label Blacklist
-  .col-7
-    - $config['host_blacklist'].each_with_index do |host, i|
-      = render 'webui/proxy/_host_input.html', type: 'bhost', index: i, val: host
-    = render 'webui/proxy/_host_input.html', type: 'bhost', index: 'last', val: ''
+    small.form-text.text-muted.mb-1 Split hosts by line.
+    textarea.form-control rows='4' xjz-id='proxy.host_whitelist' = $config['host_whitelist'].join("\n")
 
 hr
 
 .row.form-group
   label.col-3.col-form-label Projects
   .col-7
-    - $config['projects'].each_with_index do |path, i|
-      = render 'webui/proxy/_project_input.html', type: 'project', index: i, val: path
-    = render 'webui/proxy/_project_input.html', type: 'project', index: 'last', val: ''
+    ul.list-group#proxy_project_list
+      - $config['projects'].each do |path|
+        = render 'webui/proxy/_project_item.html', path: path
+        
+    .input-group.my-2
+      input#proxy_new_project_val type='hidden' xjz-id='proxy.new_project'
+      button.btn.btn-info.ml-auto#proxy_add_project_btn[
+        type='button'
+        xjz-rpc='opendir' data-rpc-target='#proxy_new_project_val'
+      ] Add Project

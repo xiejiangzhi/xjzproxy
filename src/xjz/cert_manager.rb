@@ -16,6 +16,10 @@ module Xjz
       end
     end
 
+    def pkey_fingerprint
+      gen_fingerprint(pkey.to_der)
+    end
+
     def root_ca
       return @root_ca if @root_ca
 
@@ -37,6 +41,10 @@ module Xjz
         File.write(@ca_path, cert.to_pem)
         cert
       end
+    end
+
+    def root_ca_fingerprint
+      gen_fingerprint(root_ca.to_der)
     end
 
     def issue_cert(hostname)
@@ -66,6 +74,10 @@ module Xjz
         other_config.call(cert, ef) if other_config
         cert.sign(key, OpenSSL::Digest::SHA256.new)
       end
+    end
+
+    def gen_fingerprint(der_str)
+      OpenSSL::Digest::SHA1.hexdigest(der_str).scan(/../).join(':')
     end
   end
 end

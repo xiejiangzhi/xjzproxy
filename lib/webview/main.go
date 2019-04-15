@@ -14,10 +14,12 @@ func EvalCallback(w webview.WebView, name string, value string, userdata string)
 
 	w.Eval(fmt.Sprintf(`
     (function(){
-      if (!window.rpc) { return }
-      var cb = window.rpc.%s_cb
-      if (!cb) { return }
-      cb('%s', '%s')
+      var cb = window.rpc_cb;
+      if (!cb) {
+        console.error("Not found RPC callback window.rpc_cb")
+        return;
+      }
+      cb('%s', '%s', '%s')
     })()
   `, name, value, userdata))
 }
@@ -47,6 +49,9 @@ func handleRPC(w webview.WebView, data string) {
     path := w.Dialog(
       webview.DialogTypeOpen, webview.DialogFlagDirectory,
       "Select a directory", "")
+    EvalCallback(w, action, path, userdata)
+  case action == "savefile":
+    path := w.Dialog(webview.DialogTypeSave, 0, "Save file", "")
     EvalCallback(w, action, path, userdata)
   default:
     EvalCallback(w, "error", action, userdata)

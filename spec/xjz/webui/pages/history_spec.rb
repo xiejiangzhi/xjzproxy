@@ -13,7 +13,9 @@ RSpec.describe 'webui.history', webpage: true do
     msg = new_webmsg("history.detail.#{rt.object_id}.click")
     expect(msg).to receive(:render) \
       .with("webui/history/detail.html", request_tracker: rt).and_call_original
-    expect(msg).to receive(:send_msg).with('el.html', kind_of(Hash))
+    expect(msg).to receive(:send_msg).with(
+      'el.html', selector: '#history_detail', html: kind_of(String)
+    )
     web_router.call(msg)
   end
 
@@ -21,7 +23,12 @@ RSpec.describe 'webui.history', webpage: true do
     rt.finish(res)
     msg = new_webmsg("history.clean_all.click")
     expect(msg).to receive(:render).with("webui/history/index.html").and_call_original
-    expect(msg).to receive(:send_msg).with('el.html', kind_of(Hash))
+    expect(msg).to receive(:send_msg).with(
+      'el.html', selector: '#navbar_total_requests', html: 0
+    )
+    expect(msg).to receive(:send_msg).with(
+      'el.html', selector: '#f_history', html: kind_of(String)
+    )
     expect {
       web_router.call(msg)
     }.to change { tracker.history }.to([])

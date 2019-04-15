@@ -28,18 +28,13 @@ module Xjz
 
     def process_conn?(ap, req)
       case $config['proxy_mode']
-      when 'projects'
-        ap ? true : false
+      when 'all'
+        true # will process all
       when 'whitelist'
         (ap || $config['host_whitelist'].include?(req.host)) ? true : false
-      when 'blacklist'
-        !$config['host_blacklist'].include?(req.host)
-      when 'all'
-        true
-        # will process all
       else
-        Logger[:auto].error { "Invalid proxy mode #{$config['proxy_mode']}" }
-        false
+        Logger[:auto].error { "Invalid proxy mode #{$config['proxy_mode']}, use whitelist" }
+        (ap || $config['host_whitelist'].include?(req.host)) ? true : false
       end
     end
 

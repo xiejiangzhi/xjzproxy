@@ -36,7 +36,7 @@ module Xjz
       end
 
       def send_msg(type, data = nil)
-        page_manager.websocket.send_msg(type, data)
+        page_manager.websocket&.send_msg(type, data)
       end
 
       def render(*args)

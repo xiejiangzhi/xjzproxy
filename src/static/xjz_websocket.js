@@ -34,7 +34,6 @@
 
   function onMessage(evt, ws) {
     var msg = JSON.parse(evt.data);
-    console.log(evt);
     ws.emit('message', [msg.type, msg.data]);
   }
 

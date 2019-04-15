@@ -42,7 +42,7 @@ module Xjz
     end
 
     def self.cert_manager
-      @cert_manager ||= CertManager.new
+      $config.shared_data.app.cert_manager
     end
 
     def self.ssl_cert_cb(args)

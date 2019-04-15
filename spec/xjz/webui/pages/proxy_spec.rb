@@ -1,17 +1,34 @@
 RSpec.describe 'webui.proxy', webpage: true do
-  it 'start.click should start proxy' do
-    msg = new_webmsg('proxy.start.click')
+  before :each do
+    cdata = $config.data.deep_dup
+    allow($config).to receive(:data).and_return(cdata)
+  end
+
+  it 'status.change should start proxy if value true' do
+    msg = new_webmsg('proxy.status.change', 'value' => true)
     expect($config.shared_data.app.server).to receive(:start_proxy)
     expect(msg).to receive(:render).with("webui/proxy/index.html").and_call_original
-    expect(msg).to receive(:send_msg).with('el.html', kind_of(Hash))
+    expect(msg).to receive(:render).with("webui/proxy/_status_text.html").and_call_original
+    expect(msg).to receive(:send_msg).with(
+      'el.html', selector: '#f_proxy', html: kind_of(String)
+    )
+    expect(msg).to receive(:send_msg).with(
+      'el.replace', selector: '#navbar_proxy_status_text', html: kind_of(String)
+    )
     web_router.call(msg)
   end
 
-  it 'stop.click should stop proxy' do
-    msg = new_webmsg('proxy.stop.click')
+  it 'status.change should stop proxy if value = false' do
+    msg = new_webmsg('proxy.status.change', 'value' => false)
     expect($config.shared_data.app.server).to receive(:stop_proxy)
     expect(msg).to receive(:render).with("webui/proxy/index.html").and_call_original
-    expect(msg).to receive(:send_msg).with('el.html', kind_of(Hash))
+    expect(msg).to receive(:render).with("webui/proxy/_status_text.html").and_call_original
+    expect(msg).to receive(:send_msg).with(
+      'el.html', selector: '#f_proxy', html: kind_of(String)
+    )
+    expect(msg).to receive(:send_msg).with(
+      'el.replace', selector: '#navbar_proxy_status_text', html: kind_of(String)
+    )
     web_router.call(msg)
   end
 
@@ -27,5 +44,36 @@ RSpec.describe 'webui.proxy', webpage: true do
     expect {
       web_router.call(msg)
     }.to change { $config['proxy_mode'] }.to('all')
+  end
+
+  it 'host_whitelist change should update data' do
+    msg = new_webmsg('proxy.host_whitelist.change', 'value' => "xjz.com\nasdffdsa.com")
+    expect {
+      web_router.call(msg)
+    }.to change { $config['host_whitelist'] }.to(%w{xjz.com asdffdsa.com})
+  end
+
+  it 'project.xxx.del_btn.click should remove a project' do
+    pid = $config['projects'][0].object_id
+    msg = new_webmsg("proxy.project.#{pid}.del_btn.click")
+    expect(msg).to receive(:send_msg).with('el.remove', selector: "#proxy_project_#{pid}")
+    expect {
+      expect {
+        web_router.call(msg)
+      }.to change { $config['projects'] }.to([])
+    }.to change { $config['.api_projects'] }.to([])
+  end
+
+  it 'new_project.change should add a project' do
+    msg = new_webmsg("proxy.new_project.change", 'value' => '/path/to/poj')
+    expect(msg).to receive(:send_msg).with(
+      'el.append', selector: "#proxy_project_list", html: kind_of(String)
+    )
+    pojs = ["./spec/files/project.yml", "/path/to/poj"]
+    expect {
+      expect {
+        web_router.call(msg)
+      }.to change { $config['projects'] }.to(pojs)
+    }.to change { $config['.api_projects'].map(&:repo_path) }.to(pojs)
   end
 end

@@ -69,7 +69,9 @@ module Support
     end
 
     def new_webmsg(type, data = {})
-      Xjz::WebUI::PageManager::Message.new(type, data, double('page_manager'))
+      Xjz::WebUI::PageManager::Message.new(
+        type, data, $config.shared_data.app.webui.page_manager
+      )
     end
 
     def web_router

@@ -35,9 +35,9 @@
       case 'el.remove':
         $(data.selector).remove();
         break;
-      // case 'alert':
-      //   $('#alerts').append(data.html);
-      //   break;
+      case 'alert':
+        new this.notify(data.message, data.type)
+        break;
       case 'hello':
         break;
       default: 
@@ -45,14 +45,15 @@
       }
     },
 
-    initView: function(evt) {
-      console.log("Init View", evt)
+    initView: function() {
+      console.log("Init View")
 
       this.initEvents();
       this.initRPC();
     },
 
     initEvents: function() {
+      var that = this;
       this.$container.on(
         'click', '[xjz-id][xjz-bind~=click], a[xjz-id], button[xjz-id], .btn[xjz-id]',
         this.formatEventCallback(function(evt, xjz_id) {
@@ -64,7 +65,7 @@
         'change', '[xjz-id][xjz-bind~=change], input[xjz-id], textarea[xjz-id], select[xjz-id]',
         this.formatEventCallback(function(evt, xjz_id, $el) {
           var el = $el[0]
-          var val = $el.attr('xjz-value');
+          var val = $el.data('value');
           if (val && val != ''){
             // nothing
           } else if (el.type == 'checkbox' || el.type == 'radio') { val = el.checked }
@@ -73,30 +74,44 @@
         })
       )
 
-      this.$container.on('click', '[xjz-rpc]', this.formatEventCallback(function(evt, xjz_id, $el) {
-        var rpc_data = $el.attr('xjz-rpc') + ',' + xjz_id;
+      this.$container.on('click', '[xjz-rpc]', function(evt) {
+        var $el = $(evt.currentTarget);
+        var type = $el.attr('xjz-rpc')
+        var selector = $el[0].id;
+        if (selector) { selector = '#' + selector; }
+        else if ($el.attr('xjz-id')) { selector = '[xjz-id=' + $el.attr('xjz-id') + ']'; }
+        else { throw("Cannot find RPC element id, need 'id' and 'xjz-id' attributes") }
+
+        var rpc_data = type + ',' + selector;
         console.log("Invoke RPC '" + rpc_data + "'");
         window.external.invoke(rpc_data);
-      }))
+      })
 
-      // this.$container.on('click', '#app_header .nav-item', function(evt) {
-      //   console.log('asdf')
-      //   debugger
-      // })
+      this.$container.on('click', '[xjz-action]', function(evt) {
+        var $el = $(evt.currentTarget)
+        var action = $el.attr('xjz-action')
+        var args = $el.data('args') || []
+        var $target = $($el.data('target'))
+        $target[action].apply($target, args)
+      })
+
+      this.$container.on('click', '[xjz-notify]', function(evt) {
+        var $el = $(evt.currentTarget)
+        that.notify($el.attr('xjz-notify'), $el.data('notify-type'))
+      })
     },
 
     initRPC: function() {
-      var update_input_val_by_xjz_id = this.newRPCCallback(function(value, xjz_id) {
-        if (!value || value == '') { return }
-        $("[xjz-id='" + xjz_id + "']").val(value).change();
-      })
-
-      window.rpc = {
-        openfile_cb: update_input_val_by_xjz_id,
-        opendir_cb: update_input_val_by_xjz_id,
-        open_cb: update_input_val_by_xjz_id,
-        error: function(action, user_data) {
-          console.error("Invalid action: '" + action + "' with userdata '" + user_data + "'")
+      window.rpc_cb = function(type, value, selector) {
+        if (type == 'error') {
+          console.error("Invalid RPC invoke with user data '" + selector + "'")
+        } else {
+          console.log("RPC callback '" + value + "' with data '" + selector + "'");
+          if (!value || value == '') { return }
+          var $el = $(selector)
+          var $target = $el;
+          if ($el.data('rpc-target')) { $target = $($el.data('rpc-target')) }
+          $target.val(value).change();
         }
       }
     },
@@ -114,12 +129,14 @@
       }
     },
 
-    newRPCCallback: function(cb) {
-      var that = this;
-      return function(val, user_data) {
-        console.log("RPC callback '" + val + "' with data '" + user_data + "'");
-        cb.apply(that, [val, user_data]);
-      }
+    notify: function(text, type, delay) {
+      new window.Noty({
+        text: text,
+        type: type || 'info',
+        theme: 'bootstrap-v4',
+        timeout: delay || 5000,
+        layout: 'bottomRight'
+      }).show()
     }
   }
 

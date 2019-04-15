@@ -62,7 +62,8 @@ module Xjz
 
     def proxy_addr
       addr = proxy_socket.local_address
-      "#{addr.ip_address}:#{addr.ip_port}"
+      ip = (Socket.ip_address_list.detect { |intf| intf.ipv4_private? } || addr).ip_address
+      "#{ip}:#{addr.ip_port}"
     end
 
     def ui_addr

@@ -25,6 +25,10 @@ module Xjz
       Rack::Utils.escape_html(str)
     end
 
+    def escape_json(obj)
+      Rack::Utils.escape_html(obj.to_json)
+    end
+
     def base64_encode(str)
       Base64.encode64(str)
     end

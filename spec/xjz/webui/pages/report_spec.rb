@@ -9,10 +9,12 @@ RSpec.describe 'webui.report', webpage: true do
     allow(Xjz::Tracker).to receive(:instance).and_return(tracker)
   end
 
-  it 't_report.click should render report page' do
-    msg = new_webmsg("t_report.click")
+  it 'f_report_tab.click should render report page' do
+    msg = new_webmsg("f_report_tab.click")
     expect(msg).to receive(:render).with("webui/report/index.html").and_call_original
-    expect(msg).to receive(:send_msg).with('el.html', kind_of(Hash))
+    expect(msg).to receive(:send_msg).with(
+      'el.html', selector: '#f_report', html: kind_of(String)
+    )
     web_router.call(msg)
   end
 end

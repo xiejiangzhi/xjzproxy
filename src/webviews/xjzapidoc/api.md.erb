@@ -23,7 +23,7 @@
 % if api[name].present?
 **<%= name.titleize %>**
 
-<%= render 'xjzapidoc/data.md', data: api[name] %>
+<%= render 'xjzapidoc/_data.md', data: api[name] %>
 % end
 % end
 
@@ -32,7 +32,7 @@
 % if successes.present?
 **Success Response**
 
-<%= render 'xjzapidoc/data.md', data: successes[0] %>
+<%= render 'xjzapidoc/_data.md', data: successes[0] %>
 
 Example
 
@@ -46,7 +46,7 @@ Example
 % if errors.present?
 **Error Response**
 
-<%= render 'xjzapidoc/data.md', data: errors[0] %>
+<%= render 'xjzapidoc/_data.md', data: errors[0] %>
 
 Example
 

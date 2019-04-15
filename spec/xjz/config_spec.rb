@@ -4,7 +4,6 @@ RSpec.describe Xjz::Config do
   it '#data should return formatted data' do
     expect(config.data).to eql(
       "alpn_protocols" => ["h2", "http/1.1"],
-      "host_blacklist" => ['hello.com'],
       "host_whitelist" => ['xjz.com'],
       "key_path" => "tmp/key.pem",
       "logger_level" => { "default" => "debug", 'io' => 'info' },
@@ -12,7 +11,7 @@ RSpec.describe Xjz::Config do
       "projects" => ["./spec/files/project.yml"],
       "proxy_port" => 59898,
       "proxy_timeout" => 1,
-      "proxy_mode" => "projects",
+      "proxy_mode" => "whitelist",
       "root_ca_path" => "tmp/root_ca.pem",
       "template_dir" => "./spec/files/webviews"
     )
@@ -67,11 +66,9 @@ RSpec.describe Xjz::Config do
         io: info
       projects:
       - "./spec/files/project.yml"
-      proxy_mode: projects
+      proxy_mode: whitelist
       host_whitelist:
       - xjz.com
-      host_blacklist:
-      - hello.com
       template_dir: "./spec/files/webviews"
     YAML
     )

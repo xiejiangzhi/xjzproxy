@@ -7,6 +7,7 @@ RSpec.describe Xjz::CertManager do
     it 'should return RSA private key' do
       expect(subject.pkey).to be_a(OpenSSL::PKey::RSA)
       expect(subject.pkey.object_id).to eql(subject.pkey.object_id)
+      expect(subject.pkey_fingerprint).to match(/^\w{2}(:\w{2})+$/)
     end
 
     it 'should read key from file if key file is existed' do
@@ -50,6 +51,7 @@ RSpec.describe Xjz::CertManager do
         ["authorityKeyIdentifier", "keyid:#{key_id}\n", false],
         ["nsComment", "XjzProxy Generated Certificate", false]
       ])
+      expect(subject.root_ca_fingerprint).to match(/^\w{2}(:\w{2})+$/)
     end
 
     it 'should read root_ca from file if it is existed' do
