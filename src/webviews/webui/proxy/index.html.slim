@@ -1,10 +1,10 @@
+.row.justify-content-center
+  .col-10.py-4
+    - if proxy_run?
+      = render 'webui/proxy/status.html'
+    - else
+      = render 'webui/proxy/edit_server.html'
 
-.container
-  - if proxy_run?
-    = render 'webui/proxy/status.html'
-  - else
-    = render 'webui/proxy/edit_server.html'
+    hr
 
-  hr
-
-  = render 'webui/proxy/edit.html'
+    = render 'webui/proxy/edit.html'

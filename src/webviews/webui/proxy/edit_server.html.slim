@@ -2,7 +2,7 @@
 
 .row.form-group
   label.col-3.col-form-label Proxy Port
-  .col-7
+  .col-9
     input.form-control[
       type='number' value=$config['proxy_port'] disabled=is_proxy_alive
       min=1024 max=65535 xjz-id='proxy.port'
@@ -10,14 +10,14 @@
 
 .row.mb-2
   label.col-3.col-form-label Root CA
-  .col-7.input-group
+  .col-9.input-group
     - id = 'proxy-root_ca'
     .form-control-plaintext = $config.shared_data.app.cert_manager.root_ca_fingerprint.tr(':', '')
     span.btn.btn-light xjz-id='proxy.reset_root_ca' Regenerate
 
 .row.mb-2
   label.col-3.col-form-label Private Key
-  .col-7.input-group
+  .col-9.input-group
     - id = 'proxy-pkey'
     .form-control-plaintext = $config.shared_data.app.cert_manager.pkey_fingerprint.tr(':', '')
     span.btn.btn-light xjz-id='proxy.reset_pkey' Regenerate

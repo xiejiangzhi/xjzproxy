@@ -4,13 +4,8 @@ module Xjz
       Helper::Webview.render(name, vars, [self])
     end
 
-    def history_group_each(&block)
-      Xjz::Tracker.instance.history.group_by do |rt|
-        req = rt.request
-        [req.host, req.port].join(':')
-      end.each do |host, rts|
-        block.call(host, rts)
-      end
+    def auto_cut_str(str, len)
+      str.length > len ? (str[0...(len - 3)] + '...') : str
     end
 
     def server

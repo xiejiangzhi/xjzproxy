@@ -65,7 +65,7 @@ html
 
           a.btn.btn-warning.nav-text. xjz-id='history.clean_all' Reset
 
-    #app_body.tab-content.py-4
+    #app_body.tab-content.container-fluid
       - feature_names.each do |name, _|
         - fname = "f_#{name}"
         - page_name = "webui/#{name}/index.html"

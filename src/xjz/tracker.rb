@@ -29,7 +29,7 @@ module Xjz
   end
 
   class RequestTracker
-    attr_reader :request, :response, :action_list, :action_hash
+    attr_reader :request, :response, :action_list, :action_hash, :error_msg
 
     def initialize(request, auto_start: true)
       @request = request
@@ -57,6 +57,11 @@ module Xjz
     def finish(response)
       track 'finish'
       @response = response
+    end
+
+    def error(msg)
+      track 'error'
+      @error_msg = msg
     end
 
     def start_at

@@ -57,7 +57,7 @@ module Xjz
       end
       res
     ensure
-      res ? tracker.finish(res) : tracker.finish('error') if tracker
+      res ? tracker.finish(res) : tracker.error('error') if tracker
     end
 
     def close

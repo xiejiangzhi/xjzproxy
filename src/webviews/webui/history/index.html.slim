@@ -1,24 +1,39 @@
-.row
-  .col-3 style='border-right: 1px solid'
+.row.flex-nowrap
+  - h_header = '56px'
+  .col-3.border-right.px-0.sticky-top[
+    style=("height: calc(100vh - #{h_header}); overflow-y: auto;" + "overflow-x: hidden; z-index: 999; top: #{h_header};")
+  ]
+    ul.list-group.list-group-flush.mr-2
+      - Xjz::Tracker.instance.history.each do |rt|
+        - req = rt.request
+        - res = rt.response
+        - mb_cls = %{POST PUT PATCH DELETE}.include?(req.http_method) ? 'badge-primary' : 'badge-info'
 
-    - history_group_each do |host, rts|
-      - rt_id = "rt-#{host}".gsub(/[^\w]+/i, '_')
+        - if res
+          - item_cls = '' if res.code < 300
+          - item_cls ||= 'list-group-item-warning' if res.code < 400
+          - item_cls ||= 'list-group-item-danger'
+        - elsif rt.error_msg
+          - item_cls = 'list-group-item-danger'
+        - else
+          - item_cls = 'list-group-item-dark'
 
-      .card
-        .card-header[
-          data-toggle='collapse' data-target="##{rt_id}" aria-expanded='false' aria-controls=rt_id 
-        ] = host
+        li.list-group-item.p-0[
+          class=item_cls style='cursor: pointer;'
+          xjz-id="history.detail.#{rt.object_id}" xjz-bind='click'
+        ]
+          .row.mx-0.pl-1.p-0.d-flex
+            .left.mr-auto
+              span.align-middle = auto_cut_str(req.host, 27)
+            .right
+              - req_cost = rt.cost
+              - if req_cost < 10
+                span.badge.badge-light.badge-pill.align-middle = "#{(req_cost * 1000).to_i} ms"
+              - else
+                span.badge.badge-light.badge-pill.align-middle = "#{req_cost.to_i} s"
 
-      .collapse id=rt_id
-        .card-body
-          .list-group
-            - rts.each do |rt|
-              - req = rt.request
-              - res = rt.response
-              a.list-group-item.list-group-item-action[
-                xjz-id="history.detail.#{rt.object_id}"
-              ]= "#{req.http_method.upcase} #{req.path}"
-              span = "#{rt.start_at.strftime("%H:%M:%S.%L")}"
-              span = "#{rt.cost.round(3)}s"
+          .pl-1
+            span.badge.mr-2.align-middle class=mb_cls = req.http_method.upcase
+            span.align-middle = auto_cut_str(req.path, 25)
 
-  .col-9#history_detail
+  #history_detail.col-9 style='overflow-x: hidden;'
