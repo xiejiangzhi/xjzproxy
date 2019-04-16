@@ -56,8 +56,10 @@
       var that = this;
       this.$container.on(
         'click', '[xjz-id][xjz-bind~=click], a[xjz-id], button[xjz-id], .btn[xjz-id]',
-        this.formatEventCallback(function(evt, xjz_id) {
-          this.ws.sendMsg(xjz_id + '.' + evt.type)
+        this.formatEventCallback(function(evt, xjz_id, $el) {
+          this.ws.sendMsg(xjz_id + '.' + evt.type, {
+            name: $el.data('name') || $el.attr('name')
+          })
         })
       )
 
@@ -70,7 +72,9 @@
             // nothing
           } else if (el.type == 'checkbox' || el.type == 'radio') { val = el.checked }
           else { val = $el.val() }
-          this.ws.sendMsg(xjz_id + '.' + evt.type, { value: val } )
+          this.ws.sendMsg(xjz_id + '.' + evt.type, {
+            value: val, name: $el.data('name') || $el.attr('name')
+          })
         })
       )
 

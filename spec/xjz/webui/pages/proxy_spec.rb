@@ -76,4 +76,30 @@ RSpec.describe 'webui.proxy', webpage: true do
       }.to change { $config['projects'] }.to(pojs)
     }.to change { $config['.api_projects'].map(&:repo_path) }.to(pojs)
   end
+
+  fit 'alpn_protocol.change update alpn protocols' do
+    msg = new_webmsg("proxy.alpn_protocol.change", 'value' => false, 'name' => 'h2')
+    expect(Xjz::Resolver::SSL).to receive(:reset_certs)
+    expect {
+      web_router.call(msg)
+    }.to change { $config['alpn_protocols'] }.to(['http/1.1'])
+
+    msg = new_webmsg("proxy.alpn_protocol.change", 'value' => false, 'name' => 'http/1.1')
+    expect(Xjz::Resolver::SSL).to receive(:reset_certs)
+    expect {
+      web_router.call(msg)
+    }.to change { $config['alpn_protocols'] }.to([])
+
+    msg = new_webmsg("proxy.alpn_protocol.change", 'value' => true, 'name' => 'http/1.1')
+    expect(Xjz::Resolver::SSL).to receive(:reset_certs)
+    expect {
+      web_router.call(msg)
+    }.to change { $config['alpn_protocols'] }.to(['http/1.1'])
+
+    msg = new_webmsg("proxy.alpn_protocol.change", 'value' => true, 'name' => 'http/1.1')
+    expect(Xjz::Resolver::SSL).to receive(:reset_certs)
+    expect {
+      web_router.call(msg)
+    }.to_not change { $config['alpn_protocols'] }
+  end
 end

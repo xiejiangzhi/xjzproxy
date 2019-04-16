@@ -43,6 +43,16 @@ module Xjz
           html: render('webui/proxy/_project_item.html', path: path)
         )
       end
+
+      event 'alpn_protocol.change' do
+        if data['value']
+          $config['alpn_protocols'] << data['name']
+        else
+          $config['alpn_protocols'].delete data['name']
+        end
+        $config['alpn_protocols'].uniq!
+        Resolver::SSL.reset_certs
+      end
     end
   end
 end

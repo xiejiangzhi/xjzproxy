@@ -19,6 +19,19 @@
     small.form-text.text-muted.mb-1 Split hosts by line.
     textarea.form-control rows='4' xjz-id='proxy.host_whitelist' = $config['host_whitelist'].join("\n")
 
+.row.form-group
+  label.col-3.col-form-label ALPN http2
+  .col-7
+    - [['h2', 'HTTP2'], ['http/1.1', 'HTTP/1.1']].each do |protocol, title|
+      - is_open = $config['alpn_protocols'].include?(protocol)
+      - escaped_pstr = protocol.gsub(/[^\w]/, '_')
+      - id = "proxy_alpn_#{escaped_pstr}"
+      .form-check.form-check-inline
+        input.form-check-input[
+          id=id type='checkbox' checked=is_open data-name=protocol
+          xjz-id='proxy.alpn_protocol'
+        ]
+        label.form-check-label for=id = title
 hr
 
 .row.form-group
