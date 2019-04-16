@@ -1,30 +1,43 @@
 - req = request_tracker.request
 - res = request_tracker.response
 
-h4 Request
-.request
-  h5 General
-  = render('webui/_key_val.html', data: { method: req.http_method, url: req.url })
+ul.nav.nav-tabs.sticky-top[
+  style="top: 56px;"
+]
+  li.nav-item
+    a.nav-link.active href='#rt_headers' Headers
+  li.nav-item
+    a.nav-link href='#rt_preview' Preview
+  li.nav-item
+    a.nav-link href='#rt_res' Response
+  li.nav-item
+    a.nav-link href='#rt_time' Timing
 
-  h5 Header
-  = render('webui/_key_val.html', data: req.headers)
+.detail style='overflow-x: hidden;'
+  h4 Request
+  .request
+    h5 General
+    = render('webui/_key_val.html', data: { method: req.http_method, url: req.url })
 
-  h5 Body
-  .container = Rack::Utils.escape_html(req.body)
-
-- if res
-  hr
-  h
-
-  h4 Response
-  .response
     h5 Header
-    = render('webui/_key_val.html', data: res.raw_headers)
+    = render('webui/_key_val.html', data: req.headers)
 
     h5 Body
-    .container
-    - case res.content_type
-    - when /image/
-      img src=base64_url(res.decoded_body, res.content_type)
-    - else
-      = escape_html(res.decoded_body)
+    .container = Rack::Utils.escape_html(req.body)
+
+  - if res
+    hr
+    h
+
+    h4 Response
+    .response
+      h5 Header
+      = render('webui/_key_val.html', data: res.raw_headers)
+
+      h5 Body
+      .container
+      - case res.content_type
+      - when /image/
+        img src=base64_url(res.decoded_body, res.content_type)
+      - else
+        = escape_html(res.decoded_body)

@@ -1,7 +1,7 @@
 .row.flex-nowrap
   - h_header = '56px'
   .col-3.border-right.px-0.sticky-top[
-    style=("height: calc(100vh - #{h_header}); overflow-y: auto;" + "overflow-x: hidden; z-index: 999; top: #{h_header};")
+    style="height: calc(100vh - #{h_header}); overflow-y: auto; overflow-x: hidden; top: #{h_header};"
   ]
     ul.list-group.list-group-flush.mr-2
       - Xjz::Tracker.instance.history.each do |rt|
@@ -36,4 +36,4 @@
             span.badge.mr-2.align-middle class=mb_cls = req.http_method.upcase
             span.align-middle = auto_cut_str(req.path, 25)
 
-  #history_detail.col-9 style='overflow-x: hidden;'
+  #history_detail.col-9
