@@ -1,9 +1,9 @@
-.row.flex-nowrap
+.row
   - h_header = '56px'
   .col-3.border-right.px-0.sticky-top[
     style="height: calc(100vh - #{h_header}); overflow-y: auto; overflow-x: hidden; top: #{h_header}; z-index: 999;"
   ]
-    #history_rt_list_group.list-group.list-group-flush.mr-2 role='tablist'
+    #history_rt_list_group.list-group.list-group-flush role='tablist'
       - Xjz::Tracker.instance.history.each do |rt|
         = render 'webui/history/_request_tracker_tab.html', request_tracker: rt
   #history_detail.col-9

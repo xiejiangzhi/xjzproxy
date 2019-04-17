@@ -1,8 +1,11 @@
 .row
-  .col-3 style='border-right: 1px solid'
-    ul.list-group
-    - $config['.api_projects'].each do |ap|
-      li.list-group-item xjz-id="document.detail_btn.#{ap.object_id}" = ap.repo_path
+  - h_header = '56px'
+  .col-3.border-right.px-0.sticky-top[
+    style="height: calc(100vh - #{h_header}); overflow-y: auto; overflow-x: hidden; top: #{h_header}; z-index: 999;"
+  ]
+    #document_list_group.list-group.list-group-flush role='tablist'
+      - $config['.api_projects'].each do |ap|
+        = render 'webui/document/_doc_tab.html', ap: ap
 
-  .col-9#document_detail
+  #document_detail.col-9
 

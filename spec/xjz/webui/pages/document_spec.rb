@@ -1,8 +1,8 @@
 RSpec.describe 'webui.document', webpage: true do
   let(:ap) { $config['.api_projects'][0] }
 
-  it 'detail_btn.xxx.click should render detail' do
-    msg = new_webmsg("document.detail_btn.#{ap.object_id}.click")
+  it 'detail_tab.xxx.click should render detail' do
+    msg = new_webmsg("document.detail_tab.#{ap.object_id}.click")
     dr = double('doc_renderer', render: true)
     expect(Xjz::ApiProject::DocRenderer).to receive(:new).with(ap).and_return(dr)
     expect(dr).to receive(:render).and_return('## doc')
