@@ -1,39 +1,9 @@
 .row.flex-nowrap
   - h_header = '56px'
   .col-3.border-right.px-0.sticky-top[
-    style="height: calc(100vh - #{h_header}); overflow-y: auto; overflow-x: hidden; top: #{h_header};"
+    style="height: calc(100vh - #{h_header}); overflow-y: auto; overflow-x: hidden; top: #{h_header}; z-index: 999;"
   ]
-    ul.list-group.list-group-flush.mr-2
+    #history_rt_list_group.list-group.list-group-flush.mr-2 role='tablist'
       - Xjz::Tracker.instance.history.each do |rt|
-        - req = rt.request
-        - res = rt.response
-        - mb_cls = %{POST PUT PATCH DELETE}.include?(req.http_method) ? 'badge-primary' : 'badge-info'
-
-        - if res
-          - item_cls = '' if res.code < 300
-          - item_cls ||= 'list-group-item-warning' if res.code < 400
-          - item_cls ||= 'list-group-item-danger'
-        - elsif rt.error_msg
-          - item_cls = 'list-group-item-danger'
-        - else
-          - item_cls = 'list-group-item-dark'
-
-        li.list-group-item.p-0[
-          class=item_cls style='cursor: pointer;'
-          xjz-id="history.detail.#{rt.object_id}" xjz-bind='click'
-        ]
-          .row.mx-0.pl-1.p-0.d-flex
-            .left.mr-auto
-              span.align-middle = auto_cut_str(req.host, 27)
-            .right
-              - req_cost = rt.cost
-              - if req_cost < 10
-                span.badge.badge-light.badge-pill.align-middle = "#{(req_cost * 1000).to_i} ms"
-              - else
-                span.badge.badge-light.badge-pill.align-middle = "#{req_cost.to_i} s"
-
-          .pl-1
-            span.badge.mr-2.align-middle class=mb_cls = req.http_method.upcase
-            span.align-middle = auto_cut_str(req.path, 25)
-
+        = render 'webui/history/_request_tracker_tab.html', request_tracker: rt
   #history_detail.col-9

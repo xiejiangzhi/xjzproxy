@@ -23,7 +23,7 @@ module Xjz
     def track_req(*args)
       RequestTracker.new(*args).tap do |rt|
         @history << rt
-        $config.shared_data.app.webui.emit_message('new_request', rt)
+        $config.shared_data.app.webui.emit_message('tracker.new_request', rt: rt)
       end
     end
   end
@@ -51,17 +51,18 @@ module Xjz
       end
       @action_list << [name, r]
       @action_hash[name] = r
+      $config.shared_data.app.webui.emit_message('tracker.update_request', rt: self)
       true
     end
 
     def finish(response)
-      track 'finish'
       @response = response
+      track 'finish'
     end
 
     def error(msg)
-      track 'error'
       @error_msg = msg
+      track 'error'
     end
 
     def start_at

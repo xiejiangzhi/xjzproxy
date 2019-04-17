@@ -17,6 +17,7 @@ RSpec.describe 'webui.history', webpage: true do
       'el.html', selector: '#history_detail', html: kind_of(String)
     )
     web_router.call(msg)
+    expect(msg.session[:current_rt]).to eql(rt)
   end
 
   it 'clean_all.click should reset history' do
@@ -32,5 +33,42 @@ RSpec.describe 'webui.history', webpage: true do
     expect {
       web_router.call(msg)
     }.to change { tracker.history }.to([])
+  end
+
+  describe 'server.tracker' do
+    it 'new_request should update status bar' do
+      msg = new_webmsg("server.tracker.new_request", rt: rt)
+      allow(Xjz::Tracker.instance.history).to receive(:count).and_return(321)
+      expect(msg).to receive(:send_msg) \
+        .with('el.html', selector: '#navbar_total_requests', html: 321)
+      expect(msg).to receive(:render) \
+        .with('webui/history/_request_tracker_tab.html', request_tracker: rt).and_return('htmlxxx')
+      expect(msg).to receive(:send_msg) \
+        .with('el.append', selector: '#history_rt_list_group', html: 'htmlxxx')
+      web_router.call(msg)
+    end
+
+    it 'update_request should tab' do
+      msg = new_webmsg("server.tracker.update_request", rt: rt)
+      expect(msg).to receive(:render) \
+        .with('webui/history/_request_tracker_tab.html', request_tracker: rt).and_return('htmlxxx')
+      expect(msg).to receive(:send_msg) \
+        .with('el.replace', selector: "#history_rt_tab_#{rt.object_id}", html: 'htmlxxx')
+      web_router.call(msg)
+    end
+
+    it 'update_request should tab and detail if rt is current rt' do
+      msg = new_webmsg("server.tracker.update_request", rt: rt)
+      msg.session[:current_rt] = rt
+      expect(msg).to receive(:render) \
+        .with('webui/history/_request_tracker_tab.html', request_tracker: rt).and_return('htmlxxx')
+      expect(msg).to receive(:send_msg) \
+        .with('el.replace', selector: "#history_rt_tab_#{rt.object_id}", html: 'htmlxxx')
+      expect(msg).to receive(:render) \
+        .with('webui/history/detail.html', request_tracker: rt).and_return('htmlyyy')
+      expect(msg).to receive(:send_msg) \
+        .with('el.html', selector: "#history_detail", html: 'htmlyyy')
+      web_router.call(msg)
+    end
   end
 end

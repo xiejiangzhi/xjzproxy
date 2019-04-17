@@ -1,10 +1,11 @@
 module Xjz
   class WebUI::PageManager
-    attr_reader :websocket, :action_router
+    attr_reader :websocket, :action_router, :session
 
     def initialize
       @websocket = nil
       @action_router = WebUI::ActionRouter.default
+      @session = {}
     end
 
     def watch(websocket)
@@ -27,12 +28,13 @@ module Xjz
     private
 
     class Message
-      attr_reader :type, :data, :page_manager
+      attr_reader :type, :data, :page_manager, :session
       attr_accessor :match_data
 
       def initialize(type, data, page_manager)
-        @type, @data = type, data
+        @type, @data = type, data.with_indifferent_access
         @page_manager = page_manager
+        @session = page_manager.session
       end
 
       def send_msg(type, data = nil)

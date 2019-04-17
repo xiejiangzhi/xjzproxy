@@ -49,6 +49,7 @@ RSpec.configure do |config|
       t.kill if t != Thread.current
     end
     $server.proxy_thread_pool.kill
+    $webui.page_manager.session.clear
   end
 
   config.before(:each, log: false) do

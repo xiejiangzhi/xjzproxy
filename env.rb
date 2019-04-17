@@ -25,5 +25,7 @@ require 'shellwords'
 
 puts Time.now - t
 
+I18n.load_path += Dir[File.join($root, 'config/locales/*.{yml,rb}')]
+
 $LOAD_PATH.unshift File.join($root, 'src')
 $LOAD_PATH.unshift File.join($root, 'lib')

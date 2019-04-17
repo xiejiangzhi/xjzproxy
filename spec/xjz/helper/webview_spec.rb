@@ -1,7 +1,15 @@
 RSpec.describe Xjz::Helper::Webview do
-  let(:m) { described_class }
+  let(:m) { described_class.new }
 
-  describe 'render' do
+  describe '.render' do
+    it 'should call instance#render' do
+      expect_any_instance_of(Xjz::Helper::Webview).to receive(:render) \
+        .with(123, 'asdf', 'fdswa')
+      Xjz::Helper::Webview.render(123, 'asdf', 'fdswa')
+    end
+  end
+
+  describe '#render' do
     it 'should render to string' do
       expect(m.render('index.html', 'a' => 12332111)).to eql(
         "<p>hello</p><div class=\"a\">test webview var 12332111</div>" +
@@ -27,6 +35,10 @@ RSpec.describe Xjz::Helper::Webview do
 
     it 'should back to default template if we have a default template' do
       expect(m.render('test')).to eql('<p>This is a default test template</p>')
+    end
+
+    it 'should catch template error', log: false do
+      expect(m.render('error')).to eql('Failed to render template')
     end
 
     it 'support erb template' do
