@@ -27,17 +27,30 @@ module Xjz
       # Data:
       #   rt: request tracker
       event 'new_request' do
-        total_reqs = Xjz::Tracker.instance.history.count
+        history = Xjz::Tracker.instance.history
+        total_reqs = history.count
         send_msg('el.html', selector: '#navbar_total_requests', html: total_reqs)
-        html = render 'webui/history/_request_tracker_tab.html', request_tracker: data[:rt]
-        send_msg('el.append', selector: '#history_rt_list_group', html: html)
+
+        rt = data[:rt]
+        req = rt.request
+        total_reqs_of_conn = history.count do |trt|
+          trt.request.user_socket.object_id == req.user_socket.object_id
+        end
+        if total_reqs_of_conn <= 1
+          html = render 'webui/history/request_group_tab.html', request: req
+          send_msg('el.append', selector: "#history_rt_list_group", html: html)
+        end
+
+        html = render 'webui/history/request_tab.html', request_tracker: rt
+        selector = "[data-rt-group=request_group_tab_#{rt.request.user_socket.object_id}]:last"
+        send_msg('el.after', selector: selector, html: html)
       end
 
       # Data:
       #   rt: request tracker
       event 'update_request' do
         rt = data[:rt]
-        html = render 'webui/history/_request_tracker_tab.html', request_tracker: rt
+        html = render 'webui/history/request_tab.html', request_tracker: rt
         send_msg('el.replace', selector: "#history_rt_tab_#{rt.object_id}", html: html)
 
         if session[:current_rt] == rt

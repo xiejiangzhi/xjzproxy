@@ -118,6 +118,14 @@ module Xjz
       env['xjz.grpc'] == true
     end
 
+    def h2?
+      env['xjz.h2_headers'] != nil
+    end
+
+    def https?
+      env['rack.url_scheme'] == 'https'
+    end
+
     private
 
     def self.import_h2_headers_to_env!(env, headers)

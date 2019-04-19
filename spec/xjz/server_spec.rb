@@ -25,6 +25,7 @@ RSpec.describe Xjz::Server do
           "rack.multithread" => true,
           "rack.url_scheme" => "http"
         )
+        puts '123321'
       end
       client = TCPSocket.new('127.0.0.1', $config['proxy_port'])
       client << <<~REQ
@@ -32,7 +33,7 @@ RSpec.describe Xjz::Server do
         Host: xjz.pw
 
       REQ
-      client.flush
+      client.close_write
       sleep 0.1
     end
   end

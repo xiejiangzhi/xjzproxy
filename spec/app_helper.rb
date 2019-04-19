@@ -45,10 +45,13 @@ RSpec.configure do |config|
     end
 
     FakeIO.clear
+    # clear old threads
     Thread.list.each do |t|
-      t.kill if t != Thread.current
+      next if t == Thread.current
+      next if t == $server.proxy_thread
+      next if t == $server.ui_thread
+      t.kill
     end
-    $server.proxy_thread_pool.kill
     $webui.page_manager.session.clear
   end
 

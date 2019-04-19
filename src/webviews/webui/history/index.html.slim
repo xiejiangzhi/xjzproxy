@@ -3,7 +3,12 @@
   .col-3.border-right.px-0.sticky-top[
     style="height: calc(100vh - #{h_header}); overflow-y: auto; overflow-x: hidden; top: #{h_header}; z-index: 999;"
   ]
+    - groupd_rts = Xjz::Tracker.instance.history.group_by do |rt|
+      - rt.request.user_socket.object_id
     #history_rt_list_group.list-group.list-group-flush role='tablist'
-      - Xjz::Tracker.instance.history.each do |rt|
-        = render 'webui/history/_request_tracker_tab.html', request_tracker: rt
+      - groupd_rts.each do |id, rts|
+        = render 'webui/history/request_group_tab.html', request: rts[0].request
+        - rts.each do |rt|
+          = render 'webui/history/request_tab.html', request_tracker: rt
+
   #history_detail.col-9

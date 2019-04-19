@@ -26,7 +26,7 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
       "REMOTE_ADDR" => "127.0.0.1",
       "puma.socket" => StringIO.new("sock data"),
       "rack.hijack?" => true,
-      "rack.hijack" => 'puma.client',
+      "rack.hijack" => proc { 'puma.client' },
       "rack.input" => StringIO.new('hello'),
       "rack.url_scheme" => "http",
       "rack.after_reply" => []

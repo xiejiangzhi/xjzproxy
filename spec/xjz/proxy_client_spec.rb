@@ -17,7 +17,7 @@ RSpec.describe Xjz::ProxyClient do
       "PATH_INFO" => "/asdf",
       "REMOTE_ADDR" => "127.0.0.1",
       "rack.hijack?" => true,
-      "rack.hijack" => 'puma.client',
+      "rack.hijack" => proc { 'puma.client' },
       "rack.input" => StringIO.new('hello'),
       "rack.url_scheme" => "http",
     )
@@ -31,6 +31,7 @@ RSpec.describe Xjz::ProxyClient do
     @config_data = $config.data.reject { |k, v| k == key }
     @config_data[key] = []
     allow($config).to receive(:data).and_return(@config_data)
+    allow($config.shared_data.app.webui).to receive(:emit_message)
   end
 
   it 'should create client for http1' do
@@ -77,7 +78,7 @@ RSpec.describe Xjz::ProxyClient do
         "PATH_INFO" => "/asdf",
         "REMOTE_ADDR" => "127.0.0.1",
         "rack.hijack?" => true,
-        "rack.hijack" => 'puma.client',
+        "rack.hijack" => proc { 'puma.client' },
         "rack.input" => StringIO.new('hello'),
         "rack.url_scheme" => "https",
       )

@@ -41,17 +41,37 @@ RSpec.describe 'webui.history', webpage: true do
       allow(Xjz::Tracker.instance.history).to receive(:count).and_return(321)
       expect(msg).to receive(:send_msg) \
         .with('el.html', selector: '#navbar_total_requests', html: 321)
+
       expect(msg).to receive(:render) \
-        .with('webui/history/_request_tracker_tab.html', request_tracker: rt).and_return('htmlxxx')
+        .with('webui/history/request_tab.html', request_tracker: rt).and_return('htmlxzz')
+      selector = "[data-rt-group=request_group_tab_#{req.user_socket.object_id}]:last"
+      expect(msg).to receive(:send_msg) \
+        .with('el.after', selector: selector, html: 'htmlxzz')
+      web_router.call(msg)
+    end
+
+    it 'new_request should render group tab if count <= 1' do
+      msg = new_webmsg("server.tracker.new_request", rt: rt)
+      expect(msg).to receive(:send_msg) \
+        .with('el.html', selector: '#navbar_total_requests', html: 1)
+
+      expect(msg).to receive(:render) \
+        .with('webui/history/request_group_tab.html', request: req).and_return('htmlxxx')
       expect(msg).to receive(:send_msg) \
         .with('el.append', selector: '#history_rt_list_group', html: 'htmlxxx')
+
+      expect(msg).to receive(:render) \
+        .with('webui/history/request_tab.html', request_tracker: rt).and_return('htmlxzz')
+      selector = "[data-rt-group=request_group_tab_#{req.user_socket.object_id}]:last"
+      expect(msg).to receive(:send_msg) \
+        .with('el.after', selector: selector, html: 'htmlxzz')
       web_router.call(msg)
     end
 
     it 'update_request should tab' do
       msg = new_webmsg("server.tracker.update_request", rt: rt)
       expect(msg).to receive(:render) \
-        .with('webui/history/_request_tracker_tab.html', request_tracker: rt).and_return('htmlxxx')
+        .with('webui/history/request_tab.html', request_tracker: rt).and_return('htmlxxx')
       expect(msg).to receive(:send_msg) \
         .with('el.replace', selector: "#history_rt_tab_#{rt.object_id}", html: 'htmlxxx')
       web_router.call(msg)
@@ -61,7 +81,7 @@ RSpec.describe 'webui.history', webpage: true do
       msg = new_webmsg("server.tracker.update_request", rt: rt)
       msg.session[:current_rt] = rt
       expect(msg).to receive(:render) \
-        .with('webui/history/_request_tracker_tab.html', request_tracker: rt).and_return('htmlxxx')
+        .with('webui/history/request_tab.html', request_tracker: rt).and_return('htmlxxx')
       expect(msg).to receive(:send_msg) \
         .with('el.replace', selector: "#history_rt_tab_#{rt.object_id}", html: 'htmlxxx')
       expect(msg).to receive(:render) \

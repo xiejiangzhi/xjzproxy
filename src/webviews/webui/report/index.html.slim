@@ -5,19 +5,27 @@
     .col-3 Requests
     .col-9 = total
 
+  - cost_list = tracker.history.map(&:cost)
   .row
     .col-3 Avg Cost
-    - ms = total > 0 ? ((tracker.history.map(&:cost).sum / total) * 1000).to_i : 0
+    - ms = total > 0 ? ((cost_list.sum / total) * 1000).to_i : 0
     .col-9 = "#{ms} ms"
 
+  - [50, 70, 80, 90, 95].each do |pn|
+    .row
+      .col-3 Avg #{pn}%
+      - tpn = (cost_list.size * 100 / pn).to_i
+      - ms = (cost_list.sort[0...tpn].max * 1000).to_i
+      .col-9 = "#{ms} ms"
+  
   .row
     .col-3 Min Cost
-    - ms = (tracker.history.map(&:cost).min || 0) * 1000
+    - ms = (cost_list.min || 0) * 1000
     .col-9 = "#{ms} ms"
 
   .row
     .col-3 Max Cost
-    - ms = (tracker.history.map(&:cost).max || 0) * 1000
+    - ms = (cost_list.max || 0) * 1000
     .col-9 = "#{ms} ms"
 
   - [1, 3, 5, 15, 30].each do |seconds|

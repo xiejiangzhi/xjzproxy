@@ -1,0 +1,32 @@
+- rt = request_tracker
+- req = rt.request
+- res = rt.response
+- mb_cls = %{POST PUT PATCH DELETE}.include?(req.http_method) ? 'badge-primary' : 'badge-info'
+- border_color = '#f5f5f5;'
+
+- if res
+  - border_color = '#17a2b8' if res.code < 300
+  - border_color ||= '#ffc107' if res.code < 400
+  - border_color ||= '#dc3545'
+- elsif rt.error_msg
+  - border_color = '#dc3545'
+
+.list-group-item.p-0.pr-1[
+  id="history_rt_tab_#{rt.object_id}"
+  data-rt-group="request_group_tab_#{req.user_socket.object_id}"
+  style="cursor: pointer; border-left: 4px solid #{border_color}; padding-left: 4px;"
+  role='tab'  data-toggle='list'
+  xjz-id="history.detail.#{rt.object_id}" xjz-bind='click'
+]
+  .rt_tab.py-1
+    .pl-1
+      span.badge.mr-2.align-middle class=mb_cls = req.http_method.upcase
+      span.align-middle = auto_cut_str(req.path, 25)
+
+    - if res
+      .row.mx-0.pl-1.p-0.d-flex
+        .left.mr-auto
+          span.align-middle = auto_cut_str((res&.content_type || ''), 27)
+        .right
+          span.badge.badge-light.badge-pill.align-middle = number_to_human_interval(rt.cost)
+

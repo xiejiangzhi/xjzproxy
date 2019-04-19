@@ -1,5 +1,10 @@
 RSpec.describe Xjz::Tracker do
   let(:tracker) { Xjz::Tracker.new }
+
+  before :each do
+    allow($config.shared_data.app.webui).to receive(:emit_message)
+  end
+
   describe 'track_req' do
     it 'should save request tracker' do
       t1 = tracker.track_req('req1')
