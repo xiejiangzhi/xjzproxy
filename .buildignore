@@ -18,8 +18,19 @@ xjzapidoc.md
 # /lib/**/Makefile
 # /lib/**/*.o
 
-/lib/webview/webview
-
 # build
-
 /releases
+/builder
+
+# test
+/spec
+
+# other
+/.git*
+/Gemfile.dev*
+/Rakefile
+/bin
+/.buildignore
+/.rspec
+/.rubocop.yml
+/vendor

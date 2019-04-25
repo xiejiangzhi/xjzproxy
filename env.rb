@@ -13,7 +13,7 @@ ENV['BOOTSNAP_CACHE_DIR'] = File.expand_path('tmp/bootsnap', $root)
 
 t = Time.now
 require 'bundler/setup'
-require 'bootsnap/setup'
+require 'bootsnap/setup' if $LOAD_PATH.include?('bootsnap')
 puts Time.now - t
 Bundler.require(:default)
 

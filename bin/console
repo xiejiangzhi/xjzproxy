@@ -3,7 +3,6 @@
 require 'pry'
 
 ENV['APP_ENV'] = 'dev'
-ENV['BUNDLE_GEMFILE'] = 'Gemfile.dev'
 
 require_relative '../app'
 

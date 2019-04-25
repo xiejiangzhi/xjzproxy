@@ -1,0 +1,80 @@
+#! /usr/bin/env ruby
+
+require 'bundler/setup'
+require 'erb'
+require 'yaml'
+
+def load_yaml(path)
+  erb = ERB.new(File.read(path))
+  erb.filename = path
+  YAML.load(erb.result)
+end
+
+$root = File.expand_path('../..', __FILE__)
+$releases_dir = File.join($root, 'releases')
+$config = load_yaml(File.join($root, 'build.yml'))
+
+puts "Config: \n#{$config.to_yaml}\n\n"
+
+def cmd(str)
+  puts "$ #{str}"
+  Kernel.system(str)
+end
+
+$config['platforms'].each do |platform|
+  dirname = [platform, $config['app_version']].join('-')
+  pkg_dir = File.join($releases_dir, dirname)
+  app_dir = "#{pkg_dir}/lib/app"
+  ruby_dir = "#{pkg_dir}/lib/ruby"
+  ruby_pkg_name = "#{platform}-#{$config['ruby_version']}"
+  ruby_binary_dir = File.join($config['packages_dir'], ruby_pkg_name)
+  unless Dir.exist?(ruby_binary_dir)
+    $stderr.puts "Cannot build #{platform}, not found ruby binary in #{ruby_binary_dir.inspect}"
+    next
+  end
+
+  puts "Building #{dirname}"
+
+  # init folders
+  cmd "mkdir -p #{app_dir}"
+
+  # install ruby
+  unless Dir.exist?(ruby_dir)
+    cmd "cp -pR #{ruby_binary_dir} #{ruby_dir}"
+  end
+
+  # install app
+  cmd "rsync -rt --exclude-from=.buildignore ./ #{app_dir}"
+  cmd "cp -pR builder/wrapper  #{pkg_dir}/run"
+
+  ruby_vdir = `#{ruby_dir}/lib/ruby/ | grep '\d\+\.\d\+\.\d\+'`.strip
+
+  # use gem cache
+  gem_path = Gem.path.select { |dir| Dir.exist?(dir) }.first
+  if gem_path
+    target_cache_dir = "#{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}"
+    cmd "mkdir -p #{target_cache_dir}"
+    cmd "ln -sf #{gem_path}/cache #{target_cache_dir}/cache"
+  end
+
+  # install gems
+  Bundler.with_clean_env do
+    Dir.chdir(app_dir) do
+      cmd "BUNDLE_IGNORE_CONFIG=1 bundle install --path ../vendor --without development"
+    end
+  end
+
+  # clean gem cache
+  cmd "rm -rf #{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/cache"
+
+  # config app
+  File.write(
+    "#{pkg_dir}/lib/app/config/config.yml",
+    load_yaml('config/config.yml')['prod'].to_yaml
+  )
+  cmd "cp lib/webview/webview #{app_dir}/lib/webview/webview"
+
+  puts "-" * 40
+  puts "Finish #{platform}"
+  puts "-" * 40
+end

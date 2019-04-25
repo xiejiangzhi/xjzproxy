@@ -14,7 +14,7 @@ module Xjz
         File.expand_path('lib/webview/webview', $root),
         '-url', Shellwords.escape(url)
       ]
-      cmd << '-debug' if $app_env != 'prod'
+      cmd << '-debug' if $config['webview_debug']
       exec_cmd(cmd.join(' '))
     end
 

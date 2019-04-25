@@ -1,0 +1,10 @@
+---
+app_name: XJZProxy
+app_version: 0.1.0
+ruby_version: <%= File.read('./.ruby-version') %>
+packages_dir: <%= File.join(Dir.home, 'Documents/Ruby-Binary') %>
+platforms:
+  - osx-x86_64
+  # - linux-x86
+  # - linux-x86_64
+

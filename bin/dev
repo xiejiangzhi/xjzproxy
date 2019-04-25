@@ -1,4 +1,4 @@
 #! /usr/bin/env bash
 
-BUNDLE_GEMFILE=Gemfile.dev APP_ENV=dev ./boot
+APP_ENV=dev ./boot
 

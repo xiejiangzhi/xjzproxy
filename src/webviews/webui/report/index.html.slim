@@ -15,7 +15,7 @@
     .row
       .col-3 Avg #{pn}%
       - tpn = (cost_list.size * 100 / pn).to_i
-      - ms = (cost_list.sort[0...tpn].max * 1000).to_i
+      - ms = ((cost_list.sort[0...tpn].max || 0) * 1000).to_i
       .col-9 = "#{ms} ms"
   
   .row

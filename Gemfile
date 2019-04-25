@@ -24,5 +24,23 @@ gem 'websocket', '~> 1.2.8'
 gem 'sassc', '~> 2.0.1'
 gem 'redcarpet', '~> 3.4.0'
 
-# Other
-gem 'bootsnap', '~> 1.4.2', require: false
+
+group :development do
+  # make code faster
+  gem 'bootsnap', '~> 1.4.2', require: false
+
+  # debug
+  gem 'pry'
+  gem 'pry-byebug'
+
+  # tools
+  gem 'rake'
+  gem 'gem-licenses'
+
+  # testing
+  gem 'rspec', '~> 3.8.0'
+  gem 'webmock', '~> 3.5.1'
+  gem 'super_diff'
+
+  gem 'rubocop', '~> 0.65.0'
+end

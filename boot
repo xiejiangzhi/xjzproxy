@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 
-require './app'
+require_relative './app'
 
 Xjz::Logger[:app].info { "Environment #{$app_env}" }
 
