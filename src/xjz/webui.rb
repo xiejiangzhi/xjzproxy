@@ -1,3 +1,6 @@
+require 'uri'
+require 'net/http'
+
 module Xjz
   class WebUI
     attr_reader :server, :ip, :port, :window, :page_manager, :websocket
@@ -36,9 +39,9 @@ module Xjz
     private
 
     def wait_server_ready
-      Socket.tcp(ip, port, connect_timeout: 10).close
-      true
-    rescue Errno::ETIMEDOUT
+      res = Net::HTTP.get_response(URI.parse("http://#{ip}:#{port}/status"))
+      res.code.to_i == 200
+    rescue Net::OpenTimeout
       false
     rescue => e
       Logger[:auto].error { e.log_inspect }

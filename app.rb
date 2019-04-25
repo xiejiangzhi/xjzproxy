@@ -27,3 +27,5 @@ end
 Xjz::Logger[:auto].debug { "Load projects..." }
 $config.load_projects
 $config.shared_data.app.cert_manager = Xjz::CertManager.new
+ts = Time.now - $app_start_at
+Xjz::Logger[:auto].debug { "Load time cost #{ts.round(3)}s" }

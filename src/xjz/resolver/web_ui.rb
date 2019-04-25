@@ -35,6 +35,8 @@ module Xjz
         msg_download_res(Resolver::SSL.cert_manager.root_ca.to_pem, 'xjzproxy_root_ca.pem')
       when '/root_ca.crt'
         msg_download_res(Resolver::SSL.cert_manager.root_ca.to_pem, 'xjzproxy_root_ca.crt')
+      when '/status'
+        [{}, ['Ready'], 200]
       when '/'
         body = WebUI::RenderHelper.render('webui/index.html')
         [{}, [body], 200]

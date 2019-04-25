@@ -43,9 +43,9 @@ dev:
   proxy_mode: all
 
   projects:
-    - ../xjzapidoc_examples/example1.yml
-    - ../xjzapidoc_examples/example2
-    - ../xjzapidoc_examples/example3
+    - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example1.yml
+    - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example2
+    - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example3
 
 test:
   <<: *default

@@ -3,6 +3,7 @@
 require 'pry'
 
 ENV['APP_ENV'] = 'dev'
+ENV['BUNDLE_GEMFILE'] = File.expand_path('../../Gemfile', __FILE__)
 
 require_relative '../app'
 
