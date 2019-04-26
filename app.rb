@@ -1,8 +1,7 @@
 $app_name = 'XjzProxy'
 
 module Xjz
-  require File.expand_path('../env', __FILE__)
-  require File.expand_path('../init', __FILE__)
+  require_relative './env'
 
   require 'xjz/logger'
   require 'xjz/config'
@@ -27,5 +26,3 @@ end
 Xjz::Logger[:auto].debug { "Load projects..." }
 $config.load_projects
 $config.shared_data.app.cert_manager = Xjz::CertManager.new
-ts = Time.now - $app_start_at
-Xjz::Logger[:auto].debug { "Load time cost #{ts.round(3)}s" }

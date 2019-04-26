@@ -1,0 +1,31 @@
+#! /usr/bin/env ruby
+
+require 'zlib'
+
+app_dir = File.expand_path('../../', __FILE__)
+rbdata = {}
+
+Dir.chdir(app_dir) do
+  %w{*.rb src/**/*.rb}.each do |matcher|
+    Dir[matcher].each do |path|
+      rbdata[path] = RubyVM::InstructionSequence.compile_file(path).to_binary
+      # `rm #{path}`
+      puts "Compiled #{path}"
+    end
+  end
+end
+
+data = rbdata.map do |k, v|
+  [
+    [k.bytesize].pack("N"), k,
+    [v.bytesize].pack("N"), v
+  ].join
+end.join
+
+out_path = File.join(app_dir, 'data')
+File.write(out_path, Zlib::Deflate.deflate(data))
+
+puts "Output #{out_path}"
+puts 'Done'
+
+

@@ -1,0 +1,26 @@
+#! /usr/bin/env ruby
+
+require 'zlib'
+$app_start_at = Time.now
+
+path = File.expand_path('../data', __FILE__)
+if File.exist?(path)
+  s = Zlib::Inflate.inflate(File.read(path)).force_encoding('binary')
+  r = {}
+  loop do
+    break if s.empty?
+    r[s.slice!(0, s.slice!(0, 4).unpack('N').first)] = \
+      RubyVM::InstructionSequence.load_from_binary(s.slice!(0, s.slice!(0, 4).unpack('N').first))
+  end
+
+  RubyVM::InstructionSequence.class_eval do
+    APP_PATH = File.expand_path('../', __FILE__) + '/'
+    APP_DATA = r
+
+    def self.load_iseq(path)
+      APP_DATA[path.delete_prefix(APP_PATH)]
+    end
+  end
+
+  r['boot.rb'].eval
+end

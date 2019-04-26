@@ -49,6 +49,7 @@ dev:
     - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example3
 
   webview_debug: true
+  ui_window: false
 
 test:
   <<: *default

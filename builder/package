@@ -46,8 +46,9 @@ $config['platforms'].each do |platform|
   # install app
   cmd "rsync -rt --exclude-from=.buildignore ./ #{app_dir}"
   cmd "cp -pR builder/wrapper  #{pkg_dir}/run"
+  cmd "rm -rf #{app_dir}/src/xjz"
 
-  ruby_vdir = `#{ruby_dir}/lib/ruby/ | grep '\d\+\.\d\+\.\d\+'`.strip
+  ruby_vdir = `ls #{ruby_dir}/lib/ruby/ | grep '\d\+\.\d\+\.\d\+'`.strip
 
   # use gem cache
   gem_path = Gem.dir

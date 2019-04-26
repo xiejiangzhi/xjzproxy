@@ -23,3 +23,8 @@ xjzapidoc.md
 # build
 
 /releases
+
+# compile
+/data
+
+.DS_Store

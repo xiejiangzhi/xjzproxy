@@ -34,3 +34,7 @@ xjzapidoc.md
 /.rspec
 /.rubocop.yml
 /vendor
+.DS_Store
+
+/src/**/*.rb
+/*.rb
