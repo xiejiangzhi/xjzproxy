@@ -1,10 +1,10 @@
 $app_name = 'XjzProxy'
 
 module Xjz
-  require_relative './env'
+  load_file './env'
 
-  require 'xjz/logger'
-  require 'xjz/config'
+  load_file 'xjz/logger'
+  load_file 'xjz/config'
   config_path = ENV['CONFIG_PATH'] || File.join($root, 'config/config.yml')
   $config = Xjz::Config.new(config_path)
 
@@ -15,8 +15,8 @@ module Xjz
   class ProxyClient; end
 
   Xjz::Logger[:auto].debug { "Loading code..." }
-  require 'xjz/webui/action_router'
-  Dir[File.join($root, 'src/xjz/**/*.rb')].sort.each { |path| require path }
+  load_file 'xjz/webui/action_router'
+  Dir[File.join($root, 'src/xjz/**/*.rb')].sort.each { |path| load_file path }
 end
 
 Xjz::Logger[:auto].debug { "Verify config..." }

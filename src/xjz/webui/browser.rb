@@ -11,7 +11,7 @@ module Xjz
     def open(url)
       return true if @app_process
       cmd = [
-        File.expand_path('lib/webview/webview', $root),
+        File.expand_path('ext/webview/webview', $root),
         '-url', Shellwords.escape(url)
       ]
       cmd << '-debug' if $config['webview_debug']

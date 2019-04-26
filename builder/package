@@ -73,7 +73,6 @@ $config['platforms'].each do |platform|
     "#{pkg_dir}/lib/app/config/config.yml",
     load_yaml('config/config.yml')['prod'].to_yaml
   )
-  cmd "cp lib/webview/webview #{app_dir}/lib/webview/webview"
 
   puts "-" * 40
   puts "Finish #{platform}"

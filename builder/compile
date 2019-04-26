@@ -8,8 +8,10 @@ rbdata = {}
 Dir.chdir(app_dir) do
   %w{*.rb src/**/*.rb}.each do |matcher|
     Dir[matcher].each do |path|
-      rbdata[path] = RubyVM::InstructionSequence.compile_file(path).to_binary
-      # `rm #{path}`
+      code = File.read(path)
+      rbdata[path] = RubyVM::InstructionSequence.compile(
+        code, path, path
+      ).to_binary
       puts "Compiled #{path}"
     end
   end
@@ -23,9 +25,14 @@ data = rbdata.map do |k, v|
 end.join
 
 out_path = File.join(app_dir, 'data')
-File.write(out_path, Zlib::Deflate.deflate(data))
+n = 9 + rand(128)
+data = [
+  [n].pack('C'),
+  Random.bytes(n),
+  Zlib::Deflate.deflate(data),
+  Random.bytes(n)
+].join
+File.write(out_path, data)
 
 puts "Output #{out_path}"
 puts 'Done'
-
-

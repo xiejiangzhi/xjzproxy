@@ -95,7 +95,6 @@ module Xjz
           h2 << line
         when 'connection'
           # http1 headers only
-          puts v
           @conn_status = (v.is_a?(Array) ? v.first : v).to_s.downcase
           h1 << line
         else

@@ -24,7 +24,7 @@ default: &default
     - xjz.pw # proxy host with prefix +
 
   webview_debug: false
-  ui_window: true
+  ui_window: false
 
 prod:
   <<: *default
@@ -49,7 +49,7 @@ dev:
     - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example3
 
   webview_debug: true
-  ui_window: true
+  ui_window: false
 
 test:
   <<: *default

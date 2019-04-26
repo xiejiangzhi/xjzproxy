@@ -6,4 +6,5 @@ root="$(pwd)"
 
 ./builder/webview
 ./builder/compile
+./builder/loader
 ./builder/package

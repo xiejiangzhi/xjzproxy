@@ -14,11 +14,10 @@ config/*.pem
 xjzapidoc.md
 
 # C extensions
-# /lib/**/*.bundle
-# /lib/**/Makefile
-# /lib/**/*.o
-
-/lib/webview/webview
+/ext/**/*.bundle
+/ext/**/Makefile
+/ext/**/*.o
+/ext/webview/webview
 
 # build
 

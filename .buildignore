@@ -13,10 +13,12 @@ config/*.pem
 .xjzapi
 xjzapidoc.md
 
-# C extensions
-# /lib/**/*.bundle
-# /lib/**/Makefile
-# /lib/**/*.o
+# Extensions
+/ext/**/Makefile
+/ext/**/*.o
+/ext/**/*.c
+/ext/**/extconf.rb
+/ext/**/*.go
 
 # build
 /releases

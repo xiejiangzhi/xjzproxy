@@ -4,11 +4,11 @@ set -ex
 
 root="$(pwd)"
 
-if [[ ! -f lib/webview/webview || $FORCE_BUILD ]]; then
+if [[ ! -f ext/webview/webview || $FORCE_BUILD ]]; then
   # build webview
   go get github.com/zserge/webview
-  cd lib/webview
-  # output lib/webview/webview
+  cd ext/webview
+  # output ext/webview/webview
   rm -f ./webview
   go build
 fi

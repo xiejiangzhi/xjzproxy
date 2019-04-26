@@ -1,4 +1,4 @@
-$root = File.expand_path('../', __FILE__)
+$root ||= File.expand_path('../../../', __FILE__)
 
 app_env = ENV['APP_ENV']
 $app_env = case app_env
@@ -20,6 +20,3 @@ require 'yaml'
 require 'active_support/core_ext'
 
 I18n.load_path += Dir[File.join($root, 'config/locales/*.{yml,rb}')]
-
-$LOAD_PATH.unshift File.join($root, 'src')
-$LOAD_PATH.unshift File.join($root, 'lib')
