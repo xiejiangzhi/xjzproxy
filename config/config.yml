@@ -23,7 +23,8 @@ default: &default
   host_whitelist:
     - xjz.pw # proxy host with prefix +
 
-  webview_debug: true
+  webview_debug: false
+  ui_window: true
 
 prod:
   <<: *default
@@ -46,6 +47,8 @@ dev:
     - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example1.yml
     - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example2
     - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example3
+
+  webview_debug: true
 
 test:
   <<: *default

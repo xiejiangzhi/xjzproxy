@@ -8,10 +8,16 @@ server = $config.shared_data.app.server = Xjz::Server.new
 server.start
 
 webui = $config.shared_data.app.webui = Xjz::WebUI.new(server)
-webui.start if ENV['OPEN_BROWSER'] != 'false'
+
+main_thread = if $config['ui_window'] != false
+  webui.start
+  webui.window
+else
+  server.proxy_thread
+end
 
 begin
-  webui.window.join
+  main_thread.join
   server.stop
 rescue Interrupt
   server.stop

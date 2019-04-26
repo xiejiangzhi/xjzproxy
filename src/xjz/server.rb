@@ -100,7 +100,7 @@ module Xjz
       thread_pool = Concurrent::ThreadPoolExecutor.new(
          min_threads: 2,
          max_threads: $config['max_threads'],
-         max_queue: 512,
+         max_queue: 256,
          fallback_policy: :discard
       )
 

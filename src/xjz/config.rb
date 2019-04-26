@@ -13,7 +13,10 @@ module Xjz
       projects: [:optional, NilClass, [[String]] ],
       proxy_mode: String,
       host_whitelist: [:optional, NilClass, [[String]] ],
-      template_dir: [:optional, NilClass, String]
+      template_dir: [:optional, NilClass, String],
+
+      webview_debug: [:optional, NilClass, TrueClass],
+      ui_window: [:optional, NilClass, TrueClass]
     }.stringify_keys
 
     def initialize(path)

@@ -12,15 +12,14 @@ end
 ENV['RACK_ENV'] = $app_env
 ENV['BOOTSNAP_CACHE_DIR'] = File.expand_path('tmp/bootsnap', $root)
 
-require 'bundler/setup'
-gem_envs = [:default]
-gem_envs << :development unless $app_env == 'prod'
-Bundler.require(*gem_envs)
+require 'bundler'
+require 'pry'
+gem_groups = [:default]
+gem_groups << :development unless $app_env == 'prod'
+Bundler.require(*gem_groups)
 
 require 'yaml'
-require 'fileutils'
 require 'active_support/core_ext'
-require 'shellwords'
 
 I18n.load_path += Dir[File.join($root, 'config/locales/*.{yml,rb}')]
 

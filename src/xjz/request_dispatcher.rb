@@ -11,7 +11,9 @@ module Xjz
       end
 
       ap = find_api_project(req)
-      if process_conn?(ap, req)
+      if local_request?(req)
+        Resolver::WebUI.new(req, ap).perform
+      elsif process_conn?(ap, req)
         dispatch_request(ap, req)
       else
         Resolver::Forward.new(req, ap).perform
@@ -32,7 +34,7 @@ module Xjz
         true # will process all
       when 'whitelist'
         (ap || $config['host_whitelist'].include?(req.host)) ? true : false
-      else
+      when
         Logger[:auto].error { "Invalid proxy mode #{$config['proxy_mode']}, use whitelist" }
         (ap || $config['host_whitelist'].include?(req.host)) ? true : false
       end
@@ -42,9 +44,7 @@ module Xjz
       req_method = req.http_method
       IOHelper.set_proxy_host_port(req.user_socket, req.host, req.port)
 
-      if web_ui_request?(req)
-        Resolver::WebUI.new(req, ap).perform
-      elsif req_method == 'connect'
+      if req_method == 'connect'
         if ap&.grpc
           Resolver::GRPC.new(req, ap).perform
         else
@@ -68,7 +68,7 @@ module Xjz
       end
     end
 
-    def web_ui_request?(req)
+    def local_request?(req)
       req.user_socket.is_a?(TCPSocket) && req.env['REQUEST_URI'] =~ %r{^/}
     end
   end

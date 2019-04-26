@@ -1,4 +1,7 @@
 require 'open3'
+require 'fileutils'
+require 'shellwords'
+require 'google/protobuf'
 
 module Xjz
   class ApiProject::GRPCParser

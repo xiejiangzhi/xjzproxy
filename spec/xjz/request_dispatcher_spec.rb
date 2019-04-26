@@ -131,7 +131,13 @@ RSpec.describe Xjz::RequestDispatcher do
     end
 
     it 'should process with webui for a local request' do
-      $config['proxy_mode'] = 'all'
+      data = $config.data.dup.merge!(
+        'proxy_mode' => 'whitelist',
+        'host_whitelist' => [],
+        'projects' => [],
+        '.api_projects' => [],
+      )
+      allow($config).to receive(:data).and_return(data)
       init_checker(webr)
       env['REQUEST_URI'] = '/'
       sock = double('socket', ia_a?: false)

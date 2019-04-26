@@ -1,5 +1,5 @@
-require 'shellwords'
 require 'timeout'
+require 'shellwords'
 
 module Xjz
   class WebUI::Browser

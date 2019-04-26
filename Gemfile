@@ -26,9 +26,6 @@ gem 'redcarpet', '~> 3.4.0'
 
 
 group :development do
-  # make code faster
-  gem 'bootsnap', '~> 1.4.2', require: false
-
   # debug
   gem 'pry'
   gem 'pry-byebug'
