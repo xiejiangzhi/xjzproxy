@@ -13,7 +13,6 @@ ENV['RACK_ENV'] = $app_env
 ENV['BOOTSNAP_CACHE_DIR'] = File.expand_path('tmp/bootsnap', $root)
 
 require 'bundler'
-require 'pry'
 gem_groups = [:default]
 gem_groups << :development unless $app_env == 'prod'
 Bundler.require(*gem_groups)
