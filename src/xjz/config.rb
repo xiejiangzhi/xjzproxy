@@ -56,6 +56,7 @@ module Xjz
 
     def data
       @data ||= raw_data.slice(*SCHEMA.keys).deep_dup.tap do |r|
+        r['projects'] ||= []
         r['host_whitelist'] ||= []
         r['logger_level'] ||= {}
         r['alpn_protocols'] ||= %w{h2 http/1.1}
