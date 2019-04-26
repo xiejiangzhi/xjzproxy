@@ -13,7 +13,9 @@ RSpec.describe Xjz::Config do
       "proxy_timeout" => 1,
       "proxy_mode" => "whitelist",
       "root_ca_path" => "tmp/root_ca.pem",
-      "template_dir" => "./spec/files/webviews"
+      "template_dir" => "./spec/files/webviews",
+      "webview_debug" => false,
+      "ui_window" => true,
     )
   end
 
@@ -70,6 +72,8 @@ RSpec.describe Xjz::Config do
       host_whitelist:
       - xjz.com
       template_dir: "./spec/files/webviews"
+      webview_debug: false
+      ui_window: true
     YAML
     )
   end

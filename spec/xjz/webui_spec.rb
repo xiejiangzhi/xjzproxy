@@ -3,7 +3,7 @@ RSpec.describe Xjz::WebUI, server: true do
   let(:subject) { Xjz::WebUI.new(server) }
 
   describe '#start' do
-    it 'should open window when websocket is ready' do
+    it 'should open window when websocket is ready', allow_local_http: true do
       ui_url = "http://127.0.0.1:#{server.ui_socket.local_address.ip_port}"
       expect_any_instance_of(Xjz::WebUI::Browser).to receive(:open).with(ui_url)
       # start once
@@ -12,9 +12,17 @@ RSpec.describe Xjz::WebUI, server: true do
       expect(subject.start).to eql(true)
     end
 
+    it 'should return true if ui socket is return 200', log: false do
+      ui_url = "http://127.0.0.1:#{server.ui_socket.local_address.ip_port}/status"
+      stub_request(:get, ui_url).to_return(status: 200, body: "")
+      expect_any_instance_of(Xjz::WebUI::Browser).to receive(:open)
+      expect(subject.start).to eql(true)
+    end
+
     it 'should return false if ui socket is failed to open', log: false do
+      ui_url = "http://127.0.0.1:#{server.ui_socket.local_address.ip_port}/status"
+      stub_request(:get, ui_url).to_return(status: 400, body: "err")
       expect_any_instance_of(Xjz::WebUI::Browser).to_not receive(:open)
-      allow(Socket).to receive(:tcp).and_raise('err')
       expect(subject.start).to eql(false)
     end
   end

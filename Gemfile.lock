@@ -1,5 +1,7 @@
-PATH
-  remote: ../../PubCode/http-2
+GIT
+  remote: git://github.com/xiejiangzhi/http-2.git
+  revision: 45b7456ca402aa7dec82e48679ebddaa781be86e
+  tag: 45b7456ca40
   specs:
     http-2 (0.10.1)
 

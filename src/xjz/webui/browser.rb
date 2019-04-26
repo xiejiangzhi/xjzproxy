@@ -29,6 +29,7 @@ module Xjz
         Timeout.timeout(3) { Process.wait(pid) }
       rescue Timeout::Error
         Process.kill('TERM', pid)
+      rescue Errno::ECHILD
       end
 
       @app_process = nil
@@ -37,6 +38,7 @@ module Xjz
     def join
       return unless app_process && app_process.alive?
       Process.wait(app_process.pid)
+    rescue Errno::ECHILD
     end
 
     private

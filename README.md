@@ -11,13 +11,14 @@ XjzProxy
 
 - [ ] ------ 1 ------ (7.0 - 5.0)
 - [o] 3.0 GRPC on http2
-- [0] 2.0 document renderer api project
+- [o] 2.0 document renderer api project
 - [ ] 2.0 diff request params & response data, and generate report
 - [ ] ------ 2 ------ (15)
-- [ ] 15  GUI: GTK3 
+- [o] 15  GUI: GTK3 
 - [ ] ------ 3 ------ (11)
 - [ ] 2.0 diff request params & response data, and generate report
-- [ ] 5.0 build portable ruby
+- [o] 5.0 build portable ruby
+- [ ] 2.0 link history & api, diff, export, etc in history page
 - [ ] 2.0 update request/response before process
 - [ ] 2.0 make better forward_streams. Fiber(better)/Thread 
 - [ ] 2.0 For QA, easy to change data

@@ -55,14 +55,17 @@ RSpec.configure do |config|
     $webui.page_manager.session.clear
   end
 
-  config.before(:each, log: false) do
+  config.around(:each, log: false) do |example|
     Xjz::Logger.instance.instance_eval do
       @logger.level = Logger::FATAL
-    end
-  end
-  config.after(:each, log: false) do
-    Xjz::Logger.instance.instance_eval do
+      example.run
       @logger.level = Logger::ERROR
     end
+  end
+
+  config.around(:each, allow_local_http: true) do |example|
+    WebMock.disable_net_connect!(allow_localhost: true)
+    example.run
+    WebMock.disable_net_connect!
   end
 end

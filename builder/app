@@ -50,8 +50,8 @@ $config['platforms'].each do |platform|
   ruby_vdir = `#{ruby_dir}/lib/ruby/ | grep '\d\+\.\d\+\.\d\+'`.strip
 
   # use gem cache
-  gem_path = Gem.path.select { |dir| Dir.exist?(dir) && dir["lib/ruby/#{ruby_vdir}"] }.first
-  if gem_path
+  gem_path = Gem.dir
+  if gem_path && gem_path["gems/#{ruby_vdir}"]
     target_cache_dir = "#{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}"
     cmd "mkdir -p #{target_cache_dir}"
     cmd "ln -sf #{gem_path}/cache #{target_cache_dir}/cache"
@@ -60,7 +60,7 @@ $config['platforms'].each do |platform|
   # install gems
   Bundler.with_clean_env do
     Dir.chdir(app_dir) do
-      cmd "BUNDLE_IGNORE_CONFIG=1 bundle install --path ../vendor --without development"
+      cmd "BUNDLE_IGNORE_CONFIG=1 bundle install --path ../vendor --without development test"
     end
   end
 
