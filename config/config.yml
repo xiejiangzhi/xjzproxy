@@ -8,7 +8,7 @@ default: &default
   alpn_protocols:
     - h2
     - http/1.1
-  max_threads: 64
+  max_threads: 128
   logger_level:
     default: info
 
@@ -28,10 +28,9 @@ default: &default
 
 prod:
   <<: *default
-  max_threads: 128
 
   logger_level:
-    default: debug
+    default: warn
 
   host_whitelist: []
 
@@ -44,12 +43,12 @@ dev:
   proxy_mode: all
 
   projects:
-    - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example1.yml
+    - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example1
     - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example2
     - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example3
 
   webview_debug: true
-  ui_window: false
+  ui_window: true
 
 test:
   <<: *default

@@ -56,7 +56,9 @@ RSpec.describe 'webui.proxy', webpage: true do
   it 'project.xxx.del_btn.click should remove a project' do
     pid = $config['projects'][0].object_id
     msg = new_webmsg("proxy.project.#{pid}.del_btn.click")
+    ap = $config['.api_projects'].first
     expect(msg).to receive(:send_msg).with('el.remove', selector: "#proxy_project_#{pid}")
+    expect(msg).to receive(:send_msg).with('el.remove', selector: "#document_tab_#{ap.object_id}")
     expect {
       expect {
         web_router.call(msg)
@@ -66,8 +68,17 @@ RSpec.describe 'webui.proxy', webpage: true do
 
   it 'new_project.change should add a project' do
     msg = new_webmsg("proxy.new_project.change", 'value' => '/path/to/poj')
+    expect(msg).to receive(:render).with(
+      "webui/proxy/_project_item.html", path: '/path/to/poj'
+    ).and_call_original
     expect(msg).to receive(:send_msg).with(
       'el.append', selector: "#proxy_project_list", html: kind_of(String)
+    )
+    expect(msg).to receive(:render).with(
+      "webui/document/doc_tab.html", ap: kind_of(Xjz::ApiProject)
+    ).and_call_original
+    expect(msg).to receive(:send_msg).with(
+      'el.append', selector: "#document_list_tabs", html: kind_of(String)
     )
     pojs = ["./spec/files/project.yml", "/path/to/poj"]
     expect {

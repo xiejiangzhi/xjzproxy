@@ -1,18 +1,15 @@
 ENV['APP_ENV'] = 'test'
-ENV['BUNDLE_GEMFILE'] = File.expand_path('../../Gemfile', __FILE__)
 
 require 'webmock/rspec'
 require 'fileutils'
 require 'super_diff/rspec'
 
 require 'bundler/setup'
-Bundler.require(:default, 'test')
+Bundler.require(:default, :development)
 
 require 'spec_helper'
 
-$root = File.expand_path('../../', __FILE__)
-require File.expand_path('./loader', $root)
-Xjz.load_file './app'
+require File.expand_path('../../app', __FILE__)
 
 Dir[File.expand_path('../support/*.rb', __FILE__)].each do |path|
   load path

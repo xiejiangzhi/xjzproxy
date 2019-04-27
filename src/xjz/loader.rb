@@ -14,7 +14,6 @@ module Xjz
       if app_files[path]
         app_files.delete path
         load File.expand_path(path, $root)
-        puts "[Succ] Load file #{path}"
       else
         puts "[Err] Not found file #{path}"
       end

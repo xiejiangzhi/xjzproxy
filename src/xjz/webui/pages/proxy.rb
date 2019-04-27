@@ -29,18 +29,26 @@ module Xjz
         path_id = match_data[:path_id].to_i
         path = $config['projects'].find { |path| path.object_id == path_id }
         $config['projects'].delete path
-        $config['.api_projects'].delete_if { |ap| ap.repo_path == path }
+        ap = $config['.api_projects'].find { |ap| ap.repo_path == path }
+        $config['.api_projects'].delete(ap)
         send_msg('el.remove', selector: "#proxy_project_#{path_id}")
+        send_msg('el.remove', selector: "#document_tab_#{ap.object_id}")
       end
 
       event 'new_project.change' do
         path = data['value']
         $config['projects'] << path
-        $config['.api_projects'] << ApiProject.new(path)
+        ap = ApiProject.new(path)
+        $config['.api_projects'] << ap
         send_msg(
           'el.append',
           selector: "#proxy_project_list",
           html: render('webui/proxy/_project_item.html', path: path)
+        )
+        send_msg(
+          'el.append',
+          selector: "#document_list_tabs",
+          html: render('webui/document/doc_tab.html', ap: ap)
         )
       end
 

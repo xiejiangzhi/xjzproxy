@@ -8,7 +8,7 @@
     .row.mx-0.p-1.d-flex
       .left.mr-auto
         / span.align-middle.mr-1 CONN
-        span.align-middle = auto_cut_str(req.host, 25)
+        strong.align-middle = auto_cut_str(req.host, 25)
       .right
         span.badge.badge-light.badge-pill.align-middle
           - if req.grpc?
