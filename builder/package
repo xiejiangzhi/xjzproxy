@@ -16,9 +16,9 @@ $config = load_yaml(File.join($root, 'build.yml'))
 
 puts "Config: \n#{$config.to_yaml}\n\n"
 
-def cmd(str)
-  puts "$ #{str}"
-  Kernel.system(str)
+def cmd(str, quiet: false)
+  puts "$ #{str}" unless quiet
+  exit 1 unless Kernel.system(str)
 end
 
 $config['platforms'].each do |platform|
@@ -45,10 +45,12 @@ $config['platforms'].each do |platform|
 
   # install app
   cmd "rsync -rt --exclude-from=.buildignore ./ #{app_dir}"
+  cmd "cp -pR Gemfile.prod #{app_dir}/Gemfile"
+  cmd "cp -pR Gemfile.lock #{app_dir}/Gemfile.lock"
   cmd "cp -pR builder/wrapper  #{pkg_dir}/run"
   cmd "rm -rf #{app_dir}/src/xjz"
 
-  ruby_vdir = `ls #{ruby_dir}/lib/ruby/ | grep '\d\+\.\d\+\.\d\+'`.strip
+  ruby_vdir = `ls #{ruby_dir}/lib/ruby`.split.find { |name| name =~ /^2\.\d+\.\d+$/ }
 
   # use gem cache
   gem_path = Gem.dir
@@ -67,6 +69,32 @@ $config['platforms'].each do |platform|
 
   # clean gem cache
   cmd "rm -rf #{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/cache"
+
+  # clean compile tempfiles
+  gems_dir = "#{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/gems"
+  puts "rm -rf #{gems_dir}/ext/**/*.{o,h,c,hpp,cpp}"
+  Dir["#{gems_dir}/*/ext/**/*.{o,h,c,hpp,cpp}"].each do |path|
+    cmd "rm -f #{Shellwords.escape(path)}", quiet: true
+  end
+
+  cmd "rm -rf #{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/gems/*/spec"
+  cmd "rm -rf #{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/gems/*/test"
+
+  {
+    'x86-linux' => 'linux-x86',
+    'x86-windows' => '',
+    'x86_64-macos' => 'osx-x86_64',
+    'x86-macos' => '',
+    'x86_64-linux' => 'linux-x86_64',
+    'x86_64-windows' => ''
+  }.each do |dir, pf|
+    next if pf == platform
+    cmd "rm -rf #{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/gems/grpc-tools-1.*/bin/#{dir}"
+  end
+
+  %w{2.2 2.3 2.4 2.5}.each do |version|
+    cmd "rm -rf #{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/gems/grpc-1.*/src/ruby/lib/grpc/#{version}"
+  end
 
   # config app
   File.write(

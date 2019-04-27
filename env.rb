@@ -1,4 +1,4 @@
-$root ||= File.expand_path('../../../', __FILE__)
+$root ||= File.expand_path('..', __FILE__)
 
 app_env = ENV['APP_ENV']
 $app_env = case app_env

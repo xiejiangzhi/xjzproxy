@@ -8,4 +8,4 @@ SELFDIR="`cd \"$SELFDIR\" && pwd`"
 export BUNDLE_GEMFILE="$SELFDIR/lib/app/Gemfile"
 unset BUNDLE_IGNORE_CONFIG
 
-exec "$SELFDIR/lib/ruby/bin/ruby" "$SELFDIR/lib/app/dp"
+exec "$SELFDIR/lib/ruby/bin/ruby" "$SELFDIR/lib/app/boot"

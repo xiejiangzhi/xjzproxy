@@ -62,13 +62,13 @@ VALUE load_file(VALUE self, VALUE path) {
   VALUE iseqs = rb_gv_get("$ISEQS");
   VALUE iseq = rb_hash_aref(iseqs, path);
 
-  if (rb_gv_get("$ISEQS_DEBUG") != Qnil && iseq == Qnil) {
+  if (iseq == Qnil) {
     printf("[ERR] Failed to load path %s\n", RSTRING_PTR(path));
   }
 
   if (iseq != Qnil) {
-    rb_funcall(iseq, rb_intern("eval"), 0);
     rb_hash_delete(iseqs, path);
+    rb_funcall(iseq, rb_intern("eval"), 0);
     
     return Qtrue;
   } else {
@@ -76,17 +76,44 @@ VALUE load_file(VALUE self, VALUE path) {
   }
 }
 
+VALUE load_all_files(VALUE self) {
+  VALUE iseqs = rb_funcall(rb_gv_get("$ISEQS"), rb_intern("sort"), 0);
+  VALUE iseq = Qnil;
+
+  int len = RARRAY_LENINT(iseqs);
+  for (int i = 0; i < len; i++) {
+    iseq = RARRAY_AREF(RARRAY_AREF(iseqs, i), 1);
+    rb_funcall(iseq, rb_intern("eval"), 0);
+  }
+
+  rb_hash_clear(iseqs);
+  return Qtrue;
+}
+
 VALUE run_app(VALUE self) {
-  load_file(self, rb_str_new_cstr("loader.rb"));
+  load_file(self, rb_str_new_cstr("src/xjz/loader.rb"));
   load_file(self, rb_str_new_cstr("boot.rb"));
   return self;
+}
+
+VALUE start_app(VALUE self) {
+  init_app(self);
+  run_app(self);
+  return Qnil;
 }
 
 void Init_loader() {
   rb_require("zlib");
   VALUE App = rb_define_module("Xjz");
-  rb_define_singleton_method(App, "init", init_app, 0);
-  rb_define_singleton_method(App, "run", run_app, 0);
+  
+  char *ptr = getenv("TOUCH_XJZ");
+  if (ptr != NULL && *ptr) {
+    rb_define_singleton_method(App, "init", init_app, 0);
+    rb_define_singleton_method(App, "run", run_app, 0);
+  }
+
+  rb_define_singleton_method(App, "start", start_app, 0);
   rb_define_singleton_method(App, "_load_file", load_file, 1);
+  rb_define_singleton_method(App, "load_all", load_all_files, 0);
 }
 

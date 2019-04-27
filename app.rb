@@ -1,4 +1,7 @@
 $app_name = 'XjzProxy'
+$root ||= File.expand_path('..', __FILE__)
+
+require File.expand_path('./src/xjz/loader', $root) unless defined?(Xjz) && Xjz.respond_to?(:load_file)
 
 module Xjz
   load_file './env'
@@ -16,7 +19,7 @@ module Xjz
 
   Xjz::Logger[:auto].debug { "Loading code..." }
   load_file 'xjz/webui/action_router'
-  Dir[File.join($root, 'src/xjz/**/*.rb')].sort.each { |path| load_file path }
+  load_all
 end
 
 Xjz::Logger[:auto].debug { "Verify config..." }

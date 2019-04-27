@@ -10,7 +10,9 @@ Bundler.require(:default, 'test')
 
 require 'spec_helper'
 
-require File.expand_path('../../app', __FILE__)
+$root = File.expand_path('../../', __FILE__)
+require File.expand_path('./loader', $root)
+Xjz.load_file './app'
 
 Dir[File.expand_path('../support/*.rb', __FILE__)].each do |path|
   load path

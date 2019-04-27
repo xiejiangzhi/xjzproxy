@@ -2,8 +2,7 @@
 
 $app_start_at = Time.now
 $root = File.expand_path('..', __FILE__)
+Dir.chdir($root)
 
-$ISEQS_DEBUG = true
 require './ext/loader/loader'
-Xjz.init
-Xjz.run
+Xjz.start

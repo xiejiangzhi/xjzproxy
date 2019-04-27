@@ -24,7 +24,7 @@ default: &default
     - xjz.pw # proxy host with prefix +
 
   webview_debug: false
-  ui_window: false
+  ui_window: true
 
 prod:
   <<: *default
@@ -69,3 +69,6 @@ test:
   logger_level:
     default: debug
     io: info
+
+  webview_debug: false
+  ui_window: true

@@ -2,9 +2,13 @@
 
 $app_start_at ||= Time.now
 $root = File.expand_path('..', __FILE__)
+Dir.chdir($root)
 
-require File.expand_path('./loader', $roo) unless defined?(Xjz) && Xjz.respond_to?(:load_file)
-Xjz.load_file './app'
+if defined?(Xjz) && Xjz.respond_to?(:load_file)
+  Xjz.load_file './app'
+else
+  require_relative './app'
+end
 
 ts = Time.now - $app_start_at
 Xjz::Logger[:auto].debug { "Load time cost #{ts.round(3)}s" }

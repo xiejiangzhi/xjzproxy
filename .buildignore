@@ -29,7 +29,7 @@ xjzapidoc.md
 
 # other
 /.git*
-/Gemfile.dev*
+/Gemfile*
 /Rakefile
 /bin
 /.buildignore
