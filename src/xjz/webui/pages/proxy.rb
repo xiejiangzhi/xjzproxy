@@ -50,6 +50,16 @@ module Xjz
           selector: "#document_list_tabs",
           html: render('webui/document/doc_tab.html', ap: ap)
         )
+
+        if ap.errors
+          send_msg(
+            'alert',
+            type: :error,
+            message: "Found some error of the new project, check detail in Document"
+          )
+        else
+          send_msg('alert', message: "Successfully added a project", type: :info)
+        end
       end
 
       event 'alpn_protocol.change' do

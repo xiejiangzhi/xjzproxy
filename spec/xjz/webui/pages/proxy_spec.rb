@@ -67,20 +67,26 @@ RSpec.describe 'webui.proxy', webpage: true do
   end
 
   it 'new_project.change should add a project' do
-    msg = new_webmsg("proxy.new_project.change", 'value' => '/path/to/poj')
+    path = '/path/to/poj'
+    msg = new_webmsg("proxy.new_project.change", 'value' => path)
+    ap = double('api project', errors: nil, repo_path: path)
+    expect(Xjz::ApiProject).to receive(:new).with(path).and_return(ap)
     expect(msg).to receive(:render).with(
-      "webui/proxy/_project_item.html", path: '/path/to/poj'
+      "webui/proxy/_project_item.html", path: path
     ).and_call_original
     expect(msg).to receive(:send_msg).with(
       'el.append', selector: "#proxy_project_list", html: kind_of(String)
     )
     expect(msg).to receive(:render).with(
-      "webui/document/doc_tab.html", ap: kind_of(Xjz::ApiProject)
+      "webui/document/doc_tab.html", ap: ap
     ).and_call_original
     expect(msg).to receive(:send_msg).with(
       'el.append', selector: "#document_list_tabs", html: kind_of(String)
     )
-    pojs = ["./spec/files/project.yml", "/path/to/poj"]
+    expect(msg).to receive(:send_msg).with(
+      "alert", message: "Successfully added a project", type: :info
+    )
+    pojs = ["./spec/files/project.yml", path]
     expect {
       expect {
         web_router.call(msg)

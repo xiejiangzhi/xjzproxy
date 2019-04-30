@@ -21,7 +21,7 @@ default: &default
   proxy_mode: whitelist # proxy projects and filter by rules
 
   host_whitelist:
-    - xjz.pw # proxy host with prefix +
+    - xjzasdf.pw # proxy host with prefix +
 
   webview_debug: false
   ui_window: true

@@ -40,3 +40,4 @@ xjzapidoc.md
 
 /src/**/*.rb
 /*.rb
+/licenses.csv

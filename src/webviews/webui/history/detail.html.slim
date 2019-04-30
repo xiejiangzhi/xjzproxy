@@ -1,6 +1,8 @@
 - rt = request_tracker
 - req = rt.request
 - res = rt.response
+- ap = rt.api_project
+- res_def = rt.res_definition
 
 ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
   style="top: 56px;"
@@ -12,6 +14,9 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
       a.nav-link href='#rt_preview' data-toggle='tab' Preview
     li.nav-item
       a.nav-link href='#rt_res' data-toggle='tab' Response
+  - if res_def.present?
+    li.nav-item
+      a.nav-link href='#rt_api' data-toggle='tab' API
   li.nav-item
     a.nav-link href='#rt_timing' data-toggle='tab' Timing
 
@@ -55,6 +60,17 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
         pre.bg-light
           code.text-break = escape_html(res.decoded_body)
 
+  - if res_def.present?
+    #rt_api.tab-pane.fade
+      - res_type, desc = res_def
+      strong = "#{res_type} Definition"
+      hr
+
+      pre
+        code = JSON.pretty_generate(desc)
+
+    
+    
   #rt_timing.tab-pane.fade
     - timing = { 'Start At' => l(rt.start_at, format: :tl), 'Cost' => number_to_human_interval(rt.cost) }
     - rt.action_list.each { |k, ts| timing["Action #{k}"] = ts.first }

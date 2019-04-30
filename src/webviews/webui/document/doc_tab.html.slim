@@ -1,5 +1,7 @@
+- err_cls = ap.errors ? 'list-group-item-danger' : ''
+
 .list-group-item.list-group-item-action.px-0.py-1[
-  id="document_tab_#{ap.object_id}" style='cursor: pointer;'
+  id="document_tab_#{ap.object_id}" class=err_cls style='cursor: pointer;'
   role='tab'  data-toggle='list'
   xjz-id="document.detail_tab.#{ap.object_id}" xjz-bind='click'
 ]

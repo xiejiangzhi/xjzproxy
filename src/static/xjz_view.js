@@ -36,7 +36,7 @@
         $(data.selector).remove();
         break;
       case 'alert':
-        new this.notify(data.message, data.type)
+        this.notify(data.message, data.type)
         break;
       case 'hello':
         break;

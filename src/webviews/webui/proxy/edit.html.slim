@@ -20,7 +20,7 @@
     textarea.form-control rows='4' xjz-id='proxy.host_whitelist' = $config['host_whitelist'].join("\n")
 
 .row.form-group
-  label.col-3.col-form-label ALPN http2
+  label.col-3.col-form-label ALPN Protocols
   .col-9
     - [['h2', 'HTTP2'], ['http/1.1', 'HTTP/1.1']].each do |protocol, title|
       - is_open = $config['alpn_protocols'].include?(protocol)

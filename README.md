@@ -19,10 +19,10 @@ XjzProxy
 - [ ] 2.0 diff request params & response data, and generate report
 - [o] 5.0 build portable ruby
 - [ ] 2.0 link history & api, diff, export, etc in history page
-- [ ] 2.0 update request/response before process
+- [ ] 2.0 apdate request/response before process
 - [ ] 2.0 make better forward_streams. Fiber(better)/Thread 
 - [ ] 2.0 For QA, easy to change data
-- [ ] 2.0 protect code
+- [o] 2.0 protect code
 - [ ] ------ 4 ------ (3.5)
 - [ ] 3.0 generate apidoc from real request
 - [ ] 0.5 script types

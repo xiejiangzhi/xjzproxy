@@ -40,8 +40,7 @@ module Xjz
 
     def send_req(req, &cb)
       Logger[:auto].info { " > #{req.http_method} #{req.url.split('?').first} #{@protocol}" }
-      tracker = Tracker.track_req(req)
-      # TODO call hook before request
+      tracker = Tracker.track_req(req, api_project: api_project)
       res = api_project&.hack_req(req)
       if res
         process_res_callback(res, cb) if cb
@@ -49,7 +48,6 @@ module Xjz
         res = @client.send_req(req, &cb) ||
           Response.new({}, 'XjzProxy failed to get response', 500)
       end
-      # TODO call hook after request
 
       Logger[:auto].info do
         suffix = res.conn_close? ? ' - close' : ''

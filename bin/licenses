@@ -1,0 +1,3 @@
+#! /usr/bin/env bash
+
+rake gem:licenses:csv[licenses.csv]

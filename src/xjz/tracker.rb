@@ -7,6 +7,7 @@ module Xjz
         @instance ||= new
       end
 
+      # track_req(request, auto_start: true, api_project: nil, api: nil)
       def track_req(*args)
         instance.track_req(*args)
       end
@@ -29,10 +30,12 @@ module Xjz
   end
 
   class RequestTracker
-    attr_reader :request, :response, :action_list, :action_hash, :error_msg
+    attr_reader :request, :response, :action_list, :action_hash, :error_msg, :api_project, :api
 
-    def initialize(request, auto_start: true)
+    def initialize(request, auto_start: true, api_project: nil, api: nil)
       @request = request
+      @api_project = api_project
+      @api = api
       @response = nil
       @action_list = []
       @action_hash = {}
@@ -76,6 +79,20 @@ module Xjz
     def cost
       return 0 if action_list.length < 2
       end_at - start_at
+    end
+
+    def res_definition
+      return unless api_project
+      @definition ||= begin
+        req = request
+        if grpc = api_project.grpc
+          res_desc = grpc.res_desc(req.path)
+          res_desc ? [:grpc, res_desc] : []
+        else
+          res_desc = api_project.find_api(req.http_method, req.scheme, req.host, req.path)
+          res_desc ? [:http, res_desc] : []
+        end
+      end
     end
   end
 end
