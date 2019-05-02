@@ -9,6 +9,8 @@ XjzProxy
 
 ## TODOs
 
+### V1 
+
 - [ ] ------ 1 ------ (7.0 - 5.0)
 - [o] 3.0 GRPC on http2
 - [o] 2.0 document renderer api project
@@ -27,7 +29,56 @@ XjzProxy
 - [ ] 3.0 generate apidoc from real request
 - [ ] 0.5 script types
 
+### V2
+
+16.5d => 18d
+
+**Proxy**
+
+
+- Port
+- CA
+- Project in a dir & watch dir
+
+2d
+
+**History**
+
+- Filter 1d
+- Copy Req as cURL 0.5d
+- Diff params and headers of request, and response body 1d
+
+2.5d
+
+
+**Doc/Project**
+
+- Doc style 2d
+- Export as PDF, HTML 1d
+- Online / Offline 1d
+
+4d
+
+**Report**
+
+- Slowest 10 Req(online) 0.5d
+- Most reqs in n seconds 0.5d
+- All error requests(404) and not match doc 2d
+
+3d
+
+
+**Other**
+
+- Response disk cache 2d
+- Chinese doc 1d
+- Test version & software sign 2d
+
+5d
+
+
 
 ## TODO Libraries
 
+15
 * https://github.com/filewatcher/filewatcher

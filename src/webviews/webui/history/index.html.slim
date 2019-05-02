@@ -1,8 +1,13 @@
 .row
-  - h_header = '56px'
+  - h_header = 56 
+  - offset = h_header.to_s + 'px'
   .col-3.border-right.px-0.sticky-top[
-    style="height: calc(100vh - #{h_header}); overflow-y: auto; overflow-x: hidden; top: #{h_header}; z-index: 999;"
+    style="height: calc(100vh - #{offset}); overflow-y: auto; overflow-x: hidden; top: #{offset}; z-index: 999"
   ]
+    .filter.sticky-top.bg-light style="height: 30px;"
+      a href='#' H
+      a href='#' C
+      input type='text'
     - groupd_rts = Xjz::Tracker.instance.history.group_by do |rt|
       - rt.request.user_socket.object_id
     #history_rt_list_group.list-group.list-group-flush role='tablist'
@@ -12,4 +17,5 @@
           = render 'webui/history/request_tab.html', request_tracker: rt
 
   #history_detail.col-9
-    Has Not Any Request
+    - if Xjz::Tracker.instance.history.length == 0
+      | Has Not Any Request
