@@ -39,6 +39,18 @@ RSpec.describe 'webui.proxy', webpage: true do
     }.to change { $config['proxy_port'] }.to(12342)
   end
 
+  it 'reset_cert.click should reset cert' do
+    msg = new_webmsg('proxy.reset_cert.click')
+    cm = $config.shared_data.app.cert_manager
+    expect(cm).to receive(:reset!)
+    expect(Xjz::Resolver::SSL).to receive(:reset_certs)
+    expect(msg).to receive(:send_msg).with(
+      'el.html', selector: '#root_ca_fingerprint', html: cm.root_ca_fingerprint
+    )
+    expect(msg).to receive(:send_msg).with('alert', message: kind_of(String))
+    web_router.call(msg)
+  end
+
   it 'mode.change should update port' do
     msg = new_webmsg('proxy.mode.change', 'value' => 'all')
     expect {

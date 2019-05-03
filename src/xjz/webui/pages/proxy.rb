@@ -17,6 +17,21 @@ module Xjz
         $config['proxy_port'] = data['value']
       end
 
+      event 'reset_cert.click' do
+        cm = $config.shared_data.app.cert_manager
+        cm.reset!
+        Xjz::Resolver::SSL.reset_certs
+        send_msg(
+          'el.html',
+          selector: '#root_ca_fingerprint',
+          html: cm.root_ca_fingerprint
+        )
+        send_msg(
+          'alert',
+          message: 'Successfully generate certificate, please download and setup the new one after run proxy.'
+        )
+      end
+
       event 'mode.change' do
         $config['proxy_mode'] = data['value']
       end

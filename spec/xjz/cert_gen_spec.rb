@@ -37,7 +37,7 @@ RSpec.describe Xjz::CertManager do
       expect(ca.subject.to_a).to eql([["CN", $app_name, 12], ["O", "XjzProxy", 12]])
       expect(ca.public_key.to_pem).to eql(pkey.public_key.to_pem)
       expect(ca.not_before <= Time.now).to eql(true)
-      expect(ca.not_after >= (Time.now + 1.year - 1)).to eql(true)
+      expect(ca.not_after >= (Time.now + 99.year - 1)).to eql(true)
       expect(ca.signature_algorithm).to eql('sha256WithRSAEncryption')
       expect(ca.check_private_key(pkey)).to eql(true)
       seq = OpenSSL::ASN1::Sequence([
@@ -92,6 +92,20 @@ RSpec.describe Xjz::CertManager do
         ["subjectKeyIdentifier", key_id, false],
         ["subjectAltName", "DNS:xjz.pw", false]
       ])
+    end
+  end
+
+  describe '#reset!' do
+    it 'should remove cache file and instance variables' do
+      expect(FileUtils).to receive(:rm_rf).with(File.join($root, $config['key_path']))
+      expect(FileUtils).to receive(:rm_rf).with(File.join($root, $config['root_ca_path']))
+
+      subject.pkey
+      subject.root_ca
+
+      expect {
+        subject.reset!
+      }.to change { subject.instance_eval { [@pkey, @root_ca] } }.to([nil, nil])
     end
   end
 end

@@ -1,4 +1,5 @@
 require 'openssl'
+require 'fileutils'
 
 module Xjz
   class CertManager
@@ -20,6 +21,13 @@ module Xjz
       gen_fingerprint(pkey.to_der)
     end
 
+    def reset!
+      FileUtils.rm_rf(@ca_path)
+      FileUtils.rm_rf(@key_path)
+      @pkey = nil
+      @root_ca = nil
+    end
+
     def root_ca
       return @root_ca if @root_ca
 
@@ -28,6 +36,7 @@ module Xjz
         cert = create_cert(pkey, $app_name) do |c, ef|
           c.serial = 1
           c.issuer = c.subject # root CA's are 'self-signed'
+          c.not_after = Time.now + 99.year
 
           ef.subject_certificate = c
           ef.issuer_certificate = c

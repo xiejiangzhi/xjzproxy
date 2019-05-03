@@ -9,15 +9,8 @@
     ]
 
 .row.mb-2
-  label.col-3.col-form-label Root CA
+  label.col-3.col-form-label Root CA Fingerprint
   .col-9.input-group
-    - id = 'proxy-root_ca'
-    .form-control-plaintext = $config.shared_data.app.cert_manager.root_ca_fingerprint.tr(':', '')
-    span.btn.btn-light xjz-id='proxy.reset_root_ca' Regenerate
+    .form-control-plaintext#root_ca_fingerprint = $config.shared_data.app.cert_manager.root_ca_fingerprint
+    button.btn.btn-light xjz-id='proxy.reset_cert' Regenerate
 
-.row.mb-2
-  label.col-3.col-form-label Private Key
-  .col-9.input-group
-    - id = 'proxy-pkey'
-    .form-control-plaintext = $config.shared_data.app.cert_manager.pkey_fingerprint.tr(':', '')
-    span.btn.btn-light xjz-id='proxy.reset_pkey' Regenerate

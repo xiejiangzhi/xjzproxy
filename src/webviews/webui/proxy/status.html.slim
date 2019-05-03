@@ -3,7 +3,7 @@
 .row.form-group
   label.col-3.col-form-label
     | Proxy URL
-    i.fas.fa-question-circle.ml-1 title='Stop proxy to edit' data-toggle='tooltip'
+    i.fas.fa-question-circle.ml-1 title='Stop proxy to edit port' data-toggle='tooltip'
   .col-9.input-group
     - url = "http://#{server.proxy_addr}"
     .form-control-plaintext = url
@@ -12,7 +12,9 @@
     ] Copy
 
 .row.form-group
-  label.col-3.col-form-label Proxy Root CA URL
+  label.col-3.col-form-label 
+    | Root CA URL
+    i.fas.fa-question-circle.ml-1 title='Stop proxy to reset CA' data-toggle='tooltip'
   .col-9.input-group
     - url = "http://#{server.proxy_addr}/root_ca.crt"
     .form-control-plaintext = url
@@ -21,10 +23,10 @@
     ] Copy 
 
 .row.form-group
-  label.col-3.col-form-label Private Key
+  label.col-3.col-form-label Root CA Fingerprint
   input#proxy_pkey_cb type='hidden' xjz-id='proxy.save_pkey'
   .col-9.input-group
-    .form-control-plaintext = $config.shared_data.app.cert_manager.pkey_fingerprint.tr(':', '')
+    .form-control-plaintext = $config.shared_data.app.cert_manager.root_ca_fingerprint
       button.btn.btn-light#proxy_save_pkey_btn[
         type='button' xjz-rpc='savefile' data-rpc-target='#proxy_pkey_cb'
       ] Save

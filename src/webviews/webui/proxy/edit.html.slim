@@ -16,7 +16,7 @@
 .row.form-group.collapse.fade#proxy_host_whitelist class=(proxy_mode == 'whitelist' ? 'show' : '')
   label.col-3.col-form-label Whitelist
   .col-9
-    small.form-text.text-muted.mb-1 Split hosts by line.
+    small.form-text.text-muted.mb-1 one host per line.
     textarea.form-control rows='4' xjz-id='proxy.host_whitelist' = $config['host_whitelist'].join("\n")
 
 .row.form-group

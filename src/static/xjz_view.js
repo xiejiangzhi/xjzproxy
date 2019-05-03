@@ -19,21 +19,28 @@
     },
 
     onMessage: function(type, data){
+      var $el, $html;
+      if (data.selector) { $el = $(data.selector); }
+      if (data.html) {
+        $html = $($.parseHTML(data.html));
+        this.initElem($html);
+      }
+
       switch (type) {
       case 'el.append':
-        $(data.selector).append(this.initElem(data.html));
+        $el.append($html);
         break;
       case 'el.after':
-        $(data.selector).after(this.initElem(data.html));
+        $el.after($html);
         break;
       case 'el.html':
-        $(data.selector).html(this.initElem(data.html));
+        $el.html($html);
         break;
       case 'el.replace':
-        $(data.selector).replaceWith(this.initElem(data.html));
+        $el.replaceWith($html);
         break;
       case 'el.remove':
-        $(data.selector).remove();
+        $el.remove();
         break;
       case 'alert':
         this.notify(data.message, data.type)
