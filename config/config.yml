@@ -17,6 +17,9 @@ default: &default
   # .api_projects will auto generate by projects
   projects:
 
+  # auto add project when put a project to this folder
+  projects_dir: <%= File.join(Dir.home, 'XJZProxy') %>
+
   # proxy_mode: all # proxy any host
   proxy_mode: whitelist # proxy projects and filter by rules
 

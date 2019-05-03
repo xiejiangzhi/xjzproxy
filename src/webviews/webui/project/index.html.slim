@@ -3,9 +3,9 @@
   .col-3.border-right.px-0.sticky-top[
     style="height: calc(100vh - #{h_header}); overflow-y: auto; overflow-x: hidden; top: #{h_header}; z-index: 999;"
   ]
-    #document_list_tabs.list-group.list-group-flush role='tablist'
+    #project_list_tabs.list-group.list-group-flush role='tablist'
       - $config['.api_projects'].each do |ap|
-        = render 'webui/document/doc_tab.html', ap: ap
+        = render 'webui/project/doc_tab.html', ap: ap
 
-  #document_detail.col-9
+  #project_detail.col-9
 

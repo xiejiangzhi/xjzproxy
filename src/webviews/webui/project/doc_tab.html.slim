@@ -1,10 +1,10 @@
 - err_cls = ap.errors ? 'list-group-item-danger' : ''
 
 .list-group-item.list-group-item-action.px-0.py-1[
-  id="document_tab_#{ap.object_id}" class=err_cls style='cursor: pointer;'
+  id="project_tab_#{ap.object_id}" class=err_cls style='cursor: pointer;'
   role='tab'  data-toggle='list'
-  xjz-id="document.detail_tab.#{ap.object_id}" xjz-bind='click'
+  xjz-id="project.detail_tab.#{ap.object_id}" xjz-bind='click'
 ]
   .row.mx-0.pl-1.p-0.d-flex
     strong = File.basename(ap.repo_path)
-  .pl-1 = auto_cut_str(ap.repo_path, 33)
+  .pl-1 = "#{ap.data['apis'].length} APIs"

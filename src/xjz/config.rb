@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module Xjz
   class Config
     attr_reader :path
@@ -11,6 +13,7 @@ module Xjz
       max_threads: Integer,
       logger_level: Hash,
       projects: [:optional, NilClass, [[String]] ],
+      projects_dir: [:optional, NilClass, String],
       proxy_mode: String,
       host_whitelist: [:optional, NilClass, [[String]] ],
       template_dir: [:optional, NilClass, String],
@@ -35,8 +38,17 @@ module Xjz
       errors
     end
 
+    def projects_paths
+      pojs = data['projects'] || []
+      if pd = data['projects_dir'].presence
+        FileUtils.mkdir_p(pd) unless Dir.exist?(pd)
+        pojs += Dir[File.join(pd, '*')].select { |dir| Dir.exist?(dir) }
+      end
+      pojs
+    end
+
     def load_projects
-      data['.api_projects'] = format_projects(data['projects'])
+      data['.api_projects'] = format_projects(projects_paths)
     end
 
     def shared_data

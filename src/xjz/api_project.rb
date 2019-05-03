@@ -77,8 +77,10 @@ module Xjz
           next unless val
           if val.is_a?(Array)
             (r[key] ||= []).push(*val)
-          else
+          elsif val.is_a?(Hash)
             (r[key] ||= {}).merge!(val)
+          else
+            Logger[:auto].error { "Invalid config file #{path}" }
           end
         end
       end

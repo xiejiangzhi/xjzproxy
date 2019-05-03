@@ -35,15 +35,12 @@
 hr
 
 .row.form-group
-  label.col-3.col-form-label Projects
-  .col-9
-    ul.list-group#proxy_project_list
-      - $config['projects'].each do |path|
-        = render 'webui/proxy/_project_item.html', path: path
+  label.col-3.col-form-label Projects Folder
+  .col-9.input-group
+    .form-control-plaintext#proxy_projects_dir = $config['projects_dir']
         
-    .input-group.my-2
-      input#proxy_new_project_val type='hidden' xjz-id='proxy.new_project'
-      button.btn.btn-info.ml-auto#proxy_add_project_btn[
-        type='button'
-        xjz-rpc='opendir' data-rpc-target='#proxy_new_project_val'
-      ] Add Project
+    input#proxy_new_project_dir_val type='hidden' xjz-id='proxy.projects_dir'
+    button.btn.btn-info.ml-1#proxy_add_project_btn[
+      type='button'
+      xjz-rpc='opendir' data-rpc-target='#proxy_new_project_dir_val'
+    ] Change

@@ -40,43 +40,6 @@ module Xjz
         $config['host_whitelist'] = data['value'].to_s.strip.lines.map(&:strip)
       end
 
-      event(/^project\.(?<path_id>\d+)\.del_btn\.click$/) do
-        path_id = match_data[:path_id].to_i
-        path = $config['projects'].find { |path| path.object_id == path_id }
-        $config['projects'].delete path
-        ap = $config['.api_projects'].find { |ap| ap.repo_path == path }
-        $config['.api_projects'].delete(ap)
-        send_msg('el.remove', selector: "#proxy_project_#{path_id}")
-        send_msg('el.remove', selector: "#document_tab_#{ap.object_id}")
-      end
-
-      event 'new_project.change' do
-        path = data['value']
-        $config['projects'] << path
-        ap = ApiProject.new(path)
-        $config['.api_projects'] << ap
-        send_msg(
-          'el.append',
-          selector: "#proxy_project_list",
-          html: render('webui/proxy/_project_item.html', path: path)
-        )
-        send_msg(
-          'el.append',
-          selector: "#document_list_tabs",
-          html: render('webui/document/doc_tab.html', ap: ap)
-        )
-
-        if ap.errors
-          send_msg(
-            'alert',
-            type: :error,
-            message: "Found some error of the new project, check detail in Document"
-          )
-        else
-          send_msg('alert', message: "Successfully added a project", type: :info)
-        end
-      end
-
       event 'alpn_protocol.change' do
         if data['value']
           $config['alpn_protocols'] << data['name']
@@ -85,6 +48,39 @@ module Xjz
         end
         $config['alpn_protocols'].uniq!
         Resolver::SSL.reset_certs
+      end
+
+      event 'projects_dir.change' do
+        $config['projects_dir'] = data['value'].strip
+        paths = $config.projects_paths
+        send_msg('el.html', selector: '#proxy_projects_dir', html: $config['projects_dir'])
+        added_counter, removed_counter = 0, 0
+        $config['.api_projects'].delete_if do |ap|
+          path = ap.repo_path
+          if paths.include?(path)
+            paths.delete(path)
+            false
+          else
+            removed_counter += 1
+            send_msg('el.remove', selector: "#project_tab_#{ap.object_id}")
+            true
+          end
+        end
+
+        paths.sort.each do |path|
+          ap = ApiProject.new(path)
+          $config['.api_projects'] << ap
+          added_counter += 1
+          send_msg(
+            'el.append',
+            selector: "#project_list_tabs",
+            html: render('webui/project/doc_tab.html', ap: ap)
+          )
+        end
+        msg = "Successfully change projects folder."
+        msg << " Added #{added_counter} projects." if added_counter > 0
+        msg << " Removed #{removed_counter} projects." if removed_counter > 0
+        send_msg('alert', message: msg)
       end
     end
   end

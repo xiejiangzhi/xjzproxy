@@ -17,6 +17,8 @@ gem 'grpc-tools', '~> 1.19.0'
 gem 'classy_hash', '~> 0.2.1'
 gem 'faker', "~> 1.9.3"
 
+gem 'filewatcher', '~> 1.1.1'
+
 # UI
 gem 'tilt', '~> 2.0.9'
 gem 'slim', '~> 4.0.1'
