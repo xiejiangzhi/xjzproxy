@@ -3,7 +3,7 @@
 .row.form-group
   label.col-3.col-form-label
     | Proxy URL
-    i.fas.fa-question-circle.ml-1 title='Stop proxy to edit' xjz-el='tooltip'
+    i.fas.fa-question-circle.ml-1 title='Stop proxy to edit' data-toggle='tooltip'
   .col-9.input-group
     - url = "http://#{server.proxy_addr}"
     .form-control-plaintext = url

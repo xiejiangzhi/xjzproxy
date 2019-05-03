@@ -21,16 +21,16 @@
     onMessage: function(type, data){
       switch (type) {
       case 'el.append':
-        $(data.selector).append(data.html);
+        $(data.selector).append(this.initElem(data.html));
         break;
       case 'el.after':
-        $(data.selector).after(data.html);
+        $(data.selector).after(this.initElem(data.html));
         break;
       case 'el.html':
-        $(data.selector).html(data.html);
+        $(data.selector).html(this.initElem(data.html));
         break;
       case 'el.replace':
-        $(data.selector).replaceWith(data.html);
+        $(data.selector).replaceWith(this.initElem(data.html));
         break;
       case 'el.remove':
         $(data.selector).remove();
@@ -49,8 +49,8 @@
       console.log("Init View")
 
       this.initEvents();
+      this.initDynamicEvents(this.$container);
       this.initRPC();
-      this.initTooltips(this.$container);
     },
 
     initEvents: function() {
@@ -121,16 +121,14 @@
       }
     },
 
-    initTooltips: function($container) {
-      var init_key = 'tooltip-instance';
+    initDynamicEvents: function($container) {
+      $container.find('[title][data-toggle=tooltip]').tooltip();
+    },
 
-      $container.find('[title][xjz-el~=tooltip]').each(function(i, el){
-        var $el = $(el);
-        if (!$el.data(init_key)) {
-          var tp = $(el).tooltip();
-          $el.data(init_key, tp);
-        }
-      })
+    initElem: function(html){
+      var $el = $(html);
+      this.initDynamicEvents($el);
+      return $el;
     },
 
     formatEventCallback: function(cb) {
