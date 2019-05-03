@@ -8,11 +8,13 @@ html
     title XJZ Proxy
 
     script type='text/javascript' src='/static/jquery.min.js'
+    script type='text/javascript' src='/static/popper.min.js'
     script type='text/javascript' src='/static/bootstrap.min.js'
     script type='text/javascript' src='/static/noty.min.js'
     script type='text/javascript' src='/static/clipboard.min.js'
     link rel='stylesheet' href='/static/noty.min.css'
     link rel='stylesheet' href='/static/bootstrap.min.css'
+    link rel='stylesheet' href='/static/fontawesome-5.8.1/css/all.min.css'
 
     script type='text/javascript' src='/static/xjz_websocket.js'
     script type='text/javascript' src='/static/xjz_view.js'
@@ -22,7 +24,7 @@ html
 
   body
     - current_tab = :proxy
-    - feature_names = { proxy: 'Proxy', history: 'History', document: 'Document', report: 'Report' }
+    - feature_names = { proxy: 'Proxy', history: 'History', document: 'Project', report: 'Report' }
     header#app_header.navbar.navbar-expand.navbar-light.bg-light.sticky-top
       a.navbar-brand  XJZProxy
       .navbar-collapse

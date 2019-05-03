@@ -73,6 +73,7 @@ XjzProxy
 - Response disk cache 2d
 - Chinese doc 1d
 - Test version & software sign 2d
+- 混淆 Ruby Code，放入暗桩（正常版本不会运行的或是在激活后一定时间再进行检查），
 
 5d
 

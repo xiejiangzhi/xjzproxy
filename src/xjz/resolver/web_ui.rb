@@ -48,7 +48,7 @@ module Xjz
           return if ws.perform
         end
         [{}, ['Failed to perform websocket'], 400]
-      when %r{\A/static/.+(js|css|png)\Z}
+      when %r{\A/static/.+(js|css|png|svg|woff|woff2|ttf)\Z}
         path = File.join($root, 'src', req.path)
         content_type = case path
         when /js$/ then 'text/javascript'

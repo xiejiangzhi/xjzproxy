@@ -1,12 +1,15 @@
 - server = $config.shared_data.app.server
+
 .row.form-group
-  label.col-3.col-form-label Proxy URL
+  label.col-3.col-form-label
+    | Proxy URL
+    i.fas.fa-question-circle.ml-1 title='Stop proxy to edit' xjz-el='tooltip'
   .col-9.input-group
     - url = "http://#{server.proxy_addr}"
     .form-control-plaintext = url
     button.btn.btn-light[
       type='button' data-clipboard-text=url xjz-notify='Proxy URL Cpoied' 
-    ]Copy
+    ] Copy
 
 .row.form-group
   label.col-3.col-form-label Proxy Root CA URL

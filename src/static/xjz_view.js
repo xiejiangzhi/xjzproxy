@@ -50,6 +50,7 @@
 
       this.initEvents();
       this.initRPC();
+      this.initTooltips(this.$container);
     },
 
     initEvents: function() {
@@ -118,6 +119,18 @@
           $target.val(value).change();
         }
       }
+    },
+
+    initTooltips: function($container) {
+      var init_key = 'tooltip-instance';
+
+      $container.find('[title][xjz-el~=tooltip]').each(function(i, el){
+        var $el = $(el);
+        if (!$el.data(init_key)) {
+          var tp = $(el).tooltip();
+          $el.data(init_key, tp);
+        }
+      })
     },
 
     formatEventCallback: function(cb) {
