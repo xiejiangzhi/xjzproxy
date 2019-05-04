@@ -144,25 +144,23 @@ RSpec.describe Xjz::ApiProject::Parser do
               '.index' => 0,
               'url' => 'https?://xjz.pw',
               "response" => {
-                "success" => [
-                  r['responses']['list_users'],
-                  {
-                    http_code: 200,
-                    data: {
-                      items: [r['partials']['user']] * 2,
-                      total: r['types']['integer']
-                    }
-                  }.deep_stringify_keys,
-                  {
-                    data: {
-                      items: [r['partials']['user']] * 2,
-                      '.items.desc' => 'some desc',
-                      total: r['types']['integer'],
-                      '.total.desc' => 'some desc'
-                    }
-                  }.deep_stringify_keys
-                ],
-                "error" => [r['responses']['invalid_token']]
+                "success" => r['responses']['list_users'],
+                'r2' => {
+                  http_code: 200,
+                  data: {
+                    items: [r['partials']['user']] * 2,
+                    total: r['types']['integer']
+                  }
+                }.deep_stringify_keys,
+                'r3' => {
+                   data: {
+                    items: [r['partials']['user']] * 2,
+                    '.items.desc' => 'some desc',
+                    total: r['types']['integer'],
+                    '.total.desc' => 'some desc'
+                  }
+                }.deep_stringify_keys,
+                "error" => r['responses']['invalid_token']
               }
             }
           ],
@@ -181,8 +179,8 @@ RSpec.describe Xjz::ApiProject::Parser do
               "query" => nil,
               '.index' => 1,
               "response" => {
-                "success" => [r['responses']['show_user']],
-                "error" => [r['responses']['invalid_token']]
+                "success" => r['responses']['show_user'],
+                "error" => r['responses']['invalid_token']
               }
             }
           ]

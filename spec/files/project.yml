@@ -72,7 +72,7 @@ apis:
         if: q
 
     response:
-      default: .r/list_users
+      success: .r/list_users
       r2:
         http_code: 200
         data:
@@ -95,7 +95,7 @@ apis:
     labels: ['auth']
     query:
     response:
-      default: .r/show_user
+      success: .r/show_user
       error: .r/invalid_token
 
 plugins:

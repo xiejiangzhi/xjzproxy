@@ -27,30 +27,16 @@
 % end
 % end
 
+% api['response'].each do |name, res|
+% next if res.blank?
+**<%= name.titleize %> Response**
 
-% successes = api['response']['success']
-% if successes.present?
-**Success Response**
-
-<%= render 'xjzapidoc/_data.md', data: successes[0] %>
-
-Example
-
-```
-<%= render_project_data('apis', [host_regexp, api['method'], api['path'], 'success']) %>
-```
-% end
-
-
-% errors = api['response']['error']
-% if errors.present?
-**Error Response**
-
-<%= render 'xjzapidoc/_data.md', data: errors[0] %>
+<%= render 'xjzapidoc/_data.md', data: res %>
 
 Example
 
 ```
-<%= render_project_data('apis', [host_regexp, api['method'], api['path'], 'error']) %>
+<%= render_project_data('apis', [host_regexp, api['method'], api['path'], name]) %>
 ```
 % end
+

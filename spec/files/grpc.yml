@@ -32,6 +32,5 @@ apis:
     method: POST
     path: /Hw.Greeter/SayHello
     response:
-      success:
-        - .r/list_users
+      success: .r/list_users
 

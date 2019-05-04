@@ -28,7 +28,7 @@ module Xjz
         if api.nil? || api['.enabled'] == false || api['enabled'] == false
           nil
         else
-          (api&.dig('response', 'success') || []).sample
+          api&.dig('response', 'success')
         end
       end
       return unless res

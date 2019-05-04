@@ -46,7 +46,7 @@ module Xjz
       return unless desc
       api = api_project.find_api('post', nil, nil, path)
       return if api && (api['enabled'] == false || api['.enabled'] == false)
-      res = (api&.dig('response', 'success') || []).sample || {}
+      res = api&.dig('response', 'success') || {}
 
       {
         'headers' => res['headers'] || {},
