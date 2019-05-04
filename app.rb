@@ -14,10 +14,12 @@ module Xjz
   # init sub module
   module Helper; end
   module Resolver; end
+  module PageActions; end
   class WebUI; end
   class ProxyClient; end
 
   Xjz::Logger[:auto].debug { "Loading code..." }
+  load_file 'xjz/webui/action_runner'
   load_file 'xjz/webui/action_router'
   load_all
 end

@@ -28,21 +28,11 @@ module Xjz
     private
 
     class Message
-      attr_reader :type, :data, :page_manager, :session
-      attr_accessor :match_data
+      attr_reader :type, :data, :page_manager
 
       def initialize(type, data, page_manager)
         @type, @data = type, data.with_indifferent_access
         @page_manager = page_manager
-        @session = page_manager.session
-      end
-
-      def send_msg(type, data = nil)
-        page_manager.websocket&.send_msg(type, data)
-      end
-
-      def render(*args)
-        WebUI::RenderHelper.render(*args)
       end
     end
   end

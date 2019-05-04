@@ -8,12 +8,13 @@ module Xjz
       @api_project = ap
     end
 
-    def render(type = 'md')
+    def render(type = 'md', header: true)
       path = "#{TEMPLATE_PREFIX}/index.#{type}"
       Helper::Webview.render(path, {
         'project' => api_project,
         'raw_data' => api_project.raw_data,
-        'data' => api_project.data
+        'data' => api_project.data,
+        'render_header' => header
       }, [DocViewHelper])
     end
 

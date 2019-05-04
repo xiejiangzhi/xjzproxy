@@ -1,5 +1,5 @@
 module Xjz
-  WebUI::ActionRouter.register do
+  WebUI::ActionRouter.register :report do
     namespace 'report' do
     end
 

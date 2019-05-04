@@ -48,7 +48,6 @@ RSpec.describe Xjz::WebUI::PageManager do
         expect(msg_obj.type).to eql('ready')
         expect(msg_obj.data).to eql('v' => 'hello')
         expect(msg_obj.data[:v]).to eql('hello')
-        expect(msg_obj).to be_respond_to(:send_msg)
         r
       end
       sframe << new_msg('ready', v: 'hello')
@@ -63,7 +62,6 @@ RSpec.describe Xjz::WebUI::PageManager do
         expect(msg_obj.type).to eql('ready')
         expect(msg_obj.data).to eql('t' => t)
         expect(msg_obj.data[:t]).to eql(t)
-        expect(msg_obj).to be_respond_to(:send_msg)
         123321
       end
       expect(subject.emit_message('ready', t: t)).to eql(123321)

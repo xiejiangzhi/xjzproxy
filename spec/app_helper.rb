@@ -34,6 +34,7 @@ RSpec.configure do |config|
   config.include Support::TimeHelper
   config.include Support::NetworkHelper
   config.include Support::DataHelper
+  config.include Support::WebpageHelper, webpage: true
 
   config.after(:each) do
     (@sockets ||= []).each do |server, client, remote|

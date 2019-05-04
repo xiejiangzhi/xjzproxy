@@ -34,7 +34,7 @@
         $el.after($html);
         break;
       case 'el.html':
-        $el.html($html);
+        $el.html($html || '');
         break;
       case 'el.replace':
         $el.replaceWith($html);

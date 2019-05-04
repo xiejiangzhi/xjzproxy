@@ -1,4 +1,4 @@
-RSpec.describe 'web_actions.report', webpage: true do
+RSpec.describe 'report', webpage: true do
   let(:req) { Xjz::Request.new(new_req_env) }
   let(:res) { Xjz::Response.new(new_http1_res_headers, []) }
   let(:tracker) { Xjz::Tracker.new }
@@ -10,11 +10,8 @@ RSpec.describe 'web_actions.report', webpage: true do
   end
 
   it 'f_report_tab.click should render report page' do
-    msg = new_webmsg("f_report_tab.click")
-    expect(msg).to receive(:render).with("webui/report/index.html").and_call_original
-    expect(msg).to receive(:send_msg).with(
-      'el.html', selector: '#f_report', html: kind_of(String)
-    )
-    web_router.call(msg)
+    expect_runner_render(["webui/report/index.html"], :original)
+    expect_runner_send_msg(['el.html', selector: '#f_report', html: kind_of(String)])
+    emit_msg("f_report_tab.click")
   end
 end

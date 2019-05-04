@@ -1,5 +1,5 @@
 module Xjz
-  WebUI::ActionRouter.register do
+  WebUI::ActionRouter.register :history do
     event 'f_history_tab.click' do
     end
 

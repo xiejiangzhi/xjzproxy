@@ -1,5 +1,5 @@
 module Xjz
-  WebUI::ActionRouter.register do
+  WebUI::ActionRouter.register :proxy do
     event 'f_proxy_tab.click' do
     end
 
@@ -68,15 +68,17 @@ module Xjz
             true
           end
         end
-        daps.each { |ap| $config.shared_data.app.webui.emit_message('project.del', ap: ap) }
+        daps.each { |ap| del_project(ap) }
 
-        paths.sort.each do |path|
-          $config.shared_data.app.webui.emit_message('project.add', path: path)
-        end
+        paths.sort.each { |path| add_project(path) }
         msg = "Successfully change projects folder."
         send_msg('alert', message: msg)
         $config.shared_data.app.file_watcher.restart
       end
+    end
+
+    helpers do
+      include PageActions::ProjectHelper
     end
   end
 end

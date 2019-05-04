@@ -16,38 +16,44 @@
 #
 module Xjz
   class WebUI::ActionRouter
-    attr_reader :env_obj, :matcher, :events
+    attr_reader :matcher, :events, :current_cls, :classes, :last_runner
 
-    def self.register(&block)
-      default.instance_eval(&block)
+    def self.register(name, &block)
+      default.register(name, &block)
     end
 
     def self.default
       @default ||= self.new
     end
 
-    def initialize(matcher = //, &block)
+    def initialize(matcher = //, cls = nil, &block)
       @regexp = matcher
       @events = {}
+      @current_cls = cls
+      @classes = {}
       instance_eval(&block) if block
     end
 
+    def register(name, &block)
+      @current_cls = Class.new(WebUI::ActionRunner)
+      classes[name.to_s] = @current_cls
+      instance_eval(&block)
+      @current_cls = nil
+    end
+
     # Params:
-    #   env_obj: method `type` and `data` is required
+    #   msg: method `type` and `data` is required
     # Returns:
     #   true: processed
     #   false: not found performer
-    def call(env_obj, _sub_str = nil)
-      _sub_str ||= env_obj.type
+    def call(msg, _sub_str = nil)
+      _sub_str ||= msg.type
       events.each do |matcher, performer|
-        # binding.pry if $a == 1
         if String === matcher && _sub_str.start_with?(matcher)
-          env_obj.match_data = nil
-          r = run_performer(performer, env_obj, _sub_str[(matcher.length)..-1])
+          r = run_performer(performer, msg, _sub_str[(matcher.length)..-1])
           return r if r
         elsif Regexp === matcher && m = matcher.match(_sub_str)
-          env_obj.match_data = m
-          r = run_performer(performer, env_obj)
+          r = run_performer(performer, msg, nil, m)
           return r if r
         end
       end
@@ -58,25 +64,30 @@ module Xjz
     def namespace(matcher, &block)
       raise "action block cannot be nil" if block.nil?
       matcher += '.' if String === matcher
-      events[matcher] = self.class.new(matcher, &block)
+      (events[matcher] ||= self.class.new(matcher, current_cls)).tap do |obj|
+        obj.instance_eval(&block)
+      end
     end
 
     def event(matcher, &block)
       raise "action block cannot be nil" if block.nil?
-      events[matcher] = block
+      events[matcher] = [block, current_cls]
     end
 
     def helpers(&block)
-      (@helper_module ||= Module.new).module_eval(&block)
+      current_cls.class_eval(&block)
     end
 
     private
 
-    def run_performer(performer, env_obj, sub_str = nil)
-      if self.class === performer
-        performer.call(env_obj, sub_str)
+    def run_performer(performer, msg, sub_str = nil, match_data = nil)
+      block, runner_cls = performer
+      if self.class === block
+        block.call(msg, sub_str)
       else
-        env_obj.instance_eval(&performer)
+        runner = runner_cls.new(msg, match_data)
+        runner.instance_eval(&block)
+        runner_cls.last_runner = runner
         true
       end
     end
