@@ -16,19 +16,19 @@ apis:
     ".status.rejected":
       if: q
   response:
-    success:
-    - ".r/list_users"
-    - http_code: 200
+    default: ".r/list_users"
+    r2:
+      http_code: 200
       data:
         items: ".p/user * 2"
         total: ".t/integer"
-    - data:
+    r3:
+      data:
         items: ".p/user * 2"
         ".items.desc": some desc
         total: ".t/integer"
         ".total.desc": some desc
-    error:
-    - ".r/invalid_token"
+    error: ".r/invalid_token"
 - title: Get user
   desc: show a user's info
   enabled: true
@@ -39,7 +39,5 @@ apis:
   - auth
   query: 
   response:
-    success:
-    - ".r/show_user"
-    error:
-    - ".r/invalid_token"
+    default: ".r/show_user"
+    error: ".r/invalid_token"

@@ -66,6 +66,10 @@ module Xjz
       events[matcher] = block
     end
 
+    def helpers(&block)
+      (@helper_module ||= Module.new).module_eval(&block)
+    end
+
     private
 
     def run_performer(performer, env_obj, sub_str = nil)

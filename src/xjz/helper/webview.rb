@@ -39,6 +39,7 @@ module Xjz
     def render_template(template, *args, &block)
       template.render(*args, &block)
     rescue => e
+      raise e if 'test' == $app_env
       Logger[:auto].error { e.log_inspect }
       "Failed to render template"
     end

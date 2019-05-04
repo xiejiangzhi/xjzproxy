@@ -53,7 +53,7 @@ module Xjz
 
     def shared_data
       @shared_data ||= build_obj(
-        app: build_obj([:server, :webui, :cert_manager], readonly: false),
+        app: build_obj([:server, :webui, :cert_manager, :file_watcher], readonly: false),
         webui: build_obj([:ws], readonly: false)
       )
     end
@@ -114,13 +114,12 @@ module Xjz
       return [] unless v
       v.map do |p|
         ap = Xjz::ApiProject.new(p)
-        if errs = ap.errors
+        if (errs = ap.errors).present?
           Xjz::Logger[:auto].error { "Failed to load project '#{p}'\n#{errs.join("\n")}" }
-          nil
-        else
-          ap.data # try to parse
-          ap
         end
+
+        ap.data # try to parse
+        ap
       rescue => e
         Xjz::Logger[:auto].error { e.log_inspect }
         nil

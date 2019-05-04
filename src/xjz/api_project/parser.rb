@@ -54,7 +54,7 @@ module Xjz
       apis.each_with_index do |api, i|
         m = api['method'].to_s.upcase
         url = (api['url'] ||= purl)
-        url_regexp = Regexp.new('\A' + url + '\Z')
+        url_regexp = Regexp.new('\A' + url.to_s + '\Z')
         r[url_regexp] ||= {}
         expand_api = expand_hash(api, env)
         expand_api['.path_regexp'] = Regexp.new('\A' + expand_api['path'] + '(\.\w+)?\Z')

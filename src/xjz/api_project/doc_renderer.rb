@@ -68,7 +68,7 @@ module Xjz
         data = case c
         when 'apis'
           apis = cdata.dig(id[0], id[1].upcase)
-          apis.find { |api| api['path'] == id[2] }['response'][id[3]].first['data']
+          apis.find { |api| api['path'] == id[2] }['response'][id[3]]['data']
         when 'responses'
           cdata[id.to_s]['data']
         else

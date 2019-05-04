@@ -124,6 +124,20 @@ RSpec.describe Xjz::ApiProject do
       data['project']['dir'] = dir_path
       expect(ap.raw_data).to eql(data)
     end
+
+    it 'should return empty data when load a empty file' do
+      invalid_file = File.join($root, 'tmp/empty.yml')
+      `touch #{invalid_file}`
+      ap = Xjz::ApiProject.new(invalid_file)
+      expect(ap.raw_data).to eql({})
+    end
+
+    it 'should return empty data when load a invalid file' do
+      invalid_file = File.join($root, 'tmp/array.yml')
+      `echo "- a: 1" > #{invalid_file}`
+      ap = Xjz::ApiProject.new(invalid_file)
+      expect(ap.raw_data).to eql({})
+    end
   end
 
   describe '#data' do
@@ -177,6 +191,60 @@ RSpec.describe Xjz::ApiProject do
     it 'should return api if have not scheme and host' do
       expect(ap.find_api('get', nil, nil, '/api/v1/users')['title']).to eql('Get all users')
       expect(ap.find_api('get', nil, nil, '/api/v1/users/3')['title']).to eql('Get user')
+    end
+  end
+
+  describe '#reload' do
+    it 'should reload data' do
+      [ap.data, ap.raw_data, ap.grpc, ap.errors]
+      expect(ap).to receive(:data).and_return('xxx')
+      travel_to(Time.now + 5)
+
+      expect {
+        ap.reload
+      }.to change {
+        ap.instance_eval { [@data, @raw_data, @grpc, @errors] }
+      }.to([nil, nil, nil, nil])
+    end
+
+    it 'should not reload data for new project' do
+      [ap.data, ap.raw_data, ap.grpc, ap.errors]
+      expect(ap).to_not receive(:data)
+
+      expect {
+        ap.reload
+      }.to_not change {
+        ap.instance_eval { [@data, @raw_data, @grpc, @errors] }
+      }
+    end
+
+    it 'should reload data once if reload interval too short' do
+      [ap.data, ap.raw_data, ap.grpc, ap.errors]
+      expect(ap).to receive(:data).and_return('xxx')
+      travel_to(Time.now + 5)
+
+      expect {
+        ap.reload
+        ap.reload
+        ap.reload
+      }.to change {
+        ap.instance_eval { [@data, @raw_data, @grpc, @errors].map(&:object_id) }
+      }
+    end
+
+    it 'should reload data again if reload interval > default value' do
+      [ap.data, ap.raw_data, ap.grpc, ap.errors]
+      expect(ap).to receive(:data).and_return('xxx').twice
+      travel_to(Time.now + 5)
+
+      expect {
+        ap.reload
+        travel_to(Time.now + 5)
+        ap.reload
+        ap.reload
+      }.to change {
+        ap.instance_eval { [@data, @raw_data, @grpc, @errors].map(&:object_id) }
+      }
     end
   end
 end

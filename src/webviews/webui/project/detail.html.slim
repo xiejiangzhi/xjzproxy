@@ -1,11 +1,11 @@
 .detail.pt-3.pb-5 style='overflow-x: hidden;'
-  - if errors
+  - if errors.present?
     .container
       strong.row.text-danger Errors
       - errors.each do |err|
         .row.text-danger
-          .col-5 = err[:full_path]
-          .col-1 Must
-          .col-6 = err[:message]
+          .col-7 = err[:full_path]
+          .col-1 must
+          .col-4 = err[:message]
   - else
     == doc_html

@@ -1,5 +1,8 @@
 module Xjz
   WebUI::ActionRouter.register do
+    event 'f_history_tab.click' do
+    end
+
     namespace 'history' do
       event(/^detail\.(?<req_id>\d+)\.click$/) do
         req_id = match_data['req_id'].to_i
@@ -27,7 +30,7 @@ module Xjz
       # Data:
       #   rt: request tracker
       event 'new_request' do
-        history = Xjz::Tracker.instance.history
+        history = Tracker.instance.history
         total_reqs = history.count
         send_msg('el.html', selector: '#navbar_total_requests', html: total_reqs)
 

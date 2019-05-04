@@ -62,9 +62,18 @@ RSpec.configure do |config|
     end
   end
 
+  config.before :each, stub_config: true do
+    data = $config.data.deep_dup
+    allow($config).to receive(:data).and_return(data)
+  end
+
   config.around(:each, allow_local_http: true) do |example|
     WebMock.disable_net_connect!(allow_localhost: true)
     example.run
     WebMock.disable_net_connect!
+  end
+
+  config.after(:each, stub_app_env: true) do
+    $app_env = 'test'
   end
 end

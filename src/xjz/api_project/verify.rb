@@ -52,7 +52,7 @@ module Xjz
       project: [:optional, [
         NilClass,
         {
-          url: [:optional, NilClass, String],
+          url: String,
           dir: String, # auto set when load
           grpc: [:optional, [
             NilClass,

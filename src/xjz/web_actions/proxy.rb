@@ -1,5 +1,8 @@
 module Xjz
   WebUI::ActionRouter.register do
+    event 'f_proxy_tab.click' do
+    end
+
     namespace 'proxy' do
       event 'status.change' do
         if data['value']
@@ -54,33 +57,25 @@ module Xjz
         $config['projects_dir'] = data['value'].strip
         paths = $config.projects_paths
         send_msg('el.html', selector: '#proxy_projects_dir', html: $config['projects_dir'])
-        added_counter, removed_counter = 0, 0
-        $config['.api_projects'].delete_if do |ap|
+        daps = []
+        $config['.api_projects'].each do |ap|
           path = ap.repo_path
           if paths.include?(path)
             paths.delete(path)
             false
           else
-            removed_counter += 1
-            send_msg('el.remove', selector: "#project_tab_#{ap.object_id}")
+            daps << ap
             true
           end
         end
+        daps.each { |ap| $config.shared_data.app.webui.emit_message('project.del', ap: ap) }
 
         paths.sort.each do |path|
-          ap = ApiProject.new(path)
-          $config['.api_projects'] << ap
-          added_counter += 1
-          send_msg(
-            'el.append',
-            selector: "#project_list_tabs",
-            html: render('webui/project/doc_tab.html', ap: ap)
-          )
+          $config.shared_data.app.webui.emit_message('project.add', path: path)
         end
         msg = "Successfully change projects folder."
-        msg << " Added #{added_counter} projects." if added_counter > 0
-        msg << " Removed #{removed_counter} projects." if removed_counter > 0
         send_msg('alert', message: msg)
+        $config.shared_data.app.file_watcher.restart
       end
     end
   end

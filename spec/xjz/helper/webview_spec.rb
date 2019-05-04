@@ -37,7 +37,8 @@ RSpec.describe Xjz::Helper::Webview do
       expect(m.render('test')).to eql('<p>This is a default test template</p>')
     end
 
-    it 'should catch template error', log: false do
+    it 'should catch template error in non-test env', stub_app_env: true, log: false do
+      $app_env = 'dev'
       expect(m.render('error')).to eql('Failed to render template')
     end
 

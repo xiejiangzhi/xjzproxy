@@ -19,6 +19,9 @@ server.start
 
 webui = $config.shared_data.app.webui = Xjz::WebUI.new(server)
 
+fw = $config.shared_data.app.file_watcher = Xjz::FileWatcher.new
+fw.start
+
 main_thread = if $config['ui_window'] != false
   webui.start
   webui.window

@@ -5,6 +5,12 @@ module Xjz
     def initialize(repo_path)
       @repo_path = repo_path
       @response_renderer = ApiProject::ResponseRenderer.new(self)
+
+      @grpc = nil
+      @data = nil
+      @errors = nil
+      @raw_data = nil
+      @last_reload_at = Time.now
     end
 
     def match_host?(host)
@@ -47,7 +53,7 @@ module Xjz
     end
 
     def errors
-      Verifier.verify(raw_data, repo_path)
+      @errors ||= Verifier.verify(raw_data, repo_path) || []
     end
 
     def grpc
@@ -69,10 +75,29 @@ module Xjz
       end
     end
 
+    def reload(force: false, interval: 5)
+      if @last_reload_at.nil? || (Time.now - @last_reload_at) >= interval
+        @grpc = nil
+        @data = nil
+        @errors = nil
+        @raw_data = nil
+        data
+        Logger[:auto].info { "Reload project #{repo_path}" }
+        @last_reload_at = Time.now
+        true
+      else
+        false
+      end
+    end
+
+    def files(dir_path = repo_path)
+      Dir["#{dir_path}/**/*.{yml,yaml}"]
+    end
+
     private
 
     def load_dir(dir_path)
-      Dir["#{dir_path}/**/*.{yml,yaml}"].sort.each_with_object({}) do |path, r|
+      files.sort.each_with_object({}) do |path, r|
         load_file(path).each do |key, val|
           next unless val
           if val.is_a?(Array)
@@ -89,7 +114,8 @@ module Xjz
     def load_file(file_path)
       erb = ERB.new(File.read(file_path))
       erb.filename = file_path
-      YAML.load(erb.result, filename: file_path)
+      fdata = YAML.load(erb.result, filename: file_path)
+      fdata.is_a?(Hash) ? fdata : {}
     end
   end
 end

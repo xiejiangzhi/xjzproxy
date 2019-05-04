@@ -9,7 +9,7 @@ RSpec.describe Xjz::Config do
       "logger_level" => { "default" => "debug", 'io' => 'info' },
       "max_threads" => 4,
       "projects" => ["./spec/files/project.yml"],
-      "projects_dir" => File.join(Dir.home, "XJZProxy"),
+      "projects_dir" => File.join($root, "tmp/projects_dir_test"),
       "proxy_port" => 59898,
       "proxy_timeout" => 1,
       "proxy_mode" => "whitelist",
@@ -69,7 +69,7 @@ RSpec.describe Xjz::Config do
         io: info
       projects:
       - "./spec/files/project.yml"
-      projects_dir: "#{File.join(Dir.home, "XJZProxy")}"
+      projects_dir: "#{File.join($root, "tmp/projects_dir_test")}"
       proxy_mode: whitelist
       host_whitelist:
       - xjz.com

@@ -1,4 +1,4 @@
-RSpec.describe 'webui.proxy', webpage: true do
+RSpec.describe 'web_actions.proxy', webpage: true do
   before :each do
     cdata = $config.data.deep_dup
     allow($config).to receive(:data).and_return(cdata)
@@ -72,31 +72,24 @@ RSpec.describe 'webui.proxy', webpage: true do
     expect(msg).to receive(:send_msg).with(
       'el.html', selector: "#proxy_projects_dir", html: path
     )
-    expect(msg).to receive(:send_msg) \
-      .with('el.remove', selector: "#project_tab_#{$config['.api_projects'].first.object_id}")
+    expect($config.shared_data.app.webui).to receive(:emit_message) \
+      .with('project.del', ap: $config['.api_projects'].first).and_call_original
+    expect($config.shared_data.app.file_watcher).to receive(:restart)
 
     ap_paths = []
     %w{misc support xjz files}.sort.each do |dir|
       ap_path = File.join(path, dir)
       ap_paths << ap_path
-      ap = double('api project', errors: nil, repo_path: ap_path, data: { 'apis' => [] })
-      allow(Xjz::ApiProject).to receive(:new).with(ap_path).and_return(ap)
-
-      expect(msg).to receive(:render).with(
-        "webui/project/doc_tab.html", ap: ap
-      ).and_call_original
-      expect(msg).to receive(:send_msg).with(
-        'el.append', selector: "#project_list_tabs", html: kind_of(String)
-      )
+      expect($config.shared_data.app.webui).to receive(:emit_message) \
+        .with('project.add', path: ap_path).and_call_original
     end
 
     expect(msg).to receive(:send_msg).with(
-      "alert", message: "Successfully change projects folder. " +
-        "Added 4 projects. Removed 1 projects."
+      "alert", message: "Successfully change projects folder."
     )
     expect {
       web_router.call(msg)
-    }.to change { $config['.api_projects'].map(&:repo_path) }.to(ap_paths)
+    }.to change { $config['.api_projects'].map(&:repo_path) }.to([File.join(path, 'files')])
   end
 
   it 'alpn_protocol.change update alpn protocols' do

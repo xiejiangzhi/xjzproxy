@@ -1,4 +1,4 @@
-RSpec.describe 'webui.report', webpage: true do
+RSpec.describe 'web_actions.report', webpage: true do
   let(:req) { Xjz::Request.new(new_req_env) }
   let(:res) { Xjz::Response.new(new_http1_res_headers, []) }
   let(:tracker) { Xjz::Tracker.new }
