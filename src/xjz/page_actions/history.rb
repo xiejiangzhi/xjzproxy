@@ -65,6 +65,11 @@ module Xjz
         session[:history_filter] = RequestFilter.new(data[:value])
         update_rt_list
       end
+
+      event 'detail_tab.click' do
+        next if data[:name] == session[:history_detail_tab]
+        session[:history_detail_tab] = data[:name]
+      end
     end
 
     namespace 'server.tracker' do

@@ -1,27 +1,48 @@
-- rt = request_tracker
-- req = rt.request
-- res = rt.response
-- ap = rt.api_project
-- res_def = rt.res_definition
+ruby:
+  rt = request_tracker
+  req = rt.request
+  res = rt.response
+  ap = rt.api_project
+  res_def = rt.res_definition
+
+
+  @current_tab = session[:history_detail_tab] || 'headers'
+  def nav_link(id)
+    cls = 'nav-link'
+    cls << ' active' if id.to_s == @current_tab
+    {
+      tag: :a, class: cls, name: id, href: "#rt_#{id}",
+      data: { toggle: 'tab' }, 'xjz-id' => 'history.detail_tab',
+    }
+  end
+
+  def tab_pane(id, &block)
+    css_cls = 'tab-pane fade'
+    css_cls << ' active show' if id.to_s == @current_tab
+    { tag: 'div', class: css_cls, id: "#rt_#{id}" }
+  end
+
 
 ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
   style="top: 56px;"
 ]
   li.nav-item
-    a.nav-link.active href='#rt_headers' data-toggle='tab' Headers
+    *nav_link(:headers) Headers
+
   - if res
     li.nav-item
-      a.nav-link href='#rt_preview' data-toggle='tab' Preview
+      *nav_link(:preview) Preview
     li.nav-item
-      a.nav-link href='#rt_res' data-toggle='tab' Response
+      *nav_link(:res) Response
+
   - if res_def.present?
     li.nav-item
-      a.nav-link href='#rt_api' data-toggle='tab' API
+      *nav_link(:api) API
   li.nav-item
-    a.nav-link href='#rt_timing' data-toggle='tab' Timing
+    *nav_link(:diff) Diff
 
 .detail.tab-content.pt-3.pb-5 style='overflow-x: hidden;'
-  #rt_headers.tab-pane.fade.active.show
+  *tab_pane(:headers)
     strong General
     - general =  { method: req.http_method.upcase, url: req.url }
     - if res
@@ -42,7 +63,7 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
       .req_body = Rack::Utils.escape_html(req.body)
 
   - if res
-    #rt_preview.tab-pane.fade
+    *tab_pane(:preview)
       - case res.content_type
       - when /image/
         img src=base64_url(res.decoded_body, res.content_type)
@@ -52,7 +73,7 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
           sandbox="allow-scripts"
         ]
         
-    #rt_res.tab-pane.fade
+    *tab_pane(:res)
       - case res.content_type
       - when /image/
         | Cannot display binary data
@@ -61,7 +82,7 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
           code.text-break = escape_html(res.decoded_body)
 
   - if res_def.present?
-    #rt_api.tab-pane.fade
+    *tab_pane(:api)
       - res_type, desc = res_def
       strong = "#{res_type} Definition"
       hr
@@ -69,9 +90,7 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
       pre
         code = JSON.pretty_generate(desc)
 
-    
-    
-  #rt_timing.tab-pane.fade
+  *tab_pane(:diff)
     - timing = { 'Start At' => l(rt.start_at, format: :tl), 'Cost' => number_to_human_interval(rt.cost) }
     - rt.action_list.each { |k, ts| timing["Action #{k}"] = ts.first }
     = render('webui/_key_val.html', data: timing)

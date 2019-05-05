@@ -6,12 +6,28 @@
   ]
     = render 'webui/history/filter.html'
 
+    
     #history_rt_list_group.list-group.list-group-flush role='tablist'
       = render 'webui/history/rt_list.html'
-      
+            
   #history_detail.col-9.offset-3
     - if Xjz::Tracker.instance.history.length == 0
       | Has Not Any Request
     - elsif rt = session[:current_rt]
       = render 'webui/history/detail.html', request_tracker: rt
+
+  #history_loading.d-none.mt-4
+    .text-center
+      .spinner-border role='status'
+        span.sr-only Loading...
+
+  javascript:
+    (function(){
+      var $el = $('#history_loading');
+      $el.remove();
+      $el.removeClass('d-none');
+      $('#history_rt_list_group').on('click', '.list-group-item', function(){
+        $('#history_detail').html($el);
+      })
+    })()
 
