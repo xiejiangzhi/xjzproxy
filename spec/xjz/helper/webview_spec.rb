@@ -24,6 +24,10 @@ RSpec.describe Xjz::Helper::Webview do
       )
     end
 
+    it 'should support block' do
+      expect(m.render('block.html', &(proc { 123 }))).to eql('<div>123</div>')
+    end
+
     it 'should raise error when not found' do
       tengines = Xjz::Helper::Webview::TEMPLATE_ENGINES
       expect {

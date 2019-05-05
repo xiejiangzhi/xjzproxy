@@ -40,5 +40,19 @@ module Xjz
       end
       max
     end
+
+    def filter_rts(rts, filter)
+      return rts if filter&.filters_str.blank?
+
+      rts.select do |rt|
+        req = rt.request
+        filter.valid?(
+          host: req.host,
+          path: req.path,
+          http_method: req.http_method,
+          status: rt.response&.code
+        )
+      end
+    end
   end
 end

@@ -62,7 +62,6 @@ RSpec.describe 'proxy', webpage: true do
     old_ap = $config['.api_projects'].first
     expect_runner.to receive(:del_project).with(old_ap).and_call_original
     expect_runner_send_msg(["el.remove", selector: "#project_tab_#{old_ap.object_id}"])
-    expect_runner_send_msg(["el.html", selector: "#project_detail", html: ''])
     expect_runner_send_msg(["alert", message: "Removed project #{File.basename(old_ap.repo_path)}"])
     expect($config.shared_data.app.file_watcher).to receive(:restart)
 

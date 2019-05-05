@@ -11,11 +11,15 @@
 - elsif rt.error_msg
   - border_color = '#dc3545'
 
+- unless defined?(group_id)
+  - group_id = nil
+
+- css_cls = session[:current_rt] == rt ? 'active' : nil
+
 .list-group-item.p-0.pr-1[
-  class=(session[:current_rt] == rt ? 'active' : '') id="history_rt_tab_#{rt.object_id}"
-  data-rt-group="request_group_tab_#{req.user_socket.object_id}"
+  class=css_cls id="history_rt_tab_#{rt.object_id}"
   style="cursor: pointer; border-left: 4px solid #{border_color}; padding-left: 4px;"
-  role='tab'  data-toggle='list'
+  data-toggle='deep-list' data-parent='#history_rt_list_group'
   xjz-id="history.detail.#{rt.object_id}" xjz-bind='click'
 ]
   .rt_tab.py-1

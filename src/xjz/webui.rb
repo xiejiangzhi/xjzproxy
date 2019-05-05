@@ -34,11 +34,14 @@ module Xjz
     def emit_message(type, data)
       return false unless page_manager
       page_manager.emit_message("server.#{type}", data)
+    rescue => e
+      raise e if $app_env == 'test'
+      Logger[:auto].error { e.log_inspect }
     end
 
-    def render(name, vars = {})
+    def render(name, vars = {}, &block)
       vars[:session] = page_manager.session
-      Helper::Webview.render(name, vars, [WebUI::RenderHelper])
+      Helper::Webview.render(name, vars, [WebUI::RenderHelper], &block)
     end
 
     private

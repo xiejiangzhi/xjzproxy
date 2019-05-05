@@ -1,0 +1,26 @@
+.row.filter.sticky-top.bg-white.border-bottom.mx-0.px-1.align-middle style="height: 37px; padding-top: 1px;"
+  .col-4.px-0 style='padding-top: 1px;'
+    .btn-group.btn-group-toggle.clear-style.d-inline data-toggle='buttons'
+      - group_by = session[:history_group_by] || ''
+      - radios = [['', '-', "None"], ['host', 'H', 'Group by host']]
+      - radios += [['conn', 'C', 'Group by connection']]
+      - radios.each do |type, text, title|
+        label.btn.btn-light.btn-sm[
+          class=(group_by == type ? 'active' : '')
+          title=title data-toggle='tooltip' data-trigger='hover'
+        ]
+          input.btn[
+            type='radio' autocomplete='off' value=type
+            name='history_group_by' xjz-id='history.group_by'
+          ] = text
+
+  .col-8.px-0
+    .input-group.input-group-sm
+      input.ml-2.form-control.d-inline[
+        type='text' value=session[:history_filter]&.filters_str
+        placeholder='Filter' style='margin-top: 2px;'
+        title="Split part by space. Examples: 'xjz.pw /api/v1 status>=200 status<400 method=post'"
+        data-toggle='tooltip' data-trigger='hover'
+        xjz-id='history.filter' xjz-bind='keyup'
+      ]
+

@@ -1,6 +1,7 @@
 module Xjz
   WebUI::ActionRouter.register :proxy do
     event 'f_proxy_tab.click' do
+      session[:current_tab] = :proxy
     end
 
     namespace 'proxy' do

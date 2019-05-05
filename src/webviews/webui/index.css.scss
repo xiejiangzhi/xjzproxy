@@ -9,3 +9,20 @@
     background-color: #0062cc;
   }
 }
+
+.collapse-status-icon {
+  &.collapsed {
+    i.fa-minus:before {
+      content: "\f067";
+    }
+    i.fa-plus:before {
+      content: "\f068";
+    }
+    i.fa-caret-down {
+      transform: rotate(-90deg);
+    }
+  }
+  i.fas {
+    transition: transform 0.3s;
+  }
+}

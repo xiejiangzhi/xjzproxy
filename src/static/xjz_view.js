@@ -22,7 +22,7 @@
       var $el, $html;
       if (data.selector) { $el = $(data.selector); }
       if (data.html) {
-        $html = $($.parseHTML(data.html));
+        $html = $($.parseHTML(data.html.toString()));
         this.initElem($html);
       }
 
@@ -76,7 +76,7 @@
         var val = $el.data('value');
         if (val && val != ''){
           // use data-value
-        } else if (el.type == 'checkbox' || el.type == 'radio') {
+        } else if (el.type == 'checkbox') {
           val = el.checked
         } else {
           val = $el.val()
@@ -122,6 +122,13 @@
       this.$container.on('click', '[xjz-notify]', function(evt) {
         var $el = $(evt.currentTarget)
         that.notify($el.attr('xjz-notify'), $el.data('notify-type'))
+      })
+
+      this.$container.on('click', '[data-toggle=deep-list]', function(evt) {
+        var $el = $(evt.currentTarget)
+        var $parent = $($el.data('parent'))
+        $parent.find('.active[data-toggle=deep-list]').removeClass('active');
+        $el.addClass('active');
       })
     },
 

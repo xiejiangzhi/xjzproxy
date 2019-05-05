@@ -1,0 +1,27 @@
+- rts = filter_rts(Xjz::Tracker.instance.history, session[:history_filter])
+
+- group_type = session[:history_group_by]
+
+- case group_type
+- when 'host'
+  - grouped_rts = rts.group_by { |rt| rt.request.host }
+  - grouped_rts.each do |host, rts|
+    - group_id = "rt_host_#{Base64.strict_encode64(host).tr('=', '')}"
+    = render 'webui/history/request_group_tab.html', request: rts[0].request, group_id: group_id do
+      - rts.each do |rt|
+        - group_id = "rt_host_#{Base64.strict_encode64(host).tr('=', '')}"
+        = render 'webui/history/request_tab.html', request_tracker: rt, group_id: group_id
+
+- when 'conn'
+  - grouped_rts = rts.group_by { |rt| rt.request.user_socket.object_id }
+  - grouped_rts.each do |cid, rts|
+    - group_id = "rt_conn_#{cid}"
+    = render 'webui/history/request_group_tab.html', request: rts[0].request, group_id: group_id do
+      - rts.each do |rt|
+        - group_id = "rt_conn_#{cid}"
+        = render 'webui/history/request_tab.html', request_tracker: rt, group_id: group_id
+
+- else
+  - rts.each do |rt|
+    = render 'webui/history/request_tab.html', request_tracker: rt
+

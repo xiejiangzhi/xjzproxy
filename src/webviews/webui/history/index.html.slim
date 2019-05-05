@@ -1,33 +1,15 @@
 .row
   - h_header = 56 
   - offset = h_header.to_s + 'px'
-  .col-3.border-right.px-0.sticky-top[
+  .col-3.border-right.px-0.fixed-top[
     style="height: calc(100vh - #{offset}); overflow-y: auto; overflow-x: hidden; top: #{offset}; z-index: 999"
   ]
-    .row.filter.sticky-top.bg-white.border-bottom.mx-0.px-1 style="height: 37px; padding-top: 1px;"
-      .col-3.px-0 style='padding-top: 1px;'
-        .btn-group-toggle.clear-style.d-inline data-toggle='buttons'
-          label.btn.btn-light.btn-sm title='Group by host' data-toggle='tooltip'
-            input.btn type='checkbox' autocomplete='off' xjz-id='history.group_by_host' H
+    = render 'webui/history/filter.html'
 
-          label.btn.btn-light.btn-sm.ml-1 title='Group by conn' data-toggle='tooltip'
-            input.btn type='checkbox' autocomplete='off' xjz-id='history.group_by_conn' C
-
-      .col-9.px-0
-        .input-group.input-group-sm
-          input.ml-2.form-control.d-inline[
-            type='text' placeholder='Filter' style='margin-top: 2px;'
-            xjz-id='history.filter' xjz-bind='keyup'
-          ]
-    - groupd_rts = Xjz::Tracker.instance.history.group_by do |rt|
-      - rt.request.user_socket.object_id
     #history_rt_list_group.list-group.list-group-flush role='tablist'
-      - groupd_rts.each do |id, rts|
-        = render 'webui/history/request_group_tab.html', request: rts[0].request
-        - rts.each do |rt|
-          = render 'webui/history/request_tab.html', request_tracker: rt
-
-  #history_detail.col-9
+      = render 'webui/history/rt_list.html'
+      
+  #history_detail.col-9.offset-3
     - if Xjz::Tracker.instance.history.length == 0
       | Has Not Any Request
     - elsif rt = session[:current_rt]

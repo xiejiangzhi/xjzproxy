@@ -1,6 +1,36 @@
 module Xjz
   WebUI::ActionRouter.register :history do
+    helpers do
+      def update_rt_list
+        send_msg(
+          'el.html',
+          selector: '#history_rt_list_group',
+          html: render('webui/history/rt_list.html')
+        )
+      end
+
+      def get_group_id(req)
+        case session[:history_group_by]
+        when 'host' then "rt_host_#{Base64.strict_encode64(req.host).tr('=', '')}"
+        when 'conn' then "rt_conn_#{req.user_socket.object_id}"
+        end
+      end
+
+      def total_grouped_reqs(req)
+        gb = session[:history_group_by]
+        Tracker.instance.history.count do |trt|
+          (gb == 'host' && trt.request.host == req.host) ||
+            (gb == 'conn' && trt.request.user_socket.object_id == req.user_socket.object_id)
+        end
+      end
+
+      def req_filter
+        session[:history_filter] ||= RequestFilter.new('')
+      end
+    end
+
     event 'f_history_tab.click' do
+      session[:current_tab] = :history
     end
 
     namespace 'history' do
@@ -25,17 +55,15 @@ module Xjz
         )
       end
 
-      event 'group_by_host.change' do
-        session[:history_group_by_host] = data[:value]
-      end
-
-      event 'group_by_conn.change' do
-        session[:history_group_by_conn] = data[:value]
+      event 'group_by.change' do
+        session[:history_group_by] = data[:value]
+        update_rt_list
       end
 
       event(/^filter\.(keyup|change)$/) do
-        return if data[:value] == session[:history_filter]
-        session[:history_filter] = data[:value]
+        next if data[:value] == req_filter.filters_str
+        session[:history_filter] = RequestFilter.new(data[:value])
+        update_rt_list
       end
     end
 
@@ -45,28 +73,56 @@ module Xjz
       event 'new_request' do
         history = Tracker.instance.history
         total_reqs = history.count
-        send_msg('el.html', selector: '#navbar_total_requests', html: total_reqs)
+        send_msg('el.html', selector: '#navbar_total_requests', html: total_reqs.to_s)
 
         rt = data[:rt]
         req = rt.request
-        total_reqs_of_conn = history.count do |trt|
-          trt.request.user_socket.object_id == req.user_socket.object_id
-        end
-        if total_reqs_of_conn <= 1
-          html = render 'webui/history/request_group_tab.html', request: req
-          send_msg('el.append', selector: "#history_rt_list_group", html: html)
-        end
+        rt_data = {
+          host: req.host, path: req.path,
+          http_method: req.http_method,
+          status: rt.response&.code
+        }
+        next unless req_filter.valid?(rt_data)
 
-        html = render 'webui/history/request_tab.html', request_tracker: rt
-        selector = "[data-rt-group=request_group_tab_#{rt.request.user_socket.object_id}]:last"
-        send_msg('el.after', selector: selector, html: html)
+        group_id = get_group_id(req)
+        req_tab_proc = proc {
+          render 'webui/history/request_tab.html', request_tracker: rt, group_id: group_id
+        }
+
+        if group_id.present?
+          if total_grouped_reqs(req) <= 1
+            send_msg(
+              'el.append',
+              selector: "#history_rt_list_group",
+              html: render(
+                'webui/history/request_group_tab.html',
+                request: req, group_id: group_id, &req_tab_proc
+              )
+            )
+          else
+            send_msg('el.append', selector: "[data-rt-group=#{group_id}]", html: req_tab_proc.call)
+          end
+        else
+          send_msg('el.append', selector: "#history_rt_list_group", html: req_tab_proc.call)
+        end
       end
 
       # Data:
       #   rt: request tracker
       event 'update_request' do
         rt = data[:rt]
-        html = render 'webui/history/request_tab.html', request_tracker: rt
+        req = rt.request
+        rt_data = {
+          host: req.host, path: req.path,
+          http_method: req.http_method,
+          status: rt.response&.code
+        }
+        next unless req_filter.valid?(rt_data)
+
+        html = render(
+          'webui/history/request_tab.html',
+          request_tracker: rt, group_id: get_group_id(req)
+        )
         send_msg('el.replace', selector: "#history_rt_tab_#{rt.object_id}", html: html)
 
         if session[:current_rt] == rt

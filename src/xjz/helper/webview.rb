@@ -13,8 +13,8 @@ module Xjz
       }
     }
 
-    def self.render(*args)
-      new.render(*args)
+    def self.render(*args, &block)
+      new.render(*args, &block)
     end
 
     def initialize
@@ -22,15 +22,15 @@ module Xjz
       @template_path_cache = {}
     end
 
-    def render(name, vars = {}, helper_modules = nil)
+    def render(name, vars = {}, helper_modules = nil, &block)
       ve = ViewEntity.new(vars, helper_modules, self)
 
       if Array === name
         layout, template = name.map { |p| fetch_template(fetch_template_path(p)) }
-        render_template(layout, ve, vars) { render_template(template, ve, vars) }
+        render_template(layout, ve, vars) { render_template(template, ve, vars, &block) }
       else
         template = fetch_template(fetch_template_path(name))
-        render_template(template, ve, vars)
+        render_template(template, ve, vars, &block)
       end
     end
 
@@ -79,9 +79,9 @@ module Xjz
         @renderer = renderer
       end
 
-      def render(name, new_vars = {})
+      def render(name, new_vars = {}, &block)
         @renderer.render(
-          name, vars.merge(new_vars.stringify_keys), @helper_modules
+          name, vars.merge(new_vars.stringify_keys), @helper_modules, &block
         )
       end
 

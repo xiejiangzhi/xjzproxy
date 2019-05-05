@@ -29,10 +29,13 @@ else
   server.proxy_thread
 end
 
+at_exit do
+  server.stop
+end
+
 begin
   main_thread.join
   server.stop
 rescue Interrupt
-  server.stop
   puts "\nBye!"
 end

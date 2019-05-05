@@ -26,6 +26,24 @@ RSpec.describe 'history', webpage: true do
     }.to change { tracker.history }.to([])
   end
 
+  it 'group_by.change should rerender rt_list' do
+    rt.finish(res)
+    expect_runner_render(["webui/history/rt_list.html"], :original)
+    expect_runner_send_msg(['el.html', selector: '#history_rt_list_group', html: kind_of(String)])
+    expect {
+      emit_msg("history.group_by.change", value: 'host')
+    }.to change { session[:history_group_by] }.to('host')
+  end
+
+  it 'filter.change should rerender rt_list' do
+    rt.finish(res)
+    expect_runner_render(["webui/history/rt_list.html"], :original)
+    expect_runner_send_msg(['el.html', selector: '#history_rt_list_group', html: kind_of(String)])
+    expect {
+      emit_msg("history.filter.change", value: 'xxx')
+    }.to change { session[:history_filter]&.filters_str }.to('xxx')
+  end
+
   describe 'server.tracker' do
     before :each do
       rt
@@ -33,34 +51,45 @@ RSpec.describe 'history', webpage: true do
 
     it 'new_request should update status bar' do
       allow(Xjz::Tracker.instance.history).to receive(:count).and_return(321)
-      expect_runner_send_msg(['el.html', selector: '#navbar_total_requests', html: 321])
-      expect_runner_render(['webui/history/request_tab.html', request_tracker: rt], 'htmlxzz')
-      selector = "[data-rt-group=request_group_tab_#{req.user_socket.object_id}]:last"
-      expect_runner_send_msg(['el.after', selector: selector, html: 'htmlxzz'])
+      expect_runner_send_msg(['el.html', selector: '#navbar_total_requests', html: '321'])
+      expect_runner_render(
+        ['webui/history/request_tab.html', request_tracker: rt, group_id: nil], 'htmlxzz'
+      )
+      selector = "#history_rt_list_group"
+      expect_runner_send_msg(['el.append', selector: selector, html: 'htmlxzz'])
       emit_msg("server.tracker.new_request", rt: rt)
     end
 
     it 'new_request should render group tab if count <= 1' do
-      expect_runner_send_msg(['el.html', selector: '#navbar_total_requests', html: 1])
-      expect_runner_render(['webui/history/request_group_tab.html', request: req], 'htmlxxx')
+      session[:history_group_by] = 'conn'
+      group_id = "rt_conn_#{rt.request.user_socket.object_id}"
+      expect_runner_send_msg(['el.html', selector: '#navbar_total_requests', html: '1'])
+      expect_runner_render(
+        ['webui/history/request_group_tab.html', request: req, group_id: group_id], 'htmlxxx'
+      )
       expect_runner_send_msg(['el.append', selector: '#history_rt_list_group', html: 'htmlxxx'])
-      expect_runner_render(['webui/history/request_tab.html', request_tracker: rt], 'htmlxzz')
-      selector = "[data-rt-group=request_group_tab_#{req.user_socket.object_id}]:last"
-      expect_runner_send_msg(['el.after', selector: selector, html: 'htmlxzz'])
       emit_msg("server.tracker.new_request", rt: rt)
     end
 
-    it 'update_request should tab' do
-      expect_runner_render(['webui/history/request_tab.html', request_tracker: rt], 'htmlxxx')
+    it 'update_request should update tab' do
+      expect_runner_render(
+        ['webui/history/request_tab.html', request_tracker: rt, group_id: nil], 'htmlxxx'
+      )
       expect_runner_send_msg([
         'el.replace', selector: "#history_rt_tab_#{rt.object_id}", html: 'htmlxxx'
       ])
       emit_msg("server.tracker.update_request", rt: rt)
     end
 
-    it 'update_request should tab and detail if rt is current rt' do
+    it 'update_request should update tab and detail if rt is current rt' do
+      session[:history_group_by] = 'host'
       session[:current_rt] = rt
-      expect_runner_render(['webui/history/request_tab.html', request_tracker: rt], 'htmlxxx')
+      expect_runner_render(
+        [
+          'webui/history/request_tab.html',
+          request_tracker: rt, group_id: "rt_host_#{Base64.strict_encode64(req.host).tr('=', '')}"
+        ], 'htmlxxx'
+      )
       expect_runner_send_msg(['el.replace', selector: "#history_rt_tab_#{rt.object_id}", html: 'htmlxxx'])
       expect_runner_render(['webui/history/detail.html', request_tracker: rt], 'htmlyyy')
       expect_runner_send_msg(['el.html', selector: "#history_detail", html: 'htmlyyy'])
