@@ -34,7 +34,7 @@ module Xjz
         else
           key, opt, val = ft
           case key
-          when 'status' then compare_vals(res.code, opt, val)
+          when 'status' then compare_vals(res&.code || -1, opt, val)
           when 'method' then compare_vals(req.http_method, opt, val)
           when 'type'
             compare_vals(req.content_type, opt, val) ||

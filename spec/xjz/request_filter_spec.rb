@@ -39,6 +39,14 @@ RSpec.describe Xjz::RequestFilter do
 
       subject = Xjz::RequestFilter.new('method~^ge')
       expect(subject.valid?(fargs('get', 'xjz.pw', '/api/v1/users', 200))).to eql(true)
+
+      subject = Xjz::RequestFilter.new('status>0')
+      req = double(
+        'req',
+        http_method: 'get', host: 'xjz.pw',
+        path: '/api/v1/users', content_type: 'text/plain'
+      )
+      expect(subject.valid?(req: req)).to eql(false)
     end
   end
 end
