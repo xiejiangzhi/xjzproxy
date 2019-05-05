@@ -71,20 +71,32 @@
         })
       )
 
-      this.$container.on(
-        'change', '[xjz-id][xjz-bind~=change], input[xjz-id], textarea[xjz-id], select[xjz-id]',
-        this.formatEventCallback(function(evt, xjz_id, $el) {
-          var el = $el[0]
-          var val = $el.data('value');
-          if (val && val != ''){
-            // nothing
-          } else if (el.type == 'checkbox' || el.type == 'radio') { val = el.checked }
-          else { val = $el.val() }
-          this.ws.sendMsg(xjz_id + '.' + evt.type, {
-            value: val, name: $el.data('name') || $el.attr('name')
-          })
+      var input_cb = this.formatEventCallback(function(evt, xjz_id, $el) {
+        var el = $el[0]
+        var val = $el.data('value');
+        if (val && val != ''){
+          // use data-value
+        } else if (el.type == 'checkbox' || el.type == 'radio') {
+          val = el.checked
+        } else {
+          val = $el.val()
+        }
+        this.ws.sendMsg(xjz_id + '.' + evt.type, {
+          value: val, name: $el.data('name') || $el.attr('name')
         })
+      })
+
+      this.$container.on(
+        'change',
+        '[xjz-id][xjz-bind~=change], input[xjz-id], textarea[xjz-id], select[xjz-id]',
+        input_cb
       )
+      var keyup_delay = 500;
+      var keyup_timer = null;
+      this.$container.on('keyup', 'input[xjz-id][xjz-bind~=keyup]', function(evt) {
+        if (keyup_timer) { window.clearTimeout(keyup_timer); }
+        keyup_timer = window.setTimeout(function(){ input_cb(evt); }, keyup_delay);
+      })
 
       this.$container.on('click', '[xjz-rpc]', function(evt) {
         var $el = $(evt.currentTarget);

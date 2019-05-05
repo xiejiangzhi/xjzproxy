@@ -24,6 +24,19 @@ module Xjz
           html: render('webui/history/index.html')
         )
       end
+
+      event 'group_by_host.change' do
+        session[:history_group_by_host] = data[:value]
+      end
+
+      event 'group_by_conn.change' do
+        session[:history_group_by_conn] = data[:value]
+      end
+
+      event(/^filter\.(keyup|change)$/) do
+        return if data[:value] == session[:history_filter]
+        session[:history_filter] = data[:value]
+      end
     end
 
     namespace 'server.tracker' do

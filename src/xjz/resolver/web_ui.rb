@@ -2,7 +2,7 @@ module Xjz
   class Resolver::WebUI
     attr_reader :req, :template_dir, :api_project
 
-    NOT_FOUND_RES = [{'Connection' => 'close'}, ["Not Found"], 404]
+    NOT_FOUND_RES = [{ 'Connection' => 'close' }, ["Not Found"], 404]
 
     def initialize(req, ap = nil)
       @api_project = ap
@@ -38,7 +38,7 @@ module Xjz
       when '/status'
         [{}, ['Ready'], 200]
       when '/'
-        body = WebUI::RenderHelper.render('webui/index.html')
+        body = $config.shared_data.app.webui.render('webui/index.html')
         [{}, [body], 200]
       when '/ws'
         if req.upgrade_flag == 'websocket'

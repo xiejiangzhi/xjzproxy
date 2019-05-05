@@ -1,9 +1,5 @@
 module Xjz
   module WebUI::RenderHelper
-    def self.render(name, vars = {})
-      Helper::Webview.render(name, vars, [self])
-    end
-
     def auto_cut_str(str, len)
       str.length > len ? (str[0...(len - 3)] + '...') : str
     end

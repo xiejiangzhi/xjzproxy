@@ -36,6 +36,11 @@ module Xjz
       page_manager.emit_message("server.#{type}", data)
     end
 
+    def render(name, vars = {})
+      vars[:session] = page_manager.session
+      Helper::Webview.render(name, vars, [WebUI::RenderHelper])
+    end
+
     private
 
     def wait_server_ready

@@ -1,1 +1,11 @@
-
+.btn-group-toggle.clear-style {
+  .btn {
+    color: #999;
+    cursor: pointer;
+    background-color: #f2f6fa;
+  }
+  .btn.active {
+    color: #fff;
+    background-color: #0062cc;
+  }
+}

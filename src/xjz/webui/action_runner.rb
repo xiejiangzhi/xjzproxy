@@ -12,8 +12,8 @@ module Xjz
       @match_data = match_data
     end
 
-    def render(*args)
-      WebUI::RenderHelper.render(*args)
+    def render(name, vars = {})
+      $config.shared_data.app.webui.render(name, vars)
     end
 
     def send_msg(type, data = nil)

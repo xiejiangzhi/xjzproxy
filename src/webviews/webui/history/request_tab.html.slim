@@ -12,7 +12,7 @@
   - border_color = '#dc3545'
 
 .list-group-item.p-0.pr-1[
-  id="history_rt_tab_#{rt.object_id}"
+  class=(session[:current_rt] == rt ? 'active' : '') id="history_rt_tab_#{rt.object_id}"
   data-rt-group="request_group_tab_#{req.user_socket.object_id}"
   style="cursor: pointer; border-left: 4px solid #{border_color}; padding-left: 4px;"
   role='tab'  data-toggle='list'
