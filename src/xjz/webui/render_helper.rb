@@ -46,12 +46,7 @@ module Xjz
 
       rts.select do |rt|
         req = rt.request
-        filter.valid?(
-          host: req.host,
-          path: req.path,
-          http_method: req.http_method,
-          status: rt.response&.code
-        )
+        filter.valid?(req: req, res: rt.response)
       end
     end
   end

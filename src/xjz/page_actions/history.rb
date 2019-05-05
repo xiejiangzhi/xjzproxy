@@ -77,12 +77,7 @@ module Xjz
 
         rt = data[:rt]
         req = rt.request
-        rt_data = {
-          host: req.host, path: req.path,
-          http_method: req.http_method,
-          status: rt.response&.code
-        }
-        next unless req_filter.valid?(rt_data)
+        next unless req_filter.valid?(req: req, res: rt.response)
 
         group_id = get_group_id(req)
         req_tab_proc = proc {
@@ -112,12 +107,7 @@ module Xjz
       event 'update_request' do
         rt = data[:rt]
         req = rt.request
-        rt_data = {
-          host: req.host, path: req.path,
-          http_method: req.http_method,
-          status: rt.response&.code
-        }
-        next unless req_filter.valid?(rt_data)
+        next unless req_filter.valid?(req: req, res: rt.response)
 
         html = render(
           'webui/history/request_tab.html',

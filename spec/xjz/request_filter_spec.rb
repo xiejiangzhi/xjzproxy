@@ -1,39 +1,44 @@
 RSpec.describe Xjz::RequestFilter do
   describe 'filter' do
-    let(:subject) { Xjz::RequestFilter.new('xjz api/v1 status>=200 status<=300 method=Post') }
+    let(:subject) do
+      Xjz::RequestFilter.new('xjz api/v1 status>=200 status<=300 method=Post type~text')
+    end
+
+    def fargs(http_method, host, path, status, type = 'text/plain')
+      {
+        req: double('req', host: host, path: path, http_method: http_method, content_type: type),
+        res: double('res', code: status, content_type: type)
+      }
+    end
 
     it 'should return true if match' do
-      expect(
-        subject.valid?(host: 'xjz.pw', path: '/api/v1/users', status: 200, http_method: 'post')
-      ).to eql(true)
-      expect(
-        subject.valid?(host: 'xjz.pw', path: '/api/v1/users', status: '299', http_method: 'post')
-      ).to eql(true)
-      expect(
-        subject.valid?(host: 'www.xjz.pw', path: '/api/v1/users', status: '299', http_method: 'post')
-      ).to eql(true)
+      expect(subject.valid?(fargs('post', 'xjz.pw', '/api/v1/users', 200))).to eql(true)
+      expect(subject.valid?(fargs('post', 'xjz.pw', '/api/v1/users', 299))).to eql(true)
+      expect(subject.valid?(fargs('post', 'www.xjz.pw', '/api/v1/users', 299))).to eql(true)
     end
 
     it 'should return false if not match' do
-      expect(
-        subject.valid?(host: 'x-jz.pw', path: '/api/v1/users', status: 200, http_method: 'post')
-      ).to eql(false)
-      expect(
-        subject.valid?(host: 'xjz.pw', path: '/api/v1/users', status: '399', http_method: 'post')
-      ).to eql(false)
-      expect(
-        subject.valid?(host: 'xjz.pw', path: '/api/v2/users', status: '299', http_method: 'post')
-      ).to eql(false)
-      expect(
-        subject.valid?(host: 'xjz.pw', path: '/api/v1/users', status: 200, http_method: 'get')
-      ).to eql(false)
+      expect(subject.valid?(fargs('post', 'x-jz.pw', '/api/v1/users', 200))).to eql(false)
+      expect(subject.valid?(fargs('post', 'xjz.pw', '/api/v1/users', 399))).to eql(false)
+      expect(subject.valid?(fargs('post', 'xjz.pw', '/api/v2/users', 299))).to eql(false)
+      expect(subject.valid?(fargs('get', 'xjz.pw', '/api/v1/users', 200))).to eql(false)
     end
 
-    it 'should return true if filter is empty' do
+    it 'other cases' do
       subject = Xjz::RequestFilter.new(nil)
-      expect(
-        subject.valid?(host: 'xjz.pw', path: '/api/v1/users', status: 200, http_method: 'get')
-      ).to eql(true)
+      expect(subject.valid?(fargs('get', 'xjz.pw', '/api/v1/users', 200))).to eql(true)
+
+      subject = Xjz::RequestFilter.new('method!=post')
+      expect(subject.valid?(fargs('get', 'xjz.pw', '/api/v1/users', 200))).to eql(true)
+
+      subject = Xjz::RequestFilter.new('method!=get')
+      expect(subject.valid?(fargs('get', 'xjz.pw', '/api/v1/users', 200))).to eql(false)
+
+      subject = Xjz::RequestFilter.new('method=ge')
+      expect(subject.valid?(fargs('get', 'xjz.pw', '/api/v1/users', 200))).to eql(false)
+
+      subject = Xjz::RequestFilter.new('method~^ge')
+      expect(subject.valid?(fargs('get', 'xjz.pw', '/api/v1/users', 200))).to eql(true)
     end
   end
 end

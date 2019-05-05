@@ -16,11 +16,16 @@
 
   .col-8.px-0
     .input-group.input-group-sm
+      ruby:
+        title = "Split part by space."
+        title << " Examples: 'xjz.pw /api/v1 status>=200 status<400 method=post'."
+        title << " Operations: > >= < <= = != ~(Regexp) !~."
+        title << " Field: status, method type(content_type)"
+
       input.ml-2.form-control.d-inline[
         type='text' value=session[:history_filter]&.filters_str
         placeholder='Filter' style='margin-top: 2px;'
-        title="Split part by space. Examples: 'xjz.pw /api/v1 status>=200 status<400 method=post'"
-        data-toggle='tooltip' data-trigger='hover'
+        title=title data-toggle='tooltip' data-trigger='hover'
         xjz-id='history.filter' xjz-bind='keyup'
       ]
 

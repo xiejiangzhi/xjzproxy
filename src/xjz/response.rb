@@ -36,11 +36,15 @@ module Xjz
     end
 
     def content_type
-      @content_type ||= (HTTPHelper.get_header(h1_headers, 'content-type') || 'text/plain').downcase
+      @content_type ||= (
+        HTTPHelper.get_header(h1_headers, 'content-type') || 'text/plain'
+      ).to_s.downcase
     end
 
     def content_encoding
-      @content_encoding ||= (HTTPHelper.get_header(h1_headers, 'content-encoding') || 'identity').downcase
+      @content_encoding ||= (
+        HTTPHelper.get_header(h1_headers, 'content-encoding') || 'identity'
+      ).to_s.downcase
     end
 
     def decoded_body
