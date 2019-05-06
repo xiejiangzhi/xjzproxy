@@ -126,6 +126,38 @@ module Xjz
       env['rack.url_scheme'] == 'https'
     end
 
+    def query_hash
+      @query_hash ||= Rack::Utils.parse_query(env['QUERY_STRING']) rescue {}
+    end
+
+    def body_hash
+      @body_hash ||= begin
+        type = case content_type
+        when /json/ then :json
+        when /xml/ then :xml
+        when /x-www-form-urlencoded/ then :url
+        else
+          bd = body.strip
+          case bd
+          when /^[\{\[].*[\}\]]$/ then :json
+          when /^<.*>$/ then :xml
+          when /=/ then :url
+          end
+        end
+
+        case type
+        when :json then JSON.parse(body)
+        when :xml then Hash.from_xml(body)
+        when :url then Rack::Utils.parse_query(body)
+        else {}
+        end
+      end rescue {}
+    end
+
+    def params
+      @params ||= query_hash.merge(body_hash)
+    end
+
     private
 
     def self.import_h2_headers_to_env!(env, headers)

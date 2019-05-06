@@ -81,7 +81,7 @@ module Xjz
       end_at - start_at
     end
 
-    def res_definition
+    def api_desc
       return unless api_project
       @definition ||= begin
         req = request

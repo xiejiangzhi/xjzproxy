@@ -1,4 +1,6 @@
 RSpec.describe Xjz::ApiProject::DataType do
+  let(:types) { described_class.default_types }
+
   describe 'generate' do
     it 'should return data by items' do
       subject = described_class.new('items' => 123)
@@ -45,11 +47,31 @@ RSpec.describe Xjz::ApiProject::DataType do
     end
 
     it 'should generate for default types' do
-      subject = described_class.default_types['integer']
+      subject = types['integer']
       expect(subject.generate).to be_a(Integer)
 
-      subject = described_class.default_types['name']
+      subject = types['name']
       expect(subject.generate).to be_a(String)
+    end
+  end
+
+  describe 'verify' do
+    it 'should verify by val class' do
+      expect(types['integer'].verify(123)).to eql(true)
+      expect(types['integer'].verify('123')).to eql(false)
+      expect(types['string'].verify(123)).to eql(false)
+      expect(types['string'].verify('222')).to eql(true)
+      expect(types['boolean'].verify(true)).to eql(true)
+      expect(types['boolean'].verify(false)).to eql(true)
+      expect(types['color_name'].verify('#xxx')).to eql(true)
+      expect(types['color_name'].verify('yyy')).to eql(true)
+    end
+
+    it 'should verify by proc' do
+      subject = described_class.new('items' => 123, 'validator' => proc { |v| v > 3 rescue false })
+      expect(subject.verify(3)).to eql(false)
+      expect(subject.verify(4)).to eql(true)
+      expect(subject.verify('4')).to eql(false)
     end
   end
 end

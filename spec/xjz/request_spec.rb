@@ -207,4 +207,52 @@ RSpec.describe Xjz::Request do
       )
     end
   end
+
+  it '#query_hash should parse query string' do
+    expect(req.query_hash).to eql('a' => '123')
+  end
+
+  it '#body_hash should parse json' do
+    allow(req).to receive(:content_type).and_return('application/json')
+    allow(req).to receive(:body).and_return({ a: 1 }.to_json)
+    expect(req.body_hash).to eql('a' => 1)
+  end
+
+  it '#body_hash should parse www-form-urlencoded' do
+    allow(req).to receive(:content_type).and_return('application/x-www-form-urlencoded')
+    allow(req).to receive(:body).and_return('a=1&b=123')
+    expect(req.body_hash).to eql('a' => '1', 'b' => '123')
+  end
+
+  it '#body_hash should parse xml' do
+    allow(req).to receive(:content_type).and_return('application/xml')
+    allow(req).to receive(:body).and_return(<<-XML)
+      <?xml version="1.0" encoding="UTF-8"?>
+      <xxx>
+        <foo type="integer">1</foo>
+        <bar type="integer">2</bar>
+      </xxx>
+    XML
+    expect(req.body_hash).to eql('xxx' => { 'foo' => 1, 'bar' => 2 })
+  end
+
+  it '#body_hash should parse undefined type' do
+    allow(req).to receive(:content_type).and_return('asdf')
+    allow(req).to receive(:body).and_return('a=1&b=123')
+    expect(req.body_hash).to eql('a' => '1', 'b' => '123')
+
+    req.instance_eval { @body_hash = nil }
+    allow(req).to receive(:body).and_return({ a: 1 }.to_json)
+    expect(req.body_hash).to eql('a' => 1)
+
+    req.instance_eval { @body_hash = nil }
+    allow(req).to receive(:body).and_return({ a: 2 }.to_xml)
+    expect(req.body_hash).to eql('hash' => { 'a' => 2 })
+  end
+
+  it '#params should merge body & query' do
+    allow(req).to receive(:content_type).and_return('asdf')
+    allow(req).to receive(:body).and_return('b=321')
+    expect(req.params).to eql('a' => '123', 'b' => '321')
+  end
 end

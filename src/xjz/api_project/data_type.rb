@@ -1,4 +1,8 @@
 module Xjz
+  module Boolean; end
+  TrueClass.include Boolean
+  FalseClass.include Boolean
+
   class ApiProject::DataType
     attr_reader :raw_data, :counter
 
@@ -28,14 +32,39 @@ module Xjz
       end
     end
 
+    # raw_data:
+    #   type:
+    #   items:
+    #   prefix:
+    #   suffix:
+    #   script:
+    #   validator:
     def initialize(raw_data)
       @raw_data = raw_data
       @counter = 0
       @mutex = Mutex.new
+      @validator = @raw_data['validator']
     end
 
     def name
       @raw_data['type']
+    end
+
+    def validator
+      @validator ||= begin
+        val = generate
+        cls = val.class
+        Boolean === val ? Boolean : cls
+      end
+    end
+
+    def verify(val)
+      case validator
+      when Proc
+        validator.call(val)
+      else
+        validator === val
+      end
     end
 
     def generate
@@ -50,7 +79,11 @@ module Xjz
     end
 
     def inspect
-      "#<#{self.class.name} #{@raw_data['type']}>"
+      "#<#{self.class.name} #{name}>"
+    end
+
+    def to_json(*args)
+      ".t/#{name}"
     end
 
     private

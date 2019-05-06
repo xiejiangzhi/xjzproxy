@@ -3,7 +3,7 @@ ruby:
   @req = req = rt.request
   @res = res = rt.response
   ap = rt.api_project
-  res_def = rt.res_definition
+  api_type, api_desc = rt.api_desc
 
   @current_tab = session[:history_detail_tab] || 'headers'
   def nav_link(id)
@@ -44,12 +44,12 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
     li.nav-item
       *nav_link(:res) Response
 
-  - if res_def.present?
+  - if api_desc.present?
     li.nav-item
       *nav_link(:api) API
 
-  li.nav-item
-    *nav_link(:diff) Diff
+    li.nav-item
+      *nav_link(:diff) API Diff
 
 .detail.tab-content.pt-3.pb-5 style='overflow-x: hidden;'
   *tab_pane(:headers)
@@ -71,7 +71,7 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
 
     - if res && res.raw_headers
       h6.mt-4.pb-1.border-bottom Response
-      - res_headers = res.raw_headers.map { |k, v| [k, v.join(', ')] }.sort
+      - res_headers = res.raw_headers.map { |k, v| [k, (Array === v) ? v.join(', ') : v] }.sort
       .res = render('webui/_key_val.html', data: res_headers)
 
     - if req.body.present?
@@ -97,16 +97,31 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
       - else
         a href=base64_url(res.decoded_body, res.content_type) Download
 
-  - if res_def.present?
+  - if api_desc.present?
     *tab_pane(:api)
-      - res_type, desc = res_def
-      strong = "#{res_type} Definition"
-      hr
+      h6.mt-4.pb-1.border-bottom = "#{api_type.upcase} Definition"
 
-      pre
-        code = JSON.pretty_generate(desc)
+      pre.bg-light
+        code.text-break = escape_html(JSON.pretty_generate(api_desc))
 
-  *tab_pane(:diff)
-    - timing = { 'Start At' => l(rt.start_at, format: :tl), 'Cost' => number_to_human_interval(rt.cost) }
-    - rt.action_list.each { |k, ts| timing["Action #{k}"] = ts.first }
-    = render('webui/_key_val.html', data: timing)
+    *tab_pane(:diff)
+      - pairs = [['query', 'query_hash'], ['body', 'body_hash'], ['params', 'params']]
+      - pairs.each do |name, mname|
+        - expected = api_desc[name] || {}
+        - actual = req.send(mname)
+        - next if expected == actual
+        h6.mt-4.pb-1.border-bottom = name.titleize
+        table.table.table-striped.table-borderless
+          thead
+            tr
+              th Index
+              th Expected
+              th Actual
+          tbody
+            - Xjz::ParamsDiff.new.diff(expected, actual, name.titleize).each do |index, e, a|
+              tr
+                td = escape_html(index)
+                td = Xjz::ApiProject::DataType === e ? ".t/#{e.name}" : escape_html(e.inspect)
+                td = escape_html(a.inspect)
+
+          
