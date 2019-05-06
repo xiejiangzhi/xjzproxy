@@ -149,6 +149,7 @@
 
     initDynamicEvents: function($container) {
       $container.find('[title][data-toggle=tooltip]').tooltip();
+      $container.find('[title][data-toggle=popover]').popover();
     },
 
     initElem: function(html){

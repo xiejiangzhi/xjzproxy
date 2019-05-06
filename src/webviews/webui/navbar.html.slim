@@ -6,7 +6,7 @@ header#app_header.navbar.navbar-expand.navbar-light.bg-light.fixed-top
       - feature_names.each do |name, title|
         - fname = "f_#{name}"
         - tid = "#{fname}_tab"
-        - is_active = (name == current_tab)
+        - is_active = (name.to_s == current_tab.to_s)
         li.nav-item
           a.nav-link [
             id=tid class=(is_active ? 'active' : '') href="##{fname}" xjz-id=tid
