@@ -30,7 +30,7 @@
     - if res
       .row.mx-0.pl-1.p-0.d-flex
         .left.mr-auto
-          span.align-middle = auto_cut_str((res&.content_type || ''), 27)
+          span.align-middle = auto_cut_str((res&.content_type || '').split(';').first, 27)
         .right
           span.badge.badge-light.badge-pill.align-middle = number_to_human_interval(rt.cost)
 

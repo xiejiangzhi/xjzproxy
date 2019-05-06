@@ -73,7 +73,7 @@ module Xjz
       include ActiveSupport::NumberHelper
 
       def initialize(vars, helper_modules = nil, renderer = nil)
-        @vars = (vars || {}).stringify_keys
+        @vars = (vars || {}).with_indifferent_access
         @helper_modules = helper_modules || []
         @helper_modules.each { |m| singleton_class.include(m) }
         @renderer = renderer

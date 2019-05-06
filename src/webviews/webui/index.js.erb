@@ -2,7 +2,12 @@ $(document).ready(function() {
   var ws_url = 'ws://<%= $config.shared_data.app.server.ui_addr %>/ws';
   var xjz_view = new XjzView(ws_url, 'body');
   window.xjz_view = xjz_view;
-  new ClipboardJS('.btn');
+  new ClipboardJS('.btn[data-clipboard-text], [data-clipboard-target]', {
+    text: function(trigger) {
+      var target = this.target(trigger) || trigger;
+      return this.defaultText(target) || $(target).text();
+    }
+  });
 
   $('[data-toggle="tooltip"]').tooltip()
 })

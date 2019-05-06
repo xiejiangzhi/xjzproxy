@@ -2,5 +2,6 @@
   - data.each do |k, v|
     .row.mt-2
       .col-3.text-info = k
-      .col-9.text-break = v
+      - id = vars[:id_val] ? "#{id_val}#{k}" : nil
+      .col-9.text-break id=id = v
 

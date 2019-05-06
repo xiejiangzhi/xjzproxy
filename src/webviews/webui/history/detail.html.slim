@@ -5,7 +5,6 @@ ruby:
   ap = rt.api_project
   res_def = rt.res_definition
 
-
   @current_tab = session[:history_detail_tab] || 'headers'
   def nav_link(id)
     cls = 'nav-link'
@@ -20,6 +19,19 @@ ruby:
     css_cls = 'tab-pane fade'
     css_cls << ' active show' if id.to_s == @current_tab
     { tag: 'div', class: css_cls, id: "rt_#{id}" }
+  end
+
+  def create_curl
+    str = 'curl'
+    str << " -X #{@req.http_method.upcase}"
+    str << " --http2" if @req.h2?
+    str << " '#{@req.url}'"
+    @req.proxy_headers.each do |k, v|
+      str << " -H '#{k}: #{v}'"
+    end
+    str << " --data '#{@req.body}'" unless @req.body.to_s.empty?
+    str << " --compressed"
+    str
   end
 
 ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
@@ -41,24 +53,32 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
 
 .detail.tab-content.pt-3.pb-5 style='overflow-x: hidden;'
   *tab_pane(:headers)
-    strong General
+    button.btn.btn-info.btn-sm data-clipboard-target='#history_d_g_url' xjz-notify='URL Cpoied' Copy URL
+    button.btn.btn-info.btn-sm.ml-2 data-clipboard-target='#history_d_g_curl' xjz-notify='URL Cpoied' Copy as cURL
+
+    #history_d_g_curl.d-none = create_curl
+
+    h6.mt-4.pb-1.border-bottom General
     - general =  { method: req.http_method.upcase, url: req.url }
     - if res
       - general[:code] = res.code
       - general['Request body size'] = number_to_human_size(req.body.bytesize)
       - general['Response body size'] = number_to_human_size(res.body.bytesize)
-    .general.border-top = render('webui/_key_val.html', data: general)
+    .general = render('webui/_key_val.html', data: general, id_val: 'history_d_g_')
 
-    h6.mt-4.border-bottom Request
-    .req = render('webui/_key_val.html', data: req.headers)
+    h6.mt-4.pb-1.border-bottom Request
+    .req = render('webui/_key_val.html', data: req.headers.to_a.sort)
 
     - if res && res.raw_headers
-      h6.mt-4.border-bottom Response
-      .res = render('webui/_key_val.html', data: res.raw_headers)
+      h6.mt-4.pb-1.border-bottom Response
+      - res_headers = res.raw_headers.map { |k, v| [k, v.join(', ')] }.sort
+      .res = render('webui/_key_val.html', data: res_headers)
 
     - if req.body.present?
-      h6.mt-4.border-bottom Body
-      .req_body = escape_html(req.body)
+      h6.mt-4.pb-1.border-bottom Body
+      .req_body
+        pre.bg-light
+          code.text-break = escape_html(req.body)
 
   - unless res&.body.to_s.empty?
     *tab_pane(:res)
@@ -75,8 +95,7 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
         pre.bg-light
           code.text-break = escape_html(res.decoded_body)
       - else
-        pre.bg-light
-          code.text-break = escape_html(res.decoded_body.inspect)
+        a href=base64_url(res.decoded_body, res.content_type) Download
 
   - if res_def.present?
     *tab_pane(:api)

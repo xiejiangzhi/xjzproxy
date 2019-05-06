@@ -28,6 +28,7 @@ XjzProxy
 - [ ] ------ 4 ------ (3.5)
 - [ ] 3.0 generate apidoc from real request
 - [ ] 0.5 script types
+- [ ] 1.0 Resend Request
 
 ### V2
 
