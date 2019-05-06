@@ -1,7 +1,7 @@
 ruby:
-  rt = request_tracker
-  req = rt.request
-  res = rt.response
+  @rt = rt = request_tracker
+  @req = req = rt.request
+  @res = res = rt.response
   ap = rt.api_project
   res_def = rt.res_definition
 
@@ -19,9 +19,8 @@ ruby:
   def tab_pane(id, &block)
     css_cls = 'tab-pane fade'
     css_cls << ' active show' if id.to_s == @current_tab
-    { tag: 'div', class: css_cls, id: "#rt_#{id}" }
+    { tag: 'div', class: css_cls, id: "rt_#{id}" }
   end
-
 
 ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
   style="top: 56px;"
@@ -29,15 +28,14 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
   li.nav-item
     *nav_link(:headers) Headers
 
-  - if res
-    li.nav-item
-      *nav_link(:preview) Preview
+  - unless res&.body.to_s.empty?
     li.nav-item
       *nav_link(:res) Response
 
   - if res_def.present?
     li.nav-item
       *nav_link(:api) API
+
   li.nav-item
     *nav_link(:diff) Diff
 
@@ -51,35 +49,34 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
       - general['Response body size'] = number_to_human_size(res.body.bytesize)
     .general.border-top = render('webui/_key_val.html', data: general)
 
-    strong Request
-    .req.border-top = render('webui/_key_val.html', data: req.headers)
+    h6.mt-4.border-bottom Request
+    .req = render('webui/_key_val.html', data: req.headers)
 
     - if res && res.raw_headers
-      strong Response
-      .res.border-top = render('webui/_key_val.html', data: res.raw_headers)
+      h6.mt-4.border-bottom Response
+      .res = render('webui/_key_val.html', data: res.raw_headers)
 
     - if req.body.present?
-      strong Body
-      .req_body = Rack::Utils.escape_html(req.body)
+      h6.mt-4.border-bottom Body
+      .req_body = escape_html(req.body)
 
-  - if res
-    *tab_pane(:preview)
-      - case res.content_type
-      - when /image/
-        img src=base64_url(res.decoded_body, res.content_type)
-      - when /text\/html/
-        iframe.w-100[
-          src=base64_url(res.decoded_body, res.content_type) style='height: calc(100vh - 56px - 60px);'
-          sandbox="allow-scripts"
-        ]
-        
+  - unless res&.body.to_s.empty?
     *tab_pane(:res)
       - case res.content_type
-      - when /image/
-        | Cannot display binary data
-      - else /text\/html/
+      - when /image\//
+        img src=base64_url(res.decoded_body, res.content_type)
+      - when /audio\//
+        audio controls
+          source src=base64_url(res.decoded_body, res.content_type) type=res.content_type
+      - when /video\//
+        video max-width=750 max-height=600 controls
+          source src=base64_url(res.decoded_body, res.content_type) type=res.content_type
+      - when /text|javascript|json|xml|html/
         pre.bg-light
           code.text-break = escape_html(res.decoded_body)
+      - else
+        pre.bg-light
+          code.text-break = escape_html(res.decoded_body.inspect)
 
   - if res_def.present?
     *tab_pane(:api)

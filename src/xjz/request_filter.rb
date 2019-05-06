@@ -19,7 +19,7 @@ module Xjz
 
     def filters
       @filters ||= filters_str.split.map do |part|
-        if md = part.match(/^(status|method|type)(=|>=|>|<=|<|!=|~)(.+)$/)
+        if md = part.match(/^(status|method|type)(=|>=|>|<=|<|!=|~|!~)(.+)$/)
           md[1..-1]
         else
           part
@@ -37,8 +37,13 @@ module Xjz
           when 'status' then compare_vals(res&.code || -1, opt, val)
           when 'method' then compare_vals(req.http_method, opt, val)
           when 'type'
-            compare_vals(req.content_type, opt, val) ||
-              compare_vals(res&.content_type, opt, val)
+            if opt['!']
+              compare_vals(req.content_type, opt, val) &&
+                compare_vals(res&.content_type, opt, val)
+            else
+              compare_vals(req.content_type, opt, val) ||
+                compare_vals(res&.content_type, opt, val)
+            end
           else
             false
           end
@@ -57,10 +62,13 @@ module Xjz
 
       return false unless OPTS[a.class].include?(opt)
 
-      b = Regexp.new(b, 'i') if opt == '~'
+      b = Regexp.new(b, 'i') if opt == '~' || opt == '!~'
       b = b.to_i if Integer === a
       b = b.to_f if Float === a
       a.send(OPTS_MAPPING[opt], b)
+    rescue => e
+      Logger[:auto].error { e.log_inspect }
+      false
     end
   end
 end

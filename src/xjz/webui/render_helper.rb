@@ -13,7 +13,7 @@ module Xjz
     end
 
     def escape_html(str)
-      Rack::Utils.escape_html(str)
+      Rack::Utils.escape_html(str.encode('utf-8', invalid: :replace))
     end
 
     def escape_json(obj)

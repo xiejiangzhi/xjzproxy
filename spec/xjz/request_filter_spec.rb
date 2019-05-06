@@ -40,6 +40,9 @@ RSpec.describe Xjz::RequestFilter do
       subject = Xjz::RequestFilter.new('method~^ge')
       expect(subject.valid?(fargs('get', 'xjz.pw', '/api/v1/users', 200))).to eql(true)
 
+      subject = Xjz::RequestFilter.new('method!~po')
+      expect(subject.valid?(fargs('get', 'xjz.pw', '/api/v1/users', 200))).to eql(true)
+
       subject = Xjz::RequestFilter.new('status>0')
       req = double(
         'req',
@@ -47,6 +50,17 @@ RSpec.describe Xjz::RequestFilter do
         path: '/api/v1/users', content_type: 'text/plain'
       )
       expect(subject.valid?(req: req)).to eql(false)
+    end
+
+    it 'should check all type if opt is !~' do
+      args = fargs('get', 'xjz.pw', '/api/v1/users', 200)
+      allow(args[:req]).to receive(:content_type).and_return('image/png')
+
+      subject = Xjz::RequestFilter.new('type!~image')
+      expect(subject.valid?(args)).to eql(false)
+
+      subject = Xjz::RequestFilter.new('type~image')
+      expect(subject.valid?(args)).to eql(true)
     end
   end
 end

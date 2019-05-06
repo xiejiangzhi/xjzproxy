@@ -16,6 +16,17 @@ RSpec.describe 'history', webpage: true do
     expect(session[:current_rt]).to eql(rt)
   end
 
+  describe 'detail.xxx.click for different data' do
+    it 'should working for invalid utf-8 bytes' do
+      allow(res).to receive(:body).and_return("\u001F\x8B\b\u0000\u0003Œ")
+      rt.finish(res)
+      expect_runner_render(["webui/history/detail.html", request_tracker: rt], :original)
+      expect_runner_send_msg(['el.html', selector: '#history_detail', html: kind_of(String)])
+      emit_msg("history.detail.#{rt.object_id}.click")
+      expect(session[:current_rt]).to eql(rt)
+    end
+  end
+
   it 'clean_all.click should reset history' do
     rt.finish(res)
     expect_runner_render(["webui/history/index.html"], :original)
