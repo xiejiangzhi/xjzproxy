@@ -1,4 +1,4 @@
-$app_name = 'XjzProxy'
+$app_name = 'XJZProxy'
 $root ||= File.expand_path('..', __FILE__)
 
 require File.expand_path('./src/xjz/loader', $root) unless defined?(Xjz) && Xjz.respond_to?(:load_file)

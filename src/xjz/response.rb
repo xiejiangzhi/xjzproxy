@@ -35,6 +35,10 @@ module Xjz
       end
     end
 
+    def body_hash
+      @body_hash ||= HTTPHelper.parse_data_by_type(body, content_type)
+    end
+
     def content_type
       @content_type ||= (
         HTTPHelper.get_header(h1_headers, 'content-type') || 'text/plain'

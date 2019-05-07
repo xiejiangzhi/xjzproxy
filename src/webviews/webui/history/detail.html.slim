@@ -105,12 +105,27 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
         code.text-break = escape_html(JSON.pretty_generate(api_desc))
 
     *tab_pane(:diff)
-      - pairs = [['query', 'query_hash'], ['body', 'body_hash'], ['params', 'params']]
-      - pairs.each do |name, mname|
-        - expected = api_desc[name] || {}
-        - actual = req.send(mname)
+      ruby:
+        pairs = [
+          ['Query', nil, api_desc['query'], req.query_hash],
+          ['Body', nil, api_desc['body'], req.body_hash],
+          ['Params', nil, api_desc['params'], req.params]
+        ]
+        succ_desc = api_desc['response']['success']
+        if res && succ_desc
+          pairs << ['Response Code', 'Code', succ_desc['http_code'] || 200, res.code]
+          pairs << ['Response Headers', 'Headers', headers, Hash[res.h2_headers], allow_extend: true]
+          pairs << ['Response Body', 'Body', succ_desc['data'], res.body_hash]
+        end
+
+      - pairs.each do |title, prefix, expected, actual, opts|
+        - expected ||= {}
+        - actual ||= {}
         - next if expected == actual
-        h6.mt-4.pb-1.border-bottom = name.titleize
+        - diff = Xjz::ParamsDiff.new(opts || {}).diff(expected, actual, prefix || title)
+        - next if diff.blank?
+
+        h6.mt-4.pb-1.border-bottom = title
         table.table.table-striped.table-borderless
           thead
             tr
@@ -118,10 +133,9 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
               th Expected
               th Actual
           tbody
-            - Xjz::ParamsDiff.new.diff(expected, actual, name.titleize).each do |index, e, a|
+            - diff.each do |index, e, a|
               tr
                 td = escape_html(index)
                 td = Xjz::ApiProject::DataType === e ? ".t/#{e.name}" : escape_html(e.inspect)
                 td = escape_html(a.inspect)
 
-          

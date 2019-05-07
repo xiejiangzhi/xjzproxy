@@ -19,7 +19,7 @@ RSpec.describe Xjz::Resolver::SSL do
       expect(lsock.read_nonblock(1024)).to eql("HTTP/1.1 200 OK\r\ncontent-length: 0\r\n\r\n")
       ssl_client.hostname = 'xjz.pw'
       ssl_client.connect
-      expect(ssl_client.peer_cert.subject.to_s).to eql("/CN=xjz.pw/O=XjzProxy")
+      expect(ssl_client.peer_cert.subject.to_s).to eql("/CN=xjz.pw/O=#{$app_name}")
       ssl_client << <<~REQ
         GET / HTTP/1.1
         Host: xjz.pw:443

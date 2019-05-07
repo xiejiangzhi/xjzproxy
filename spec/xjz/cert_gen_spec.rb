@@ -34,7 +34,7 @@ RSpec.describe Xjz::CertManager do
 
       expect(ca.serial.to_i).to eql(1)
       expect(ca.version).to eql(2)
-      expect(ca.subject.to_a).to eql([["CN", $app_name, 12], ["O", "XjzProxy", 12]])
+      expect(ca.subject.to_a).to eql([["CN", $app_name, 12], ["O", $app_name, 12]])
       expect(ca.public_key.to_pem).to eql(pkey.public_key.to_pem)
       expect(ca.not_before <= Time.now).to eql(true)
       expect(ca.not_after >= (Time.now + 99.year - 1)).to eql(true)
@@ -49,7 +49,7 @@ RSpec.describe Xjz::CertManager do
         ["keyUsage", "Certificate Sign, CRL Sign", true],
         ["subjectKeyIdentifier", key_id, false],
         ["authorityKeyIdentifier", "keyid:#{key_id}\n", false],
-        ["nsComment", "XjzProxy Generated Certificate", false]
+        ["nsComment", "#{$app_name} Generated Certificate", false]
       ])
       expect(subject.root_ca_fingerprint).to match(/^\w{2}(:\w{2})+$/)
     end

@@ -1,13 +1,15 @@
 RSpec.describe Xjz::HTTPHelper do
+  let(:subject) { Xjz::HTTPHelper }
+
   describe 'get_header' do
     let(:headers) { [[':method', 'a'], ['hehe', 123], ['Content-Type', 'text/plain']] }
 
     it 'should get return header' do
-      expect(Xjz::HTTPHelper.get_header(headers, ':method')).to eql('a')
-      expect(Xjz::HTTPHelper.get_header(headers, 'hehe')).to eql(123)
-      expect(Xjz::HTTPHelper.get_header(headers, :hehe)).to eql(123)
-      expect(Xjz::HTTPHelper.get_header(headers, :adsf)).to eql(nil)
-      expect(Xjz::HTTPHelper.get_header(headers, 'conTent-tYpe')).to eql('text/plain')
+      expect(subject.get_header(headers, ':method')).to eql('a')
+      expect(subject.get_header(headers, 'hehe')).to eql(123)
+      expect(subject.get_header(headers, :hehe)).to eql(123)
+      expect(subject.get_header(headers, :adsf)).to eql(nil)
+      expect(subject.get_header(headers, 'conTent-tYpe')).to eql('text/plain')
     end
   end
 
@@ -15,16 +17,16 @@ RSpec.describe Xjz::HTTPHelper do
     let(:headers) { [[':method', 'a'], ['hehe', 123]] }
 
     it 'should update headers' do
-      Xjz::HTTPHelper.set_header(headers, ':method', 'GET')
+      subject.set_header(headers, ':method', 'GET')
       expect(headers).to eql([[':method', 'GET'], ['hehe', 123]])
 
-      Xjz::HTTPHelper.set_header(headers, 'hehe', '321')
+      subject.set_header(headers, 'hehe', '321')
       expect(headers).to eql([[':method', 'GET'], ['hehe', '321']])
 
-      Xjz::HTTPHelper.set_header(headers, 'asdf', 'aaa')
+      subject.set_header(headers, 'asdf', 'aaa')
       expect(headers).to eql([[':method', 'GET'], ['hehe', '321'], ['asdf', 'aaa']])
 
-      Xjz::HTTPHelper.set_header(headers, ':status', '200')
+      subject.set_header(headers, ':status', '200')
       expect(headers).to eql([[':status', '200'], [':method', 'GET'], ['hehe', '321'], ['asdf', 'aaa']])
     end
   end
@@ -35,7 +37,7 @@ RSpec.describe Xjz::HTTPHelper do
       conn = double('conn', remote_address: addr)
       Xjz::IOHelper.set_proxy_host_port(conn, 'xjz.pw', '80')
       env = {}
-      Xjz::HTTPHelper.write_conn_info_to_env!(env, conn)
+      subject.write_conn_info_to_env!(env, conn)
       expect(env.keys).to eql(%w{
         REMOTE_ADDR SERVER_NAME SERVER_PORT rack.hijack? rack.hijack rack.hijack_io
       })
@@ -54,7 +56,7 @@ RSpec.describe Xjz::HTTPHelper do
       allow(OpenSSL::SSL::SSLSocket).to receive('===').and_return(true)
       allow(conn).to receive(:to_io).and_return(conn)
       env = {}
-      Xjz::HTTPHelper.write_conn_info_to_env!(env, conn)
+      subject.write_conn_info_to_env!(env, conn)
       expect(env.keys).to eql(%w{
         REMOTE_ADDR SERVER_NAME SERVER_PORT rack.url_scheme rack.hijack? rack.hijack rack.hijack_io
       })
@@ -76,7 +78,7 @@ RSpec.describe Xjz::HTTPHelper do
         ['hello', ' world'],
         200
       )
-      Xjz::HTTPHelper.write_res_to_conn(res, conn)
+      subject.write_res_to_conn(res, conn)
       conn.rewind
       expect(conn.read).to eql(
         <<~RES.strip
@@ -95,7 +97,7 @@ RSpec.describe Xjz::HTTPHelper do
       res = Xjz::Response.new(
         [['Host', 'xjz.pw'], ['Content-Type', 'text/plan']], [], 200
       )
-      Xjz::HTTPHelper.write_res_to_conn(res, conn)
+      subject.write_res_to_conn(res, conn)
       conn.rewind
       expect(conn.read).to eql(
         <<~RES
@@ -106,6 +108,40 @@ RSpec.describe Xjz::HTTPHelper do
           \r
         RES
       )
+    end
+
+    describe '.parse_data_by_type' do
+      it 'should parse json' do
+        r = subject.parse_data_by_type({ a: 1 }.to_json, 'application/json')
+        expect(r).to eql('a' => 1)
+      end
+
+      it 'should parse www-form-urlencoded' do
+        r = subject.parse_data_by_type('a=1&b=123', 'application/x-www-form-urlencoded')
+        expect(r).to eql('a' => '1', 'b' => '123')
+      end
+
+      it 'should parse xml' do
+        r = subject.parse_data_by_type(<<-XML, 'application/xml')
+          <?xml version="1.0" encoding="UTF-8"?>
+          <xxx>
+            <foo type="integer">1</foo>
+            <bar type="integer">2</bar>
+          </xxx>
+        XML
+        expect(r).to eql('xxx' => { 'foo' => 1, 'bar' => 2 })
+      end
+
+      it 'should parse undefined type' do
+        r = subject.parse_data_by_type('a=1&b=123', 'asdf')
+        expect(r).to eql('a' => '1', 'b' => '123')
+
+        r = subject.parse_data_by_type({ a: 122 }.to_json, 'asdf')
+        expect(r).to eql('a' => 122)
+
+        r = subject.parse_data_by_type({ a: 2 }.to_xml, 'asdf')
+        expect(r).to eql('hash' => { 'a' => 2 })
+      end
     end
   end
 end

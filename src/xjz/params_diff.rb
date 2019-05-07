@@ -1,6 +1,9 @@
 module Xjz
   class ParamsDiff
-    def initialize
+    attr_reader :allow_extend
+
+    def initialize(allow_extend: false)
+      @allow_extend = allow_extend
     end
 
     def diff(expected, actual, index = nil)
@@ -9,28 +12,32 @@ module Xjz
 
     private
 
-    def compare_val(e, a, index = nil, r = [])
-      index ||= e.class.name
+    def compare_val(e, a, prefix = nil, key = nil, r = [])
+      index = prefix || e.class.name
+      index += "[#{key.inspect}]" if key
+      return r if String === key && key[0] == '.' && a.nil?
+
       case e
-      when ApiProject::DataType
-        r << [index, e, a] unless e.verify(a)
       when Array
         if Array === a
-          [e.size, a.size].max.times do |i|
-            compare_val(e[i], a[i], "#{index}[#{i}]", r)
+          total = allow_extend ? e.size : [e.size, a.size].max
+          total.times do |i|
+            compare_val(e[i], a[i], index, i, r)
           end
         else
           r << [index, e, a]
         end
       when Hash
         if Hash === a
-          keys = e.keys | a.keys
+          keys = allow_extend ? e.keys : (e.keys | a.keys)
           keys.each do |k|
-            compare_val(e[k], a[k], "#{index}[#{k.inspect}]", r)
+            compare_val(e[k], a[k], index, k, r)
           end
         else
           r << [index, e, a]
         end
+      when ApiProject::DataType
+        r << [index, e, a] unless e.verify(a)
       else
         r << [index, e, a] unless e == a
       end

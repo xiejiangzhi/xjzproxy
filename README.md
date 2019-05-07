@@ -32,7 +32,7 @@ XjzProxy
 
 ### V2
 
-16.5d => 18d
+17d => 18d
 
 **Proxy Done**
 
@@ -48,8 +48,9 @@ XjzProxy
 - Filter 1d
 - Copy Req as cURL 0.5d
 - Diff params and headers of request, and response body 1d
+- Diff tag on request tab(need check api always) 0.5d
 
-2.5d
+3.0d
 
 
 **Doc/Project**

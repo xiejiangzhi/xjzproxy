@@ -1,13 +1,13 @@
 RSpec.describe Xjz::Response do
-  describe 'From HTTP1' do
-    let(:res) do
-      Xjz::Response.new({
-        'connection' => 'close',
-        'transfer-encoding' => 'chunked',
-        'other' => ['xxx', 'bb']
-      }, ['hello', ' world'], 201)
-    end
+  let(:res) do
+    Xjz::Response.new({
+      'connection' => 'close',
+      'transfer-encoding' => 'chunked',
+      'other' => ['xxx', 'bb']
+    }, ['hello', ' world'], 201)
+  end
 
+  describe 'From HTTP1' do
     it '#h1_headers should return http1 response headers' do
       expect(res.h1_headers).to eql([
         ['connection', 'close'], ['other', 'xxx, bb'], ['content-length', '11']
@@ -88,14 +88,6 @@ RSpec.describe Xjz::Response do
   end
 
   describe '#to_s' do
-    let(:res) do
-      Xjz::Response.new({
-        'connection' => 'close',
-        'transfer-encoding' => 'chunked',
-        'other' => ['xxx', 'bb']
-      }, ['hello', ' world'], 201)
-    end
-
     it 'should return string of response' do
       expect(res.to_s).to eql(<<~RES.strip
         HTTP/1.1 201 Created\r
@@ -107,5 +99,13 @@ RSpec.describe Xjz::Response do
       RES
       )
     end
+  end
+
+  it '#body_hash should parse body' do
+    allow(res).to receive(:content_type).and_return('application/json')
+    allow(res).to receive(:body).and_return({ a: 1 }.to_json)
+    expect(Xjz::HTTPHelper).to receive(:parse_data_by_type) \
+      .with(res.body, 'application/json').and_call_original
+    expect(res.body_hash).to eql('a' => 1)
   end
 end

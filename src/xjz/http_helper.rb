@@ -54,6 +54,34 @@ module Xjz
         end
         Logger[:auto].debug { "Wrote res #{data.bytesize} bytes" }
       end
+
+      def parse_data_by_type(data, content_type)
+        type = case content_type
+        when /json/ then :json
+        when /xml/ then :xml
+        when /x-www-form-urlencoded/, 'urlencoded' then :url
+        else
+          d = data.strip
+          case d
+          when /^[\{\[].*[\}\]]$/ then :json
+          when /^<.*>$/ then :xml
+          when /=/ then :url
+          end
+        end
+
+        case type
+        when :json then JSON.parse(data)
+        when :xml then Hash.from_xml(data)
+        when :url then Rack::Utils.parse_query(data)
+        else
+          Logger[:auto].error { "Cannot parse #{content_type.inspect} #{data.inspect}" }
+          {}
+        end
+      rescue => e
+        Logger[:auto].error { "Failed to parse #{content_type.inspect} #{data.inspect}" }
+        Logger[:auto].error { e.log_inspect }
+        {}
+      end
     end
   end
 end
