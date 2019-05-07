@@ -132,6 +132,16 @@ RSpec.describe Xjz::HTTPHelper do
         expect(r).to eql('xxx' => { 'foo' => 1, 'bar' => 2 })
       end
 
+      it 'should parse grpc' do
+        file_path = File.join($root, 'spec/files/grpc.yml')
+        ap = Xjz::ApiProject.new(file_path)
+        schema = ap.grpc.find_rpc('/Hw.Greeter/SayHello').input
+        proto = schema.new(name: 'xxx').to_proto
+        data = [0, proto.bytesize].pack('CN') + proto
+        r = subject.parse_data_by_type(data, 'application/GrPc', schema)
+        expect(r).to eql('name' => 'xxx')
+      end
+
       it 'should parse undefined type' do
         r = subject.parse_data_by_type('a=1&b=123', 'asdf')
         expect(r).to eql('a' => '1', 'b' => '123')

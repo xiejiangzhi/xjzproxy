@@ -37,6 +37,27 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
         expect(r.h1_headers).to eql([['content-type', 'application/json'], ['content-length', '36']])
       end
 
+      it 'should return a json response for a hash if accpet type is text' do
+        default_types = Xjz::ApiProject::DataType.default_types
+        allow(default_types['integer']).to receive(:generate).and_return(123)
+        allow(default_types['name']).to receive(:generate).and_return('name')
+        req.env['HTTP_ACCEPT'] = 'text/html'
+        r = subject.render(req, {
+          http_code: 201,
+          desc: 'asdf',
+          data: {
+            id: default_types['integer'],
+            name: default_types['name'],
+            other: 123,
+            '.other' => 'desc'
+          }
+        }.deep_stringify_keys)
+        expect(r).to be_a(Xjz::Response)
+        expect(r.code).to eql(201)
+        expect(r.body).to eql("{\"id\":123,\"name\":\"name\",\"other\":123}")
+        expect(r.h1_headers).to eql([['content-type', 'text/html'], ['content-length', '36']])
+      end
+
       it 'should return a response for a array' do
         default_types = Xjz::ApiProject::DataType.default_types
         allow(default_types['integer']).to receive(:generate).and_return(123)

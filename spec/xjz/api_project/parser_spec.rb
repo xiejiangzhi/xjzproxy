@@ -21,7 +21,7 @@ RSpec.describe Xjz::ApiProject::Parser do
         "nickname" => types['string'],
       )
       expect(partials['user']).to eql(
-        ".posts.desc" => "a list of post",
+        ".posts" => { "desc" => "a list of post" },
         "avatar" => types['avatar'],
         "id" => types['integer'],
         "nickname" => types['string'],
@@ -68,9 +68,9 @@ RSpec.describe Xjz::ApiProject::Parser do
           "http_code" => 200,
           "data" => {
             "items" => [pts['user']] * 2,
-            ".items.desc" => "a array of user",
+            ".items" => { "desc" => "a array of user" },
             "total" => types['integer'],
-            ".total.desc" => "val"
+            ".total" => { "desc" => "val" }
           }
         }
       )
@@ -109,7 +109,7 @@ RSpec.describe Xjz::ApiProject::Parser do
           },
           "headers" => nil,
           "params" => {
-            ".token.required" => true,
+            ".token" => { "required" => true },
             "token" => r['types']['string']
           },
           "query" => nil
@@ -135,11 +135,10 @@ RSpec.describe Xjz::ApiProject::Parser do
               "labels" => ['auth'],
               "query" => {
                 "page" => 1,
-                ".page.required" => true,
+                ".page" => { 'optional' => true },
                 "q" => 123,
                 "status" => r['types']['integer'],
-                ".status.required" => { "unless" => "q" },
-                ".status.rejected" => { "if" => "q" }
+                ".status" => { "optional" => { "unless" => "q" }, "rejected" => { "if" => "q" } }
               },
               '.index' => 0,
               'url' => 'https?://xjz.pw',
@@ -155,9 +154,9 @@ RSpec.describe Xjz::ApiProject::Parser do
                 'r3' => {
                    data: {
                     items: [r['partials']['user']] * 2,
-                    '.items.desc' => 'some desc',
+                    '.items' => { 'desc' => 'some desc' },
                     total: r['types']['integer'],
-                    '.total.desc' => 'some desc'
+                    '.total' => { 'desc' => 'some desc' }
                   }
                 }.deep_stringify_keys,
                 "error" => r['responses']['invalid_token']

@@ -55,11 +55,13 @@ module Xjz
         Logger[:auto].debug { "Wrote res #{data.bytesize} bytes" }
       end
 
-      def parse_data_by_type(data, content_type)
+      # schema: it is required if data need a schema to parse
+      def parse_data_by_type(data, content_type, schema = nil)
         type = case content_type
-        when /json/ then :json
-        when /xml/ then :xml
-        when /x-www-form-urlencoded/, 'urlencoded' then :url
+        when /json/i then :json
+        when /xml/i then :xml
+        when /x-www-form-urlencoded/i, 'urlencoded' then :url
+        when /application\/grpc/i, 'urlencoded' then :grpc
         else
           d = data.strip
           case d
@@ -73,6 +75,16 @@ module Xjz
         when :json then JSON.parse(data)
         when :xml then Hash.from_xml(data)
         when :url then Rack::Utils.parse_query(data)
+        when :grpc
+          if schema
+            data.force_encoding('binary')
+            _compressed, length = data[0..4].unpack('CN')
+            pb = schema.decode(data.slice(5, length))
+            pb.to_hash.deep_stringify_keys
+          else
+            Logger[:auto].error { "Need a schema to parse GRPC data" }
+            {}
+          end
         else
           Logger[:auto].error { "Cannot parse #{content_type.inspect} #{data.inspect}" }
           {}

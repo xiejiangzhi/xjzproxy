@@ -81,5 +81,14 @@ RSpec.describe Xjz::ParamsDiff do
         ["Hash[:d]", { v: 2 }, nil]
       ])
     end
+
+    it 'should ignore nil if a field is optional' do
+      subject = described_class.new(allow_extend: true)
+      expect(
+        subject.diff({ a: [1, 2], '.a' => { 'optional' => true },  c: 1 }, {})
+      ).to eql([
+        ["Hash[:c]", 1, nil],
+      ])
+    end
   end
 end

@@ -11,7 +11,7 @@
 %   val = opts['val']
 |<%= k -%>
 |<%= type -%>
-|<%= opts['required'] -%>
+|<%= opts['optional'] != true -%>
 |<%= opts['desc'] -%>
 |<%= val ? "`#{val.inspect}`" : '' %>|
 % end

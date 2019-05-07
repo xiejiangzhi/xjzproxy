@@ -44,7 +44,7 @@ module Xjz
         FileUtils.mkdir_p(pd) unless Dir.exist?(pd)
         pojs += Dir[File.join(pd, '*')].select { |dir| Dir.exist?(dir) }
       end
-      pojs
+      pojs.uniq
     end
 
     def load_projects

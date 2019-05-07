@@ -8,13 +8,11 @@ apis:
   - auth
   query:
     page: 1
-    ".page.required": true
+    ".page.optional": true
     q: 123
     status: ".t/integer"
-    ".status.required":
-      unless: q
-    ".status.rejected":
-      if: q
+    ".status.optional.unless": q
+    ".status.rejected.if": q
   response:
     success: ".r/list_users"
     r2:

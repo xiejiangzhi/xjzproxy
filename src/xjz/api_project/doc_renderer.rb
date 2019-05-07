@@ -26,13 +26,14 @@ module Xjz
       # Params
       #   data:
       #     a: 1
-      #     .a.desc: 123
-      #     .a.required: true
+      #     .a:
+      #       desc: 123
+      #       required: true
       #     b: .t/integer
       #     c: {
       #       a: 123
       #     }
-      #     .c.desc: 'xxx'
+      #     .c: { desc: 'xxx' }
       # Returns
       #   [
       #     ['a', { 'val' => 1, 'desc' => 123, 'required: true }],
@@ -118,13 +119,23 @@ module Xjz
       end
 
       def _save_data_line(k, v, result, prefix = nil)
-        o = nil
-        _, k, o = k.split('.') if k[0] == '.'
-        pk = prefix ? "#{prefix}[#{k.inspect}]" : k
-        r = result[pk] ||= {}
+        _, k, *opts_ks = k.split('.') if k[0] == '.'
+        rk = if k == '*' # '.*'
+          prefix
+        else
+          prefix ? "#{prefix}[#{k.inspect}]" : k
+        end
+        r = result[rk] ||= {}
 
-        if o
-          r[o] = v
+        if opts_ks
+          if opts_ks.empty? # use type for '.*'
+            r['type'] = v
+          else
+            opts_ks[1..-2].each do |k|
+              r = (r[k] ||= {})
+            end
+            r[opts_ks[-1]] = v
+          end
         elsif v.to_s[0] == '.'
           val, oper, *args = v.split
           r['type'] = val
@@ -138,10 +149,10 @@ module Xjz
           case v
           when Hash
             r['type'] = 'hash'
-            format_data(v, result, pk)
+            format_data(v, result, rk)
           when Array
             r['type'] = 'array'
-            format_data(v, result, pk)
+            format_data(v, result, rk)
           else
             r['val'] = v
           end

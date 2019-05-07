@@ -114,7 +114,7 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
         succ_desc = api_desc['response']['success']
         if res && succ_desc
           pairs << ['Response Code', 'Code', succ_desc['http_code'] || 200, res.code]
-          pairs << ['Response Headers', 'Headers', headers, Hash[res.h2_headers], allow_extend: true]
+          pairs << ['Response Headers', 'Headers', succ_desc['headers'], Hash[res.h2_headers], allow_extend: true]
           pairs << ['Response Body', 'Body', succ_desc['data'], res.body_hash]
         end
 

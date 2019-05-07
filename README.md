@@ -49,6 +49,7 @@ XjzProxy
 - Copy Req as cURL 0.5d
 - Diff params and headers of request, and response body 1d
 - Diff tag on request tab(need check api always) 0.5d
+- Diff GRPC(send schame when parse request.body, response.body)
 
 3.0d
 

@@ -45,11 +45,6 @@ dev:
 
   proxy_mode: all
 
-  projects:
-    - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example1
-    - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example2
-    - <%= File.expand_path('../', $root) %>/xjzapidoc_examples/example3
-
   webview_debug: true
   ui_window: true
 

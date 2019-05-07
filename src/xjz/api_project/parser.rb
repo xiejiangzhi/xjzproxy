@@ -10,8 +10,7 @@ module Xjz
     }
     # .f/: read file
     REF_PREFIX = /^\.(t|p|r|f)\/.+/
-
-    COMMENT_PREFIX = '.'
+    OPTS_FIELD = /^(\.[\w-]+)+$/
     EXPAND_HASH_FLAG = '.*'
 
     def parse(raw_data)
@@ -86,11 +85,12 @@ module Xjz
     #   val: .t/integer # ref type
     #
     # key:
-    #   val: .t/integer
-    #   .val.desc: desc
+    #   val: .p/xxx
     #
     # key:
     #   .val.desc: desc
+    #   .val:
+    #     optional: true
     #   val:
     #     s1: 123
     #     .s1.desc: xxx
@@ -104,8 +104,16 @@ module Xjz
     def expand_hash(data, env)
       data.each_with_object({}) do |kv, r|
         k, v = kv
-        if k == EXPAND_HASH_FLAG
-          r.merge!(expand_var(v, env))
+        case k
+        when EXPAND_HASH_FLAG then r.merge!(expand_var(v, env))
+        when OPTS_FIELD
+          ks = k[1..-1].split('.')
+          field = ks.shift
+          opts_field = ".#{field}"
+          t = r[opts_field] ||= {}
+          ks[0..-2].each { |k| t[k] ||= {}; t = t[k] }
+          t[ks[-1]] = v
+          r
         else
           r[k] = case v
           when Hash then expand_hash(v, env)

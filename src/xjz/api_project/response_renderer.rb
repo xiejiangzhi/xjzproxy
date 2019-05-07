@@ -48,7 +48,7 @@ module Xjz
       end
     end
 
-    def render_body(conf, depth = 200)
+    def render_body(conf, depth = 100)
       return conf if depth < 0
 
       case conf
@@ -83,7 +83,10 @@ module Xjz
           flags.pack("CN") + pb_data
         end
       when CONTENT_TYPES[:text]
-        body.to_s
+        case body
+        when Hash, Array then body.to_json
+        else body.to_s
+        end
       else
         raise "Cannot handle content_type '#{content_type}'"
       end

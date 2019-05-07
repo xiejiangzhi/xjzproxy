@@ -12,10 +12,11 @@ module Xjz
 
     private
 
-    def compare_val(e, a, prefix = nil, key = nil, r = [])
+    def compare_val(e, a, prefix = nil, key = nil, r = [], opts = nil)
       index = prefix || e.class.name
       index += "[#{key.inspect}]" if key
       return r if String === key && key[0] == '.' && a.nil?
+      return r if a.nil? && opts && opts['optional']
 
       case e
       when Array
@@ -31,7 +32,7 @@ module Xjz
         if Hash === a
           keys = allow_extend ? e.keys : (e.keys | a.keys)
           keys.each do |k|
-            compare_val(e[k], a[k], index, k, r)
+            compare_val(e[k], a[k], index, k, r, e[".#{k}"])
           end
         else
           r << [index, e, a]
