@@ -48,9 +48,6 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
     li.nav-item
       *nav_link(:api) API
 
-    li.nav-item
-      *nav_link(:diff) API Diff
-
 .detail.tab-content.pt-3.pb-5 style='overflow-x: hidden;'
   *tab_pane(:headers)
     button.btn.btn-info.btn-sm data-clipboard-target='#history_d_g_url' xjz-notify='URL Cpoied' Copy URL
@@ -99,12 +96,6 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
 
   - if api_desc.present?
     *tab_pane(:api)
-      h6.mt-4.pb-1.border-bottom = "#{api_type.upcase} Definition"
-
-      pre.bg-light
-        code.text-break = escape_html(JSON.pretty_generate(api_desc))
-
-    *tab_pane(:diff)
       ruby:
         pairs = [
           ['Query', nil, api_desc['query'], req.query_hash],
@@ -138,4 +129,9 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
                 td = escape_html(index)
                 td = Xjz::ApiProject::DataType === e ? ".t/#{e.name}" : escape_html(e.inspect)
                 td = escape_html(a.inspect)
+
+      h6.mt-4.pb-1.border-bottom = "API Definition - #{api_type.upcase}"
+
+      pre.bg-light
+        code.text-break = escape_html(JSON.pretty_generate(api_desc))
 
