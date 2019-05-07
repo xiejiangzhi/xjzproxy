@@ -3,6 +3,7 @@ require 'zlib'
 module Xjz
   class Response
     attr_reader :raw_headers, :raw_body
+    attr_accessor :api_project
 
     def initialize(raw_headers, raw_body, code = nil)
       @code = code

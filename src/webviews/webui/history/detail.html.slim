@@ -97,25 +97,20 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
   - if api_desc.present?
     *tab_pane(:api)
       ruby:
-        pairs = [
-          ['Query', nil, api_desc['query'], req.query_hash],
-          ['Body', nil, api_desc['body'], req.body_hash],
-          ['Params', nil, api_desc['params'], req.params]
-        ]
-        succ_desc = api_desc['response']['success']
-        if res && succ_desc
-          pairs << ['Response Code', 'Code', succ_desc['http_code'] || 200, res.code]
-          pairs << ['Response Headers', 'Headers', succ_desc['headers'], Hash[res.h2_headers], allow_extend: true]
-          pairs << ['Response Body', 'Body', succ_desc['data'], res.body_hash]
-        end
+        desc_mapping = {
+          query: ['Query'],
+          req_body: ['Body'],
+          params: ['Params'],
+          req_headers: ['Headers', 'Request Headers'],
+          res_code: ['Code'],
+          res_headers: ['Headers', 'Response Headers'],
+          res_body: ['Body', 'Response Body']
+        }
 
-      - pairs.each do |title, prefix, expected, actual, opts|
-        - expected ||= {}
-        - actual ||= {}
-        - next if expected == actual
-        - diff = Xjz::ParamsDiff.new(opts || {}).diff(expected, actual, prefix || title)
+      - rt.diff.each do |code, diff|
         - next if diff.blank?
-
+        - name, title = desc_mapping[code.to_sym]
+        - title ||= name
         h6.mt-4.pb-1.border-bottom = title
         table.table.table-striped.table-borderless
           thead
@@ -126,7 +121,7 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
           tbody
             - diff.each do |index, e, a|
               tr
-                td = escape_html(index)
+                td = escape_html(name + index.delete_prefix('Data'))
                 td = Xjz::ApiProject::DataType === e ? ".t/#{e.name}" : escape_html(e.inspect)
                 td = escape_html(a.inspect)
 

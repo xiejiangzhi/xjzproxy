@@ -1,7 +1,7 @@
 module Xjz
   class Request
     attr_reader :env
-    attr_accessor :forward_conn_attrs
+    attr_accessor :forward_conn_attrs, :api_project
 
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
     # only for single transport-level connection, must not be retransmitted by proxies or cached
@@ -135,7 +135,9 @@ module Xjz
     end
 
     def body_hash
-      @body_hash ||= HTTPHelper.parse_data_by_type(body, content_type)
+      @body_hash ||= HTTPHelper.parse_data_by_type(
+        body, content_type, api_project&.grpc&.find_rpc(path)&.input
+      )
     end
 
     def params

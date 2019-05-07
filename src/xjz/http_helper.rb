@@ -65,6 +65,7 @@ module Xjz
         else
           d = data.strip
           case d
+          when '' then :empty
           when /^[\{\[].*[\}\]]$/ then :json
           when /^<.*>$/ then :xml
           when /=/ then :url
@@ -72,6 +73,7 @@ module Xjz
         end
 
         case type
+        when :empty then {}
         when :json then JSON.parse(data)
         when :xml then Hash.from_xml(data)
         when :url then Rack::Utils.parse_query(data)

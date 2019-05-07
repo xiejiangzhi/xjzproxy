@@ -22,6 +22,9 @@
   data-toggle='deep-list' data-parent='#history_rt_list_group'
   xjz-id="history.detail.#{rt.object_id}" xjz-bind='click'
 ]
+  - if rt.diff.present?
+    span.badge.badge-warning.position-absolute.m-1 style='right: 0; top: 0;' !
+
   .rt_tab.py-1
     .pl-1
       span.badge.mr-2.align-middle class=mb_cls = req.http_method.upcase

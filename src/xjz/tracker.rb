@@ -31,6 +31,7 @@ module Xjz
 
   class RequestTracker
     attr_reader :request, :response, :action_list, :action_hash, :error_msg, :api_project, :api
+    attr_accessor :rt_diff
 
     def initialize(request, auto_start: true, api_project: nil, api: nil)
       @request = request
@@ -39,6 +40,8 @@ module Xjz
       @response = nil
       @action_list = []
       @action_hash = {}
+      @rt_diff = {}
+      request.api_project = api_project if api_project
       start if auto_start
     end
 
@@ -60,6 +63,8 @@ module Xjz
 
     def finish(response)
       @response = response
+      @diff = nil
+      response.api_project = api_project if api_project
       track 'finish'
     end
 
@@ -91,6 +96,39 @@ module Xjz
         else
           res_desc = api_project.find_api(req.http_method, req.scheme, req.host, req.path)
           res_desc ? [:http, res_desc] : []
+        end
+      end
+    end
+
+    def diff
+      return unless api_project && api_desc.present?
+
+      @diff ||= begin
+        _, ad = api_desc
+        req = request
+        pairs = [
+          [:query, ad['query'], req.query_hash],
+          [:req_body, ad['body'], req.body_hash],
+        ]
+        pairs << [:params, ad['params'], req.params] if ad['params']
+        pairs << [:req_headers, ad['headers'], Hash[req.proxy_headers], allow_extend: true]
+
+        res = response
+        if response && ad && succ_desc = ad.dig('response', 'success')
+          pairs += [
+            [:code, succ_desc['http_code'] || 200, res.code],
+            [:res_headers, succ_desc['headers'], Hash[res.h2_headers], allow_extend: true],
+            [:res_body, succ_desc['data'], res.body_hash]
+          ]
+        end
+
+        pairs.each_with_object({}) do |data, r|
+          code, expected, actual, opts = data
+          expected ||= {}
+          actual ||= {}
+          diff = Xjz::ParamsDiff.new(opts || {}).diff(expected, actual, 'Data')
+          next if diff.blank?
+          r[code] = diff
         end
       end
     end

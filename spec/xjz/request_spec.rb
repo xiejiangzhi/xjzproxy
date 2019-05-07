@@ -218,8 +218,24 @@ RSpec.describe Xjz::Request do
     allow(req).to receive(:content_type).and_return('application/json')
     allow(req).to receive(:body).and_return({ a: 1 }.to_json)
     expect(Xjz::HTTPHelper).to receive(:parse_data_by_type) \
-      .with(req.body, 'application/json').and_call_original
+      .with(req.body, 'application/json', nil).and_call_original
     expect(req.body_hash).to eql('a' => 1)
+  end
+
+  it '#body_hash should parse grpc' do
+    file_path = File.join($root, 'spec/files/grpc.yml')
+    ap = Xjz::ApiProject.new(file_path)
+    schema = ap.grpc.find_rpc('/Hw.Greeter/SayHello').input
+    proto = schema.new(name: 'xxx').to_proto
+    data = [0, proto.bytesize].pack('CN') + proto
+
+    allow(req).to receive(:body).and_return(data)
+    allow(req).to receive(:content_type).and_return('application/grpc')
+    allow(req).to receive(:path).and_return('/Hw.Greeter/SayHello')
+    req.api_project = ap
+    expect(Xjz::HTTPHelper).to receive(:parse_data_by_type) \
+      .with(req.body, 'application/grpc', schema).and_call_original
+    expect(req.body_hash).to eql('name' => 'xxx')
   end
 
   it '#params should merge body & query' do
