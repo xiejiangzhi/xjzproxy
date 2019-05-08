@@ -33,27 +33,19 @@ module Xjz
       send_msg('alert', message: "Updated project #{File.basename(ap.repo_path)}")
     end
 
-    def show_project(ap)
-      errors = ap.errors
-      session[:current_project] = ap
-      if errors.present?
+    def show_project(ap, toc: false)
+      if session[:project_focus_toc] && toc
         send_msg(
           'el.html',
-          selector: '#project_detail',
-          html: render('webui/project/detail.html', errors: errors, doc_html: nil)
-        )
-      else
-        markdown_str = Xjz::ApiProject::DocRenderer.new(ap).render('md', header: false)
-        doc_html = Redcarpet::Markdown.new(
-          Redcarpet::Render::HTML,
-          autolink: true, tables: true, fenced_code_blocks: true
-        ).render(markdown_str)
-        send_msg(
-          'el.html',
-          selector: '#project_detail',
-          html: render('webui/project/detail.html', doc_html: doc_html, errors: nil)
+          selector: '#project_left',
+          html: render('webui/project/detail_toc.html', ap: ap)
         )
       end
+      send_msg(
+        'el.html',
+        selector: '#project_detail',
+        html: render('webui/project/detail.html', ap: ap)
+      )
     end
   end
 end

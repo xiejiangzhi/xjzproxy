@@ -199,12 +199,13 @@ RSpec.describe Xjz::ApiProject do
       [ap.data, ap.raw_data, ap.grpc, ap.errors]
       expect(ap).to receive(:data).and_return('xxx')
       travel_to(Time.now + 5)
+      ap.cache[:a] = 123
 
       expect {
         ap.reload
       }.to change {
-        ap.instance_eval { [@data, @raw_data, @grpc, @errors] }
-      }.to([nil, nil, nil, nil])
+        ap.instance_eval { [@data, @raw_data, @grpc, @errors, @cache] }
+      }.to([nil, nil, nil, nil, {}])
     end
 
     it 'should not reload data for new project' do

@@ -22,7 +22,7 @@
 .row.form-group
   label.col-3.col-form-label ALPN Protocols
   .col-9
-    - [['h2', 'HTTP2'], ['http/1.1', 'HTTP/1.1']].each do |protocol, title|
+    - [['http/1.1', 'HTTP/1.1'], ['h2', 'HTTP2']].each do |protocol, title|
       - is_open = $config['alpn_protocols'].include?(protocol)
       - escaped_pstr = protocol.gsub(/[^\w]/, '_')
       - id = "proxy_alpn_#{escaped_pstr}"

@@ -118,6 +118,15 @@ module Xjz
         fetch_schema_of_pb_desc(desc)
       end
 
+      def toc_id(title, ids)
+        id = Base64.strict_encode64(ids.join('-')).tr('=', '')
+        "<i style='display: none;'>#{id}</i> #{title}"
+      end
+
+      def sub_title_icon
+        "<i class='sub-title-icon fas fa-list-alt'></i>"
+      end
+
       def _save_data_line(k, v, result, prefix = nil)
         _, k, *opts_ks = k.split('.') if k[0] == '.'
         rk = if k == '*' # '.*'
@@ -136,7 +145,7 @@ module Xjz
             end
             r[opts_ks[-1]] = v
           end
-        elsif v.to_s[0] == '.'
+        elsif v.to_s =~ /^\.\w\//
           val, oper, *args = v.split
           r['type'] = val
           if oper

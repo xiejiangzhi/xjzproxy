@@ -6,9 +6,29 @@ module Xjz
 
     namespace 'project' do
       event(/^detail_tab\.(?<ap_id>\d+)\.click$/) do
+        session[:project_focus_toc] = true
         ap_id = match_data['ap_id'].to_i
         ap = $config['.api_projects'].find { |obj| obj.object_id == ap_id }
-        show_project(ap)
+
+        send_msg(
+          'el.html',
+          selector: '#project_left',
+          html: render('webui/project/detail_toc.html', ap: ap)
+        )
+
+        if session[:current_project] != ap
+          session[:current_project] = ap
+          show_project(ap, toc: false)
+        end
+      end
+
+      event 'show_list.click' do
+        session[:project_focus_toc] = false
+        send_msg(
+          'el.html',
+          selector: '#project_left',
+          html: render('webui/project/tab_list.html')
+        )
       end
     end
 
@@ -38,6 +58,5 @@ module Xjz
     helpers do
       include PageActions::ProjectHelper
     end
-
   end
 end

@@ -1,6 +1,6 @@
 module Xjz
   class ApiProject
-    attr_reader :repo_path, :response_renderer
+    attr_reader :repo_path, :response_renderer, :cache
 
     def initialize(repo_path)
       @repo_path = repo_path
@@ -11,6 +11,7 @@ module Xjz
       @errors = nil
       @raw_data = nil
       @last_reload_at = Time.now
+      @cache = {}
     end
 
     def match_host?(host)
@@ -81,6 +82,7 @@ module Xjz
         @data = nil
         @errors = nil
         @raw_data = nil
+        @cache.clear
         data
         Logger[:auto].info { "Reload project #{repo_path}" }
         @last_reload_at = Time.now

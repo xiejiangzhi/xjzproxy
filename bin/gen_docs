@@ -5,6 +5,7 @@ ENV['APP_ENV'] ||= 'prod'
 require_relative '../app'
 
 $config['.api_projects'].each do |ap|
+  next if ap.errors.present?
   path = File.join(ap.data['project']['dir'], 'xjzapidoc.md')
   File.write(path, Xjz::ApiProject::DocRenderer.new(ap).render)
   puts "Generated #{ap.repo_path} to #{path}"

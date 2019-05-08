@@ -1,0 +1,3 @@
+#project_list_tabs.list-group.list-group-flush role='tablist'
+  - $config['.api_projects'].each do |ap|
+    = render 'webui/project/doc_tab.html', ap: ap

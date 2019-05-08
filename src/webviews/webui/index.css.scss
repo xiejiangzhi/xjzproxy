@@ -26,3 +26,39 @@
     transition: transform 0.3s;
   }
 }
+
+.f_project {
+  .detail {
+    .top-title {
+      &:not(:first-child) {
+        margin-top: 2em;
+      }
+      &:first-child {
+        margin-top: 1em;
+      }
+    }
+    .sub-title {
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+    }
+    .sub-title-icon {
+      margin-right: 0.25em;
+    }
+  }
+  .detail_toc {
+    .toc-level-1:before {
+      padding: 0 0.25em 0 0.5em;
+      content: ' - ';
+    }
+
+    .toc-level-2:before {
+      padding: 0 0.25em 0 2em;
+      content: ' - ';
+    }
+
+    .toc-level-3:before {
+      padding: 0 0.25em 0 3.5em;
+      content: '-';
+    }
+  }
+}

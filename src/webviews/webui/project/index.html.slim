@@ -1,10 +1,17 @@
 .row
   - h_header = '56px'
-  .col-3.border-right.px-0.sticky-top[
+  - current_ap = session[:current_project]
+
+  #project_left.col-3.border-right.px-0.sticky-top[
     style="height: calc(100vh - #{h_header}); overflow-y: auto; overflow-x: hidden; top: #{h_header}; z-index: 999;"
   ]
-    #project_list_tabs.list-group.list-group-flush role='tablist'
-      - $config['.api_projects'].each do |ap|
-        = render 'webui/project/doc_tab.html', ap: ap
+    - if current_ap
+      = render 'webui/project/detail_toc.html', ap: current_ap
+    - else
+      = render 'webui/project/tab_list.html', ap: current_ap
 
   #project_detail.col-9
+    - if current_ap
+      = render 'webui/project/detail.html', ap: current_ap
+    - elsif $config['.api_projects'].blank?
+      strong Has no any project

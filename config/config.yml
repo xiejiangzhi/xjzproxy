@@ -6,7 +6,7 @@ default: &default
   proxy_timeout: 60 # seconds
   proxy_port: 9898
   alpn_protocols:
-    - h2
+    # - h2
     - http/1.1
   max_threads: 128
   logger_level:
@@ -55,6 +55,10 @@ test:
   proxy_timeout: 1
   proxy_port: 59898
   max_threads: 4
+
+  alpn_protocols:
+    - h2
+    - http/1.1
 
   projects:
     - ./spec/files/project.yml

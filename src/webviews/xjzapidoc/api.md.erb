@@ -1,4 +1,4 @@
-### <%= api['title'] || api['path'] %>
+#### <%= sub_title_icon + toc_id(api['title'] || api['path'], [:api, api.object_id]) %>
 
 <%= api['desc'] %>
 
@@ -35,7 +35,7 @@
 
 Example
 
-```
+```json
 <%= render_project_data('apis', [host_regexp, api['method'], api['path'], name]) %>
 ```
 % end

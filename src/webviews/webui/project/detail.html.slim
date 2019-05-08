@@ -1,11 +1,28 @@
-.detail.pt-3.pb-5 style='overflow-x: hidden;'
-  - if errors.present?
-    .container
-      strong.row.text-danger Errors
-      - errors.each do |err|
-        .row.text-danger
-          .col-7 = err[:full_path]
-          .col-1 must
-          .col-4 = err[:message]
-  - else
-    == doc_html
+- h_header = '56px'
+- errors = ap.errors
+
+.row
+  .col-12.detail.pt-3.pb-5[
+    data-spy='scroll' data-target='#project_detail_toc' data-offset='18'
+    style='height: calc(100vh - #{h_header}); overflow-y: auto; overflow-x: hidden; position: relative;"
+  '
+  ]
+    - if errors.present?
+      .container
+        strong.row.text-danger Errors
+        - errors.each do |err|
+          .row.text-danger
+            .col-7 = err[:full_path]
+            .col-1 must
+            .col-4 = err[:message]
+    - else
+      ruby:
+        ap.cache[:doc_markdown] ||= Xjz::ApiProject::DocRenderer.new(ap).render('md', header: false)
+        doc_html = ap.cache[:doc_html] ||= Redcarpet::Markdown.new(
+          Xjz::ProjectRender::HTML.new(with_toc_data: true),
+          autolink: true, tables: true, fenced_code_blocks: true
+        ).render(ap.cache[:doc_markdown]) \
+          .gsub('<h3', '<h3 class="top-title text-info text-center"')
+          .gsub('<h4', '<h4 class="sub-title"')
+
+      == doc_html

@@ -15,6 +15,7 @@ module Xjz
   module Helper; end
   module Resolver; end
   module PageActions; end
+  module ProjectRender; end
   class WebUI; end
   class ProxyClient; end
 

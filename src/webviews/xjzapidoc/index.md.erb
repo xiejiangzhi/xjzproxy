@@ -3,7 +3,7 @@
 ---------------
 % end
 
-## APIs
+### APIs
 
 % apis_each do |host_regexp, api|
 <%= render('xjzapidoc/api.md', host_regexp: host_regexp, api: api) %>
@@ -11,7 +11,7 @@
 
 
 % if project.grpc
-## GRPC
+### GRPC
 
 % grpc_each do |path, input, output|
 <%=
@@ -26,7 +26,7 @@ render(
 
 
 % %w{responses partials types}.each do |part_name|
-## <a name="<%= part_name %>"><%= part_name.titleize %></a>
+### <%= part_name.titleize %>
 
 % if data = raw_data[part_name]
 %   sname = part_name.singularize

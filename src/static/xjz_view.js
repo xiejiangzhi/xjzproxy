@@ -150,6 +150,13 @@
     initDynamicEvents: function($container) {
       $container.find('[title][data-toggle=tooltip]').tooltip();
       $container.find('[title][data-toggle=popover]').popover();
+      $container.find('[data-spy="scroll"]').each(function(i, el) {
+        var $el = $(el);
+        $el.scrollspy($(el).data());
+      })
+      $container.find('pre code').each(function(i, el) {
+        hljs.highlightBlock(el);
+      });
     },
 
     initElem: function(html){

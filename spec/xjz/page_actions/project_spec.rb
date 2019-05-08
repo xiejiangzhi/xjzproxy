@@ -1,16 +1,25 @@
 RSpec.describe 'project', webpage: true do
   let(:ap) { $config['.api_projects'][0] }
 
+  before :each do
+    ap.cache.clear
+  end
+
   it 'detail_tab.xxx.click should render detail' do
     dr = double('doc_renderer', render: true)
     expect(Xjz::ApiProject::DocRenderer).to receive(:new).with(ap).and_return(dr)
     expect(dr).to receive(:render).and_return('## doc')
-    expect_runner_render(
-      [ "webui/project/detail.html", doc_html: "<h2>doc</h2>\n", errors: nil ],
-      :original
-    )
-    expect_runner_send_msg(['el.html', kind_of(Hash)])
+    expect_runner_render([ "webui/project/detail_toc.html", ap: ap], :original)
+    expect_runner_send_msg(['el.html', selector: '#project_left', html: kind_of(String)])
+    expect_runner_render([ "webui/project/detail.html", ap: ap], :original)
+    expect_runner_send_msg(['el.html', selector: '#project_detail', html: kind_of(String)])
     emit_msg("project.detail_tab.#{ap.object_id}.click")
+  end
+
+  it 'show_list.click should render project list' do
+    expect_runner_render([ "webui/project/tab_list.html"], :original)
+    expect_runner_send_msg(['el.html', selector: '#project_left', html: kind_of(String)])
+    emit_msg("project.show_list.click")
   end
 
   it 'server.project.del should remove a project', stub_config: true do

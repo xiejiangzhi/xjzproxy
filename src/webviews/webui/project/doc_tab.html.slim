@@ -1,5 +1,5 @@
 - css_cls = ap.errors.present? ? 'list-group-item-danger' : ''
-- css_cls << ' active' if defined?(active) && active == true
+- css_cls << ' active' if session[:current_project] == ap
 
 .list-group-item.list-group-item-action.px-1.py-1[
   id="project_tab_#{ap.object_id}" class=css_cls style='cursor: pointer;'

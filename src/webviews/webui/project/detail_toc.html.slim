@@ -1,0 +1,15 @@
+
+button.btn.btn-light.text-center.w-100[
+  xjz-id='project.show_list'
+]
+  i.fas.fa-angle-left
+
+- unless ap.errors.present?
+  ruby:
+    ap.cache[:doc_markdown] ||= Xjz::ApiProject::DocRenderer.new(ap).render('md', header: false)
+    doc_html_toc = ap.cache[:doc_html_toc] ||= Redcarpet::Markdown.new(
+      Xjz::ProjectRender::HTML_TOC.new(container_id: 'project_detail_toc'),
+      autolink: true, tables: true, fenced_code_blocks: true
+    ).render(ap.cache[:doc_markdown])
+
+  .detail_toc == doc_html_toc
