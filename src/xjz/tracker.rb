@@ -18,7 +18,7 @@ module Xjz
     end
 
     def clean_all
-      @history = []
+      @history.clear
     end
 
     def track_req(*args)

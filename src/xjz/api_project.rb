@@ -15,6 +15,7 @@ module Xjz
     end
 
     def match_host?(host)
+      return false if data['.enabled'] == false
       _, t = data['apis'].find { |k, v| k.match?("https://#{host}") || k.match?("http://#{host}") }
       t ? true : false
     end
@@ -22,6 +23,7 @@ module Xjz
     # Return nil if don't hijack
     # Return a response if hijack req
     def hack_req(req)
+      return if data['.enabled'] == false
       res = if grpc
         grpc.res_desc(req.path)
       else

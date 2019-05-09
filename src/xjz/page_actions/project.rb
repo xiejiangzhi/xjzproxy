@@ -30,6 +30,19 @@ module Xjz
           html: render('webui/project/tab_list.html')
         )
       end
+
+      event(/^status_switch.(?<ap_id>\d+).change$/) do
+        ap_id = match_data['ap_id'].to_i
+        ap = $config['.api_projects'].find { |obj| obj.object_id == ap_id }
+        ap.data['.enabled'] = !!data['value']
+        if session[:project_focus_toc] == false
+          send_msg(
+            'el.replace',
+            selector: "#project_tab_#{ap.object_id}",
+            html: render('webui/project/doc_tab.html', ap: ap)
+          )
+        end
+      end
     end
 
     namespace 'server.project' do

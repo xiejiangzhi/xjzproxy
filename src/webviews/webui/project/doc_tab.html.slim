@@ -1,5 +1,5 @@
-- css_cls = ap.errors.present? ? 'list-group-item-danger' : ''
-- css_cls << ' active' if session[:current_project] == ap
+- css_cls = session[:current_project] == ap ? ' active' : ''
+- css_cls << ' list-group-item-light' if ap.data['.enabled'] == false
 
 .list-group-item.list-group-item-action.px-1.py-1[
   id="project_tab_#{ap.object_id}" class=css_cls style='cursor: pointer;'
@@ -9,12 +9,17 @@
   .row.mx-0.pl-1.p-0.d-flex
     strong.mr-auto = File.basename(ap.repo_path)
     
-    - if ap.errors.blank?
-      .right
+    .right
+
+      - if ap.errors.present?
+        span.badge.badge-danger style='line-height: inherit;'
+          = "#{ap.errors.length} ERRs"
+      - else
         span.badge.badge-info style='line-height: inherit;'
           - if ap.grpc
             = "#{ap.grpc.services.map { |s| s.rpc_descs.size }.sum} RPCs"
           - else
             = "#{(ap.raw_data['apis'] || []).length} APIs"
-  .pl-1
-    = "#{(ap.raw_data['project'] || {})['url']}"
+
+  .pl-1 style='height: 1.5em;'
+    = "#{(ap.raw_data['project'] || {})['url']} "

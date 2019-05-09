@@ -53,6 +53,7 @@ RSpec.configure do |config|
       t.kill
     end
     $webui.page_manager.session.clear
+    Xjz::Tracker.instance.clean_all
   end
 
   config.around(:each, log: false) do |example|

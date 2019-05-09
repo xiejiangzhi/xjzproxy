@@ -27,7 +27,7 @@ module Xjz
       send_msg(
         'el.replace',
         selector: "#project_tab_#{ap.object_id}",
-        html: render('webui/project/doc_tab.html', ap: ap, active: ap == session[:current_project])
+        html: render('webui/project/doc_tab.html', ap: ap)
       )
       show_project(ap) if ap == session[:current_project]
       send_msg('alert', message: "Updated project #{File.basename(ap.repo_path)}")

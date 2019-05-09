@@ -22,9 +22,41 @@ RSpec.describe 'project', webpage: true do
     emit_msg("project.show_list.click")
   end
 
+  it 'project.status_switch.xxx.change should update project status' do
+    expect_runner.to_not receive(:render)
+    expect {
+      emit_msg("project.status_switch.#{ap.object_id}.change", value: nil)
+    }.to change { ap.data['.enabled'] }.to(false)
+
+    expect {
+      emit_msg("project.status_switch.#{ap.object_id}.change", value: true)
+    }.to change { ap.data['.enabled'] }.to(true)
+  end
+
+  it 'project.status_switch.xxx.change should update doc tab when focus tab' do
+    session[:project_focus_toc] = false
+    expect_runner_render(['webui/project/doc_tab.html', ap: ap], :original)
+    expect_runner_send_msg([
+      'el.replace', selector: "#project_tab_#{ap.object_id}", html: kind_of(String)
+    ])
+    expect {
+      emit_msg("project.status_switch.#{ap.object_id}.change", value: nil)
+    }.to change { ap.data['.enabled'] }.to(false)
+  end
+
   it 'server.project.del should remove a project', stub_config: true do
     expect_runner_send_msg(['el.remove', selector: "#project_tab_#{ap.object_id}"])
     # expect_runner_send_msg(["el.html", selector: "#project_detail", html: ''])
+    expect_runner_send_msg(['alert', message: "Removed project #{File.basename(ap.repo_path)}"])
+    expect {
+      emit_msg("server.project.del", ap: ap)
+    }.to change($config.data['.api_projects'], :size).to(0)
+  end
+
+  it 'server.project.del should clean detail if it is current project', stub_config: true do
+    session[:current_project] = ap
+    expect_runner_send_msg(['el.remove', selector: "#project_tab_#{ap.object_id}"])
+    expect_runner_send_msg(["el.html", selector: "#project_detail", html: ''])
     expect_runner_send_msg(['alert', message: "Removed project #{File.basename(ap.repo_path)}"])
     expect {
       emit_msg("server.project.del", ap: ap)

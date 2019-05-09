@@ -53,7 +53,7 @@ RSpec.describe Xjz::ApiProject do
       expect(r).to be_nil
     end
 
-    it 'should return nil if api.enabled == true' do
+    it 'should return nil if api.enabled == false' do
       ap.data['apis'].values.map(&:values).flatten.each do |api|
         om = api.method(:[])
         allow(api).to receive(:[]) do |name|
@@ -70,13 +70,10 @@ RSpec.describe Xjz::ApiProject do
       expect(r).to be_nil
     end
 
-    it 'should return nil if api[.enabled] == true' do
-      ap.data['apis'].values.map(&:values).flatten.each do |api|
-        om = api.method(:[])
-        allow(api).to receive(:[]) do |name|
-          name == '.enabled' ? false : om.call(name)
-        end
-      end
+    it 'should return nil if data[.enabled] == false' do
+      data = ap.data.deep_dup
+      allow(ap).to receive(:data).and_return(data)
+      data['.enabled'] = false
 
       r = ap.hack_req(Xjz::Request.new(
         'HTTP_HOST' => 'xjz.pw',
@@ -163,6 +160,11 @@ RSpec.describe Xjz::ApiProject do
   describe '.match_host?' do
     it 'should return true if match host' do
       expect(ap.match_host?('xjz.pw')).to eql(true)
+    end
+
+    it 'should return true if data[.enabled] == false ' do
+      allow(ap).to receive(:data).and_return('.enabled' => false)
+      expect(ap.match_host?('xjz.pw')).to eql(false)
     end
 
     it 'should return false if not match host' do

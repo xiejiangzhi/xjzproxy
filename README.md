@@ -55,10 +55,11 @@ XjzProxy
 3.0d
 
 
-**Doc/Project**
+**Project/doc**
 
 - Doc style 2d
 - Online / Offline 1d
+- Auto test all APIs, each apis and send request, see result in history and report
 
 3d
 
@@ -67,6 +68,7 @@ XjzProxy
 - Slowest 10 Req(online) 0.5d
 - Most reqs in n seconds 0.5d
 - All error requests(404) and not match doc 2d
+- How many errors and show 5xx 4xx count
 
 3d
 

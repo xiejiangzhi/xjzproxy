@@ -28,7 +28,7 @@ RSpec.describe Xjz::ProxyClient do
 
   before :each do
     key = '.api_projects'
-    @config_data = $config.data.reject { |k, v| k == key }
+    @config_data = $config.data.deep_dup.reject { |k, v| k == key }
     @config_data[key] = []
     allow($config).to receive(:data).and_return(@config_data)
     allow($config.shared_data.app.webui).to receive(:emit_message)
