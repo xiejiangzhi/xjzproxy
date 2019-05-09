@@ -42,6 +42,20 @@
       case 'el.remove':
         $el.remove();
         break;
+      case 'el.set_attr':
+        switch (data.attr) {
+        case 'checked':
+        case 'selected':
+          $el[0][data.attr] = data.value
+          break;
+        default:
+          if (data.value) {
+            $el.attr(data.attr, data.value)
+          } else {
+            $el.removeAttr(data.attr)
+          }
+        }
+        break;
       case 'alert':
         this.notify(data.message, data.type)
         break;

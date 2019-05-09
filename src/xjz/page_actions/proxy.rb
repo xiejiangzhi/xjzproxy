@@ -6,10 +6,20 @@ module Xjz
 
     namespace 'proxy' do
       event 'status.change' do
+        server = $config.shared_data.app.server
         if data['value']
-          $config.shared_data.app.server.start_proxy
+          server.start_proxy
+          unless server.proxy_socket
+            send_msg('el.set_attr', selector: '#proxy_status_switch', attr: 'checked', value: nil)
+            send_msg(
+              'alert',
+              type: :error,
+              message: 'Failed to start proxy. Please try to change the port.'
+            )
+            next
+          end
         else
-          $config.shared_data.app.server.stop_proxy
+          server.stop_proxy
         end
 
         send_msg('el.html', selector: '#f_proxy', html: render('webui/proxy/index.html'))

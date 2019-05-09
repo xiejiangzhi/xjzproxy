@@ -29,6 +29,7 @@ XjzProxy
 - [ ] 3.0 generate apidoc from real request
 - [ ] 0.5 script types
 - [ ] 1.0 Resend Request
+- [ ] 1.0 Export as PDF, HTML
 
 ### V2
 
@@ -57,10 +58,9 @@ XjzProxy
 **Doc/Project**
 
 - Doc style 2d
-- Export as PDF, HTML 1d
 - Online / Offline 1d
 
-4d
+3d
 
 **Report**
 

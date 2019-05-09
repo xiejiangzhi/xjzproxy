@@ -1,11 +1,13 @@
 RSpec.describe 'proxy', webpage: true do
+  let(:server) { $config.shared_data.app.server }
+
   before :each do
     cdata = $config.data.deep_dup
     allow($config).to receive(:data).and_return(cdata)
   end
 
   it 'status.change should start proxy if value true' do
-    expect($config.shared_data.app.server).to receive(:start_proxy)
+    expect(server).to receive(:start_proxy)
     expect_runner_render(["webui/proxy/index.html"], :original)
     expect_runner_render(["webui/proxy/_status_text.html"], :original)
     expect_runner_send_msg(['el.html', selector: '#f_proxy', html: kind_of(String)])
@@ -15,8 +17,21 @@ RSpec.describe 'proxy', webpage: true do
     emit_msg('proxy.status.change', 'value' => true)
   end
 
+  it 'status.change should back to off if failed to start' do
+    allow(TCPSocket).to receive(:new).and_raise(Errno::EADDRINUSE.new('err'))
+    allow(server).to receive(:proxy_socket)
+    expect(server).to receive(:start_proxy).and_call_original
+    expect_runner_send_msg([
+      'el.set_attr', selector: '#proxy_status_switch', attr: 'checked', value: nil
+    ])
+    expect_runner_send_msg([
+      'alert', type: :error, message: 'Failed to start proxy. Please try to change the port.'
+    ])
+    emit_msg('proxy.status.change', 'value' => true)
+  end
+
   it 'status.change should stop proxy if value = false' do
-    expect($config.shared_data.app.server).to receive(:stop_proxy)
+    expect(server).to receive(:stop_proxy)
     expect_runner_render(["webui/proxy/index.html"], :original)
     expect_runner_render(["webui/proxy/_status_text.html"], :original)
     expect_runner_send_msg(['el.html', selector: '#f_proxy', html: kind_of(String)])

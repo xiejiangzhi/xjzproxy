@@ -1,5 +1,5 @@
 RSpec.describe Xjz::Server do
-  describe 'Start', server: true do
+  describe 'start', server: true do
     let(:server) { $config.shared_data.app.server }
 
     it 'should auto fetch first request' do
@@ -34,6 +34,14 @@ RSpec.describe Xjz::Server do
       REQ
       client.close_write
       sleep 0.1
+    end
+  end
+
+  describe 'start_proxy' do
+    it 'should not raise error if port was used', log: false do
+      s = Xjz::Server.new
+      expect { s.start_proxy }.to_not raise_error
+      expect(s.proxy_socket).to be_nil
     end
   end
 end

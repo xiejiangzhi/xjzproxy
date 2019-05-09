@@ -30,6 +30,9 @@ module Xjz
         Logger[:auto].info { "Start Proxy at port #{proxy_addr}" }
         @proxy_thread, @proxy_thread_pool = loop_server(proxy_socket, 'Proxy')
       end
+    rescue Errno::EADDRINUSE => e
+      Logger[:auto].error { e.log_inspect }
+      nil
     end
 
     def start_ui
@@ -89,8 +92,10 @@ module Xjz
       end
 
       thread.kill if thread && thread.alive?
-      thread_pool.shutdown
-      thread_pool.kill
+      if thread_pool
+        thread_pool.shutdown
+        thread_pool.kill
+      end
     end
 
     def loop_server(server_sock, name = '')
