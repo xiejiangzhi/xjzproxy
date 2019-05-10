@@ -29,6 +29,5 @@ RSpec.describe Xjz::WebUI::Browser do
       }.to change { ap.alive? }.to(false)
       expect(subject.app_process).to eql(nil)
     end
-
   end
 end

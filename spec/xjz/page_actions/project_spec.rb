@@ -3,6 +3,7 @@ RSpec.describe 'project', webpage: true do
 
   before :each do
     ap.cache.clear
+    allow(ap).to receive(:data).and_return(ap.data.deep_dup)
   end
 
   it 'detail_tab.xxx.click should render detail' do

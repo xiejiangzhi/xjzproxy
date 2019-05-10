@@ -28,8 +28,7 @@ module Xjz
       "data:#{type};base64,#{base64_encode(str)}"
     end
 
-    def max_reqs_in_sec(seconds)
-      rts = Tracker.instance.history
+    def max_reqs_in_sec(rts, seconds)
       max = 0
       rt_times = rts.map { |rt| rt.start_at }
       rt_times.each_with_index do |st, i|

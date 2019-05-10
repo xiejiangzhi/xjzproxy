@@ -1,35 +1,78 @@
-- tracker = Xjz::Tracker.instance
-- total = tracker.history.length
-.container
-  .row
-    .col-3 Requests
-    .col-9 = total
+ruby:
+  rts = filter_rts(Xjz::Tracker.instance.history, session[:history_filter])
+  total = rts.length
+  project_rts = rts.select { |rt| rt.api_project }
+  api_rts = project_rts.select { |rt| rt.diff }
+  diff_rts = api_rts.select { |rt| rt.diff.size > 0 }
 
-  - cost_list = tracker.history.map(&:cost)
-  .row
-    .col-3 Avg Cost
-    - ms = total > 0 ? ((cost_list.sum / total) * 1000).to_i : 0
-    .col-9 = "#{ms} ms"
+  groups = {
+    200..299 => '2xx',
+    300..399 => '3xx',
+    (400..403).to_a + (405..499).to_a => '4xx',
+    [404] => '404',
+    500..599 => '5xx'
+  }
+  txx_group = rts.group_by do |rt|
+    (groups.find { |k, v| k.include?(rt&.response&.code || -1) } || []).last
+  end
 
-  - [50, 70, 80, 90, 95].each do |pn|
-    .row
-      .col-3 Avg #{pn}%
-      - tpn = (cost_list.size * 100 / pn).to_i
-      - ms = ((cost_list.sort[0...tpn].max || 0) * 1000).to_i
-      .col-9 = "#{ms} ms"
-  
-  .row
-    .col-3 Min Cost
-    - ms = (cost_list.min || 0) * 1000
-    .col-9 = "#{ms} ms"
+.container.py-4
+  .note-block.note-info
+    | The result is the same as 'History'.
+    br
+    | If you update the filter of history, the page will follow the changes.
 
-  .row
-    .col-3 Max Cost
-    - ms = (cost_list.max || 0) * 1000
-    .col-9 = "#{ms} ms"
+  h5 Request
 
-  - [1, 3, 5, 15, 30].each do |seconds|
-    .row
-      .col-3 Max Request in #{seconds} sec
-      .col-9 = "#{max_reqs_in_sec(seconds)} Requests"
+  table.table.table-stripe
+    tbody
+      tr
+        th style='width: 30%' Total
+        td style='width: 55%' = total
+        td style='width: 15%' 
 
+      - groups.values.each do |name|
+        - txx = txx_group[name]&.size || 0
+        tr
+          th
+            | #{name.upcase} reqs
+            - if name == '4xx'
+              i.fas.fa-question-circle.ml-1 title="Does not include 404" data-toggle='tooltip'
+          td = txx
+          td
+            - if total > 0
+              = number_to_percentage(txx / total * 100, precision: 2)
+
+      - [3, 15, 60].each do |seconds|
+        tr
+          th
+            | #{seconds} seconds
+            i.fas.fa-question-circle.ml-1 title="Maximum number of requests in #{seconds} seconds" data-toggle='tooltip'
+          td = max_reqs_in_sec(rts, seconds)
+          td
+
+
+  h5 Project
+
+  table.table.table-stripe
+    tbody
+      tr
+        th style='width: 30%'
+          | Host matched reqs
+          i.fas.fa-question-circle.ml-1 title="domain of request equal to domain of project" data-toggle='tooltip'
+        td style='width: 55%' = project_rts.size
+        td style='width: 15%' 
+
+      tr
+        th
+          | Defined reqs
+          i.fas.fa-question-circle.ml-1 title="The requests was defined in apis of project" data-toggle='tooltip'
+        td = api_rts.size
+        td 
+
+      tr
+        th
+          | Unmatched reqs
+          i.fas.fa-question-circle.ml-1 title="The requests was defined in apis of project, but didn't get a expected result" data-toggle='tooltip'
+        td = diff_rts.size
+        td 

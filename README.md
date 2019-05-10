@@ -64,8 +64,6 @@ XjzProxy
 
 **Report**
 
-- Slowest 10 Req(online) 0.5d
-- Most reqs in n seconds 0.5d
 - All error requests(404) and not match doc 2d
 - How many errors and show 5xx 4xx count
 
@@ -78,7 +76,7 @@ XjzProxy
 - Chinese doc 1d
 - Save proxy config
 - Test version & software sign 2d
-- 混淆 Ruby Code，放入暗桩（正常版本不会运行的或是在激活后一定时间再进行检查）， 1d
+- 混淆 Ruby Code，放入暗桩（正常版本不会运行的或是在激活后一定时间再进行检查），可以通过 ERB 来生成代码 1d
 - Auto test all APIs, each apis and send request, see result in history and report 2d
 
 7d

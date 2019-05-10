@@ -12,9 +12,10 @@
         strong.row.text-danger Errors
         - errors.each do |err|
           .row.text-danger
-            .col-7 = err[:full_path]
-            .col-1 must
-            .col-4 = err[:message]
+            .col-6 = err[:full_path]
+            .col-6
+              | is not 
+              = err[:message]
     - else
       ruby:
         ap.cache[:doc_markdown] ||= Xjz::ApiProject::DocRenderer.new(ap).render('md', header: false)
