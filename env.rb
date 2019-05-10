@@ -17,6 +17,7 @@ gem_groups << :development unless $app_env == 'prod'
 Bundler.require(*gem_groups)
 
 require 'yaml'
+require 'objspace'
 require 'active_support/core_ext'
 
 I18n.load_path += Dir[File.join($root, 'config/locales/*.{yml,rb}')]

@@ -132,5 +132,11 @@ module Xjz
         end
       end
     end
+
+    def memsize
+      Helper::Memsize.count(self) +
+        Helper::Memsize.count(request) * 1.2 +
+        Helper::Memsize.count(response) * 1.1
+    end
   end
 end

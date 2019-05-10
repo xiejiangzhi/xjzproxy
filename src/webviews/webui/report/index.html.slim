@@ -76,3 +76,15 @@ ruby:
           i.fas.fa-question-circle.ml-1 title="The requests was defined in apis of project, but didn't get a expected result" data-toggle='tooltip'
         td = diff_rts.size
         td 
+
+
+  h5 Other
+
+  table.table.table-stripe
+    tbody
+      tr
+        th style='width: 30%' All history size 
+        td style='width: 55%' = number_to_human_size(rts.map(&:memsize).sum)
+        td style='width: 15%' 
+
+
