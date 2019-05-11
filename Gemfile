@@ -1,4 +1,4 @@
-eval File.read('Gemfile.prod')
+eval File.read(File.expand_path('../Gemfile.prod', __FILE__))
 
 group :development do
   # debug
@@ -8,6 +8,7 @@ group :development do
   # tools
   gem 'rake'
   gem 'gem-licenses'
+  gem 'uglifier', '~> 4.1.20' # compress js
 
   # testing
   gem 'rspec', '~> 3.8.0'

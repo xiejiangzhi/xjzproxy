@@ -5,8 +5,6 @@
 
 config/*.pem
 
-/spec/examples.txt
-
 *.swp
 *.log
 
@@ -24,16 +22,12 @@ xjzapidoc.md
 /releases
 /builder
 
-# test
-/spec
-
 # other
 /.git*
 /Gemfile*
 /Rakefile
 /bin
 /.buildignore
-/.rspec
 /.rubocop.yml
 /vendor
 .DS_Store

@@ -1,0 +1,4 @@
+#! /bin/bash
+
+open http://xjz.pw
+exit 0

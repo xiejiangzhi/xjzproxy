@@ -1,6 +1,6 @@
 module Xjz
   class << self
-    unless self.respond_to?(:_load_file)
+    unless Xjz.respond_to?(:_load_file)
       def app_files
         @app_files ||= begin
           hash = Dir['*.rb', 'src/**/*.rb'].each_with_object({}) { |v, r| r[v] = true }
@@ -21,7 +21,7 @@ module Xjz
       end
     end
 
-    unless respond_to?(:load_all)
+    unless Xjz.respond_to?(:load_all)
       def load_all
         app_files.keys.sort.each { |path, _| _load_file path }
         app_files.clear

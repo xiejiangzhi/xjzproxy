@@ -1,0 +1,24 @@
+#! /usr/bin/env ruby
+
+require_relative './help'
+
+def build_osx_app(pkg_dir)
+  pname = "XJZProxy.app"
+  app_dir = "#{pkg_dir}/#{pname}"
+  cmd "cp -r #{$releases_dir}/#{pname} #{app_dir}"
+  cmd "cp -r #{pkg_dir}/lib #{app_dir}/Contents/MacOS/lib"
+  cmd "cp -r #{pkg_dir}/run #{app_dir}/Contents/MacOS/XJZProxy"
+end
+
+def build_debian_pkg(dir)
+end
+
+$config['platforms'].each do |platform|
+  dirname = [platform, $config['app_version']].join('-')
+  pkg_dir = File.join($releases_dir, dirname)
+
+  case platform
+  when /^osx/ then build_osx_app(pkg_dir)
+  when /linux/ then build_debian_pkg(pkg_dir)
+  end
+end

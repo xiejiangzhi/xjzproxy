@@ -5,13 +5,53 @@ require 'zlib'
 app_dir = File.expand_path('../../', __FILE__)
 rbdata = {}
 
+def compile(path)
+  code = File.read(path)
+  vars = {}
+  current_level = 0
+  counter = 0
+  code = code.lines.each_with_object([]) do |line, r|
+    next if line =~ /^\s*(#.*)?$/
+    r << line
+    matchs = line.scan(/^\s+([a-z_]+)\s=\s/)
+    indent = line.scan(/^(\s+)\S/).dig(0, 0).to_s
+    raise "Error indent #{line.inspect.strip}" if indent.length % 2 == 1
+    level = indent.length / 2
+
+    if level > current_level
+      current_level = level
+      vars[current_level] ||= {}
+    elsif current_level > level
+      (current_level - level).times do |i|
+        vars[current_level - i] = {}
+      end
+      current_level = level
+    end
+
+    # line.gsub!(/^\s+/, '')
+    if matchs.size > 0
+      matchs.flatten.each { |name| vars[current_level][name] = "xjzv#{counter}"; counter += 1 }
+    end
+
+    vars.values.each do |lvars|
+      lvars.each do |s, t|
+        line.gsub!(/([\s\[\{])#{s}([\s\}\[\],\.\&])/, "\\1#{t}\\2")
+      end
+    end
+  end.join
+
+  RubyVM::InstructionSequence.compile(
+    code, path, path
+  ).to_binary
+end
+
+compile('src/xjz/config.rb')
+exit
+
 Dir.chdir(app_dir) do
   %w{*.rb src/**/*.rb}.each do |matcher|
     Dir[matcher].each do |path|
-      code = File.read(path)
-      rbdata[path] = RubyVM::InstructionSequence.compile(
-        code, path, path
-      ).to_binary
+      rbdata[path] = compile(path)
       puts "Compiled #{path}"
     end
   end

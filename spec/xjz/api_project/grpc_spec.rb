@@ -89,19 +89,20 @@ RSpec.describe Xjz::ApiProject::GRPC do
 
   describe '#services' do
     it 'should return all services' do
-      t = Time.now
-      allow(Time).to receive(:now).and_return(t)
-      id = "ffed6c4896a5fb9483521dc8b0fd3dea759abcc74371e801ee66fde2d323c6fe_#{t.to_f}".tr('.', '')
-      expect(subject.services.map(&:name)).to eql([
-        "Xjz::ApiProject::GRPCParser::ParsedModule_#{id}::Hw::Greeter::Service"
-      ])
+      expect(subject.services.length).to eql(1)
+      expect(subject.services.map(&:name)[0]).to match(
+        /^Xjz::ApiProject::GRPCParser::ParsedModule_\w+::Hw::Greeter::Service$/
+      )
 
       m = Class.new { include GRPC::GenericService }
       subject.grpc.const_set("GxxxxService", m)
-      expect(subject.services.map(&:name).sort).to eql([
-        "Xjz::ApiProject::GRPCParser::ParsedModule_#{id}::Hw::Greeter::Service",
-        "Xjz::ApiProject::GRPCParser::ParsedModule_#{id}::GxxxxService"
-      ].sort)
+      expect(subject.services.length).to eql(2)
+      expect(subject.services.map(&:name)[0]).to match(
+        /^Xjz::ApiProject::GRPCParser::ParsedModule_\w+::Hw::Greeter::Service$/
+      )
+      expect(subject.services.map(&:name)[1]).to match(
+        /^Xjz::ApiProject::GRPCParser::ParsedModule_\w+::GxxxxService$/
+      )
     end
   end
 

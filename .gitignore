@@ -21,7 +21,9 @@ xjzapidoc.md
 
 # build
 
-/releases
+/releases/linux-*
+/releases/osx-*
+/releases/windows-*
 
 # compile
 /data

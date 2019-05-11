@@ -28,7 +28,7 @@ RSpec.describe Xjz::WebUI::PageManager do
     it 'should bind message event' do
       expect(ws).to receive(:bind) do |name, &block|
         expect(name).to eql(:message)
-        expect(block.source).to eql(subject.method(:on_message).source)
+        expect(block.source_location).to eql(subject.method(:on_message).source_location)
       end
 
       subject.watch(ws)

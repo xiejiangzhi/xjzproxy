@@ -8,3 +8,7 @@ root="$(pwd)"
 ./builder/compile
 ./builder/loader
 ./builder/package
+
+echo "Finished all"
+echo "Run system_package to build package for different system"
+# ./builder/system_package

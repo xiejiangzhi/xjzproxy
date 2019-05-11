@@ -1,25 +1,6 @@
 #! /usr/bin/env ruby
 
-require 'bundler/setup'
-require 'erb'
-require 'yaml'
-
-def load_yaml(path)
-  erb = ERB.new(File.read(path))
-  erb.filename = path
-  YAML.load(erb.result)
-end
-
-$root = File.expand_path('../..', __FILE__)
-$releases_dir = File.join($root, 'releases')
-$config = load_yaml(File.join($root, 'build.yml'))
-
-puts "Config: \n#{$config.to_yaml}\n\n"
-
-def cmd(str, quiet: false)
-  puts "$ #{str}" unless quiet
-  exit 1 unless Kernel.system(str)
-end
+require_relative './help'
 
 $config['platforms'].each do |platform|
   dirname = [platform, $config['app_version']].join('-')
@@ -66,6 +47,19 @@ $config['platforms'].each do |platform|
       cmd "BUNDLE_IGNORE_CONFIG=1 bundle install --path ../vendor --without development test"
     end
   end
+
+  # compile js
+  Dir["#{app_dir}/src/static/xjz_*.js"].each do |path|
+    File.write(path, Uglifier.compile(File.read(path)))
+  end
+
+  # run test
+  if platform =~ /^osx/
+    cmd "cd #{app_dir} && BUNDLE_GEMFILE=#{$root}/Gemfile bundle exec rspec"
+  end
+
+  # clean test files
+  cmd "rm -rf #{app_dir}/spec #{app_dir}/.rspec"
 
   # clean gem cache
   cmd "rm -rf #{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/cache"
