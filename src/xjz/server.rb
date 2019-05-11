@@ -103,10 +103,10 @@ module Xjz
       end_msg = ['Close', name, 'connection'].join(' ')
 
       thread_pool = Concurrent::ThreadPoolExecutor.new(
-         min_threads: 2,
-         max_threads: $config['max_threads'],
-         max_queue: 256,
-         fallback_policy: :discard
+        min_threads: 2,
+        max_threads: $config['max_threads'],
+        max_queue: 256,
+        fallback_policy: :discard
       )
 
       t = Thread.new do

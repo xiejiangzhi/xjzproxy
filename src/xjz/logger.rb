@@ -9,9 +9,9 @@ module Xjz
 
       def [](progname = nil)
         if progname == :auto
-          name = caller[0]
-          name = caller[0][($root.length + 1)..-1] if name[$root]
-          name = name[('src/xjz'.length + 1)..-1] if name[/^src\/xjz/]
+          name = caller[0].to_s
+          name = name.delete_prefix($root + '/') if name[$root]
+          name = name.delete_prefix('src/xjz/') if name[/^src\/xjz/]
           progname = name.split(':', 2).first
         end
         instance[progname]

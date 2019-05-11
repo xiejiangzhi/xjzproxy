@@ -28,6 +28,11 @@ RSpec.describe Xjz::Helper::Webview do
       expect(m.render('block.html', &(proc { 123 }))).to eql('<div>123</div>')
     end
 
+    it 'should read read from Xjz.get_res' do
+      expect(Xjz).to receive(:get_res).and_call_original
+      expect(m.render('block.html', &(proc { 123 }))).to eql('<div>123</div>')
+    end
+
     it 'should raise error when not found' do
       tengines = Xjz::Helper::Webview::TEMPLATE_ENGINES
       expect {
@@ -35,6 +40,15 @@ RSpec.describe Xjz::Helper::Webview do
       }.to raise_error(
         "Not found template not_found_xxasdf.html.(#{tengines.join('|')})"
       )
+    end
+
+    it 'should not raise error if MYRES include the template(for prod)' do
+      path = 'src/webviews/not_found_xxasdf.html.erb'
+      stub_const('MYRES',  path => '123')
+      expect(Xjz).to receive(:get_res).with(path).and_return('xxx')
+      expect {
+        m.render('not_found_xxasdf.html')
+      }.to_not raise_error
     end
 
     it 'should back to default template if we have a default template' do

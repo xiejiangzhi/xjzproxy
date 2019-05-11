@@ -7,37 +7,10 @@ rbdata = {}
 
 def compile(path)
   code = File.read(path)
-  vars = {}
-  current_level = 0
-  counter = 0
   code = code.lines.each_with_object([]) do |line, r|
     next if line =~ /^\s*(#.*)?$/
     r << line
-    matchs = line.scan(/^\s+([a-z_]+)\s=\s/)
-    indent = line.scan(/^(\s+)\S/).dig(0, 0).to_s
-    raise "Error indent #{line.inspect.strip}" if indent.length % 2 == 1
-    level = indent.length / 2
-
-    if level > current_level
-      current_level = level
-      vars[current_level] ||= {}
-    elsif current_level > level
-      (current_level - level).times do |i|
-        vars[current_level - i] = {}
-      end
-      current_level = level
-    end
-
-    # line.gsub!(/^\s+/, '')
-    if matchs.size > 0
-      matchs.flatten.each { |name| vars[current_level][name] = "xjzv#{counter}"; counter += 1 }
-    end
-
-    vars.values.each do |lvars|
-      lvars.each do |s, t|
-        line.gsub!(/([\s\[\{])#{s}([\s\}\[\],\.\&])/, "\\1#{t}\\2")
-      end
-    end
+    line.gsub!(/^\s+/, '')
   end.join
 
   RubyVM::InstructionSequence.compile(
@@ -45,22 +18,24 @@ def compile(path)
   ).to_binary
 end
 
-compile('src/xjz/config.rb')
-exit
-
 Dir.chdir(app_dir) do
-  %w{*.rb src/**/*.rb}.each do |matcher|
-    Dir[matcher].each do |path|
-      rbdata[path] = compile(path)
-      puts "Compiled #{path}"
-    end
+  Dir[*%w{*.rb src/xjz/**/*.rb}].each do |path|
+    rbdata[path] = compile(path)
   end
+  puts "Compiled Ruby Code"
+
+  Dir[*%w{src/static/**/* src/webviews/**/*}].each do |path|
+    next if File.directory?(path)
+    rbdata[path] = File.read(path)
+  end
+  puts "Saved JS and Templates"
 end
 
 data = rbdata.map do |k, v|
+  is_utf8 = v.encoding == Encoding::UTF_8 ? 1 : 0
   [
-    [k.bytesize].pack("N"), k,
-    [v.bytesize].pack("N"), v
+    [1, k.bytesize].pack("CN"), k,
+    [is_utf8, v.bytesize].pack("CN"), v.force_encoding('binary')
   ].join
 end.join
 

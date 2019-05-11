@@ -45,7 +45,14 @@ module Xjz
     end
 
     def fetch_template(path)
-      @template_cache[path] ||= Tilt.new(path, TEMPLATE_ARGS[Tilt[path]] || {})
+      @template_cache[path] ||= begin
+        data_proc = nil
+        # support $root/xxx and src/webviews/xxx
+        if path.match?(/^\w/) || path[$root]
+          data_proc = proc { Xjz.get_res(path.delete_prefix($root + '/')) }
+        end
+        Tilt.new(path, TEMPLATE_ARGS[Tilt[path]] || {}, &data_proc)
+      end
     end
 
     def fetch_template_path(name)
@@ -54,7 +61,15 @@ module Xjz
       template_dirs = [$config['template_dir'], 'src/webviews'].compact.map do |path|
         File.expand_path(path, $root)
       end
-      path = @template_path_cache[name] = query_template_path(template_dirs, name)
+      path = @template_path_cache[name] = begin
+        p = query_template_path(template_dirs, name)
+        if p
+          p
+        else
+          regexp = %r{^src/webviews/#{name}.(#{TEMPLATE_ENGINES.join('|')})$}
+          ::MYRES.find { |k, _v| k.match?(regexp) }&.first
+        end
+      end
       return path if path
       raise("Not found template #{name}.(#{TEMPLATE_ENGINES.join('|')})")
     end

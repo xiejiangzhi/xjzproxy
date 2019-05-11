@@ -97,12 +97,12 @@ RSpec.describe Xjz::ApiProject::GRPC do
       m = Class.new { include GRPC::GenericService }
       subject.grpc.const_set("GxxxxService", m)
       expect(subject.services.length).to eql(2)
-      expect(subject.services.map(&:name)[0]).to match(
-        /^Xjz::ApiProject::GRPCParser::ParsedModule_\w+::Hw::Greeter::Service$/
-      )
-      expect(subject.services.map(&:name)[1]).to match(
+      ms = [
+        /^Xjz::ApiProject::GRPCParser::ParsedModule_\w+::Hw::Greeter::Service$/,
         /^Xjz::ApiProject::GRPCParser::ParsedModule_\w+::GxxxxService$/
-      )
+      ]
+      subject.services.map(&:name).each { |name| ms.delete_if { |reg| name =~ reg } }
+      expect(ms).to be_empty
     end
   end
 

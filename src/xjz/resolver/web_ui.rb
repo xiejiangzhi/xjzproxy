@@ -49,14 +49,15 @@ module Xjz
         end
         [{}, ['Failed to perform websocket'], 400]
       when %r{\A/static/.+(js|css|png|svg|woff|woff2|ttf)\Z}
-        path = File.join($root, 'src', req.path)
+        path = File.join('src', req.path)
         content_type = case path
         when /js$/ then 'text/javascript'
         when /css$/ then 'text/css'
         when /png$/ then 'image/png'
         end
-        if File.exist?(path)
-          [{ 'content-type' => content_type }.compact, [File.read(path)], 200]
+        res = Xjz.get_res(path)
+        if res
+          [{ 'content-type' => content_type }.compact, [res], 200]
         else
           NOT_FOUND_RES
         end

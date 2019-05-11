@@ -8,6 +8,10 @@ config/*.pem
 *.swp
 *.log
 
+# test
+/spec
+/.rspec
+
 .xjzapi
 xjzapidoc.md
 
@@ -32,6 +36,6 @@ xjzapidoc.md
 /vendor
 .DS_Store
 
-/src/**/*.rb
+/src
 /*.rb
 /licenses.csv

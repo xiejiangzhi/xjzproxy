@@ -26,6 +26,17 @@ module Xjz
         app_files.keys.sort.each { |path, _| _load_file path }
         app_files.clear
       end
+
+      def get_res(path)
+        if File.exist?(path)
+          File.read(path)
+        else
+          Logger[:auto].error { "Not found res #{path}" }
+          nil
+        end
+      end
+
+      Object::MYRES = {}
     end
 
     def load_file(path)
