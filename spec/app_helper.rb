@@ -10,16 +10,15 @@ Bundler.require(:default, :development)
 require 'spec_helper'
 
 app_path = File.expand_path('../../app.rb', __FILE__)
-if File.exist?(app_path)
+if !ENV['PROD_CODE']
   require app_path
 else
   $root = File.expand_path('../..', __FILE__)
-  ENV['TOUCH_XJZ'] = '1'
+  ENV['TOUCH_APP'] = '1'
   require './ext/loader/loader'
   Xjz.init
-  MYAPPDATA.delete 'boot.rb'
-  Xjz._load_file 'src/xjz/loader.rb'
-  Xjz._load_file 'app.rb'
+  MYISEQS.delete 'boot.rb'
+  Xjz.load_file './app.rb'
 end
 
 Dir[File.expand_path('../support/*.rb', __FILE__)].each do |path|

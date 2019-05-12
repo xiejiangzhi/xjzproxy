@@ -1,6 +1,6 @@
 module Xjz
-  class << self
-    unless Xjz.respond_to?(:_load_file)
+  unless Xjz.respond_to?(:load_file)
+    class << self
       def app_files
         @app_files ||= begin
           hash = Dir['*.rb', 'src/**/*.rb'].each_with_object({}) { |v, r| r[v] = true }
@@ -19,9 +19,7 @@ module Xjz
           puts "[Err] Not found file #{path}"
         end
       end
-    end
 
-    unless Xjz.respond_to?(:load_all)
       def load_all
         app_files.keys.sort.each { |path, _| _load_file path }
         app_files.clear
@@ -36,22 +34,20 @@ module Xjz
         end
       end
 
-      Object::MYRES = {}
-    end
+      def load_file(path)
+        if path =~ /^(xjz)\//
+          path = "src/#{path}"
+        elsif path.start_with?('./') && Dir.pwd == $root
+          path.delete_prefix!('./')
+        elsif path.start_with?($root)
+          path.delete_prefix!($root + '/')
+        end
 
-    def load_file(path)
-      if path =~ /^(xjz)\//
-        path = "src/#{path}"
-      elsif path.start_with?('./') && Dir.pwd == $root
-        path.delete_prefix!('./')
-      elsif path.start_with?($root)
-        path.delete_prefix!($root + '/')
-      else
-        raise "Invalid load path #{path}"
+        path << '.rb' unless path.end_with?('.rb')
+        _load_file(path)
       end
-
-      path << '.rb' unless path.end_with?('.rb')
-      _load_file(path)
     end
+
+    Object::MYRES = {}
   end
 end

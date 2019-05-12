@@ -1,4 +1,4 @@
-load File.join($root, 'licenses/manager')
+load File.join($root, 'licenses/xjz_license.rb')
 
 RSpec.describe XJZLicense do
   let(:pkey_path) { File.join($root, 'tmp/test_license_key') }

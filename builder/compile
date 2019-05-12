@@ -4,14 +4,33 @@ require 'zlib'
 
 app_dir = File.expand_path('../../', __FILE__)
 rbdata = {}
+public_key = File.read(File.join(app_dir, 'licenses/license_key.pub'))
+LICENSE_PREFIX = '__LICENSE_CHECK_'
+
+def license_checker(flags)
+  require 'pry'
+  binding.pry
+  false
+end
 
 def compile(path)
   code = File.read(path)
-  code = code.lines.each_with_object([]) do |line, r|
+  lines = code.lines.each_with_object([]) do |line, r|
     next if line =~ /^\s*(#.*)?$/
-    r << line
     line.gsub!(/^\s+/, '')
-  end.join
+    if line.start_with?(LICENSE_PREFIX)
+      line.gsub!(/#{LICENSE_PREFIX}(\w+)__/) do |s|
+        flags = s[(LICENSE_PREFIX.length)..-3].split('_')
+        license_checker(flags)
+      end
+    else
+      r << line
+    end
+  end
+  code = lines.join
+
+  require 'pry'
+  binding.pry if  path =~ /config.rb/
 
   RubyVM::InstructionSequence.compile(
     code, path, path
@@ -20,6 +39,7 @@ end
 
 Dir.chdir(app_dir) do
   Dir[*%w{*.rb src/xjz/**/*.rb}].each do |path|
+    next if path == 'src/xjz/loader.rb'
     rbdata[path] = compile(path)
   end
   puts "Compiled Ruby Code"
@@ -50,4 +70,5 @@ data = [
 File.write(out_path, data)
 
 puts "Output #{out_path}"
+
 puts 'Done'

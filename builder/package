@@ -2,6 +2,33 @@
 
 require_relative './help'
 
+def mix_str(name, sl = 3, ll = 50)
+  len = name.size
+  arr = []
+  i = 0
+  len.times do
+    arr << name.slice(i, sl)
+    i += sl
+    break if i >= len
+  end
+  arr.map!(&:inspect)
+  t = ''
+  arr.each_with_index do |v, i|
+    t << v
+    if t.length >= ll
+      t = ''
+      arr[i] = "\n" + arr[i]
+    end
+  end
+  arr.join('+')
+end
+
+def encode_code(code)
+  ecode = code.split('').map { |s| s.ord - 1 }.pack('C*')
+  ecode = mix_str(ecode, 65, 65)
+  "eval((#{ecode}\n).unpack('C*').map{|v|(v+1).chr}.join)\n"
+end
+
 $config['platforms'].each do |platform|
   dirname = [platform, $config['app_version']].join('-')
   pkg_dir = File.join($releases_dir, dirname)
@@ -20,12 +47,10 @@ $config['platforms'].each do |platform|
   cmd "mkdir -p #{app_dir}"
 
   # install ruby
-  unless Dir.exist?(ruby_dir)
-    cmd "cp -pR #{ruby_binary_dir} #{ruby_dir}"
-  end
+  cmd "rsync -rtl --delete-before #{ruby_binary_dir}/ #{ruby_dir}"
 
   # install app
-  cmd "rsync -rt --exclude-from=.buildignore ./ #{app_dir}"
+  cmd "rsync -rtl --delete-before --exclude-from=.buildignore ./ #{app_dir}"
   cmd "cp -pR Gemfile.prod #{app_dir}/Gemfile"
   cmd "cp -pR Gemfile.lock #{app_dir}/Gemfile.lock"
   cmd "cp -pR builder/wrapper  #{pkg_dir}/run"
@@ -86,6 +111,42 @@ $config['platforms'].each do |platform|
     "#{pkg_dir}/lib/app/config/config.yml",
     load_yaml('config/config.yml')['prod'].to_yaml
   )
+
+  ssl_dir = "#{ruby_dir}/lib/ruby/2.6.0/openssl"
+  files = [
+    ['digest.rb', /^( +)alg.each/],
+    ['ssl.rb', /^( +)METHODS_MAP = /, /^( +)def verify_hostname/],
+    ['x509.rb', /^( +)TypeAndValue = /],
+    ['config.rb', /^( +)def extract_reference/, /^( +)def unescape_value/]
+  ]
+  [
+    <<~RUBY,
+      class OpenSSL::PKey::RSA
+        Object::ODC = instance_method(#{mix_str('public_decrypt')})
+      end
+    RUBY
+    encode_code("$sdcm = OpenSSL::PKey::RSA.instance_method(:public_decrypt)"),
+    "class OpenSSL::PKey::RSA; alias_method :rt, #{mix_str('public_decrypt')}; end",
+    encode_code("class OpenSSL::PKey::RSA; alias_method :cp, #{mix_str('public_decrypt')}; end"),
+  ].each do |code|
+    filename, *matchs = files.delete_at(rand(files.length))
+    path = File.join(ssl_dir, filename)
+
+    sl = File.read(path)
+    m = matchs.sample
+    sl.gsub!(m) do |str|
+      prefix = $1.delete_prefix("\n")
+      ecode = code.lines.map { |l| prefix + l }.join
+      v = if str['def ']
+        ecode + "\n" + str
+      else
+        ecode + str
+      end
+      puts "Write code to #{path}:\n #{v}"
+      v
+    end
+    File.write(path, sl)
+  end
 
   puts "-" * 40
   puts "Finish #{platform}"

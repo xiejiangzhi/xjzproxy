@@ -126,7 +126,6 @@ VALUE load_all_code(VALUE self) {
 }
 
 VALUE run_app(VALUE self) {
-  load_code(self, rb_str_new_cstr("src/xjz/loader.rb"));
   load_code(self, rb_str_new_cstr("boot.rb"));
   return self;
 }
@@ -137,18 +136,38 @@ VALUE start_app(VALUE self) {
   return Qnil;
 }
 
+VALUE load_app_code(VALUE self, VALUE path) {
+  VALUE root_path = rb_gv_get("$root");
+
+  if (rb_funcall(path, rb_intern("start_with?"), 1, rb_str_new_cstr("xjz/")) == Qtrue) {
+    path = rb_str_concat(rb_str_new_cstr("src/"), path);
+  } else if (rb_funcall(path, rb_intern("start_with?"), 1, rb_str_new_cstr("./")) == Qtrue) {
+    path = rb_str_substr(path, 2, RSTRING_LEN(path) - 2);
+  } else if (rb_funcall(path, rb_intern("start_with?"), 1, root_path) == Qtrue) {
+    VALUE len = RSTRING_LEN(root_path);
+    path = rb_str_substr(path, len, RSTRING_LEN(path) - len);
+  }
+
+  VALUE prefix = rb_str_new_cstr(".rb");
+  if (rb_funcall(path, rb_intern("end_with?"), 1, prefix) == Qfalse) {
+    rb_str_concat(path, prefix);
+  }
+  return load_code(self, path);
+}
+
 void Init_loader() {
   rb_require("zlib");
   VALUE App = rb_define_module("Xjz");
   
-  char *ptr = getenv("TOUCH_XJZ");
+  char *ptr = getenv("TOUCH_APP");
   if (ptr != NULL && *ptr) {
     rb_define_singleton_method(App, "init", init_app, 0);
     rb_define_singleton_method(App, "run", run_app, 0);
   }
 
   rb_define_singleton_method(App, "start", start_app, 0);
-  rb_define_singleton_method(App, "_load_file", load_code, 1);
+  /* rb_define_singleton_method(App, "_load_file", load_code, 1); */
+  rb_define_singleton_method(App, "load_file", load_app_code, 1);
   rb_define_singleton_method(App, "load_all", load_all_code, 0);
   rb_define_singleton_method(App, "get_res", get_res, 1);
 }
