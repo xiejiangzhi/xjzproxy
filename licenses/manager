@@ -1,0 +1,120 @@
+#! /usr/bin/env ruby
+
+require 'openssl'
+require 'optparse'
+
+class XJZLicense
+  attr_reader :pkey_path
+
+  DIGEST = 'SHA256'
+  KEY_SIZE = 1024 * 8
+  FEATURE_FLAGS = %w{
+    grpc diff req_res
+  }
+
+  def initialize(pkey_path)
+    @pkey_path ||= pkey_path
+  end
+
+  def pkey
+    @pkey ||= if File.exist?(pkey_path)
+      OpenSSL::PKey::RSA.new(File.read(pkey_path))
+    else
+      OpenSSL::PKey::RSA.new(KEY_SIZE).tap do |key|
+        File.write(pkey_path, key.to_pem)
+        File.write(pkey_path + '.pub', key.public_key.to_pem)
+      end
+    end
+  end
+
+  def public_key
+    @public_key ||= pkey.public_key
+  end
+
+  def generate_license(id, flags)
+    pkey.private_encrypt(format_data(id, flags))
+  end
+
+  def decrypt(data)
+    public_key.public_decrypt(data).split(',')
+  rescue OpenSSL::PKey::RSAError
+    nil
+  end
+
+  private
+
+  def format_data(id, flags)
+    flags.map!(&:to_s)
+    eks = flags - (flags & FEATURE_FLAGS)
+    raise "Invalid flags: #{eks.join(', ')}" unless eks.empty?
+    ([id.to_s] + flags).join(',')
+  end
+end
+
+options = {}
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: manager [options]"
+
+  opts.on(
+    '-gLICENSE_PATH', '--generate LICENSE_PATH',
+    'Generate a license and write to the file'
+  ) do |path|
+    options[:g] = path
+  end
+
+  opts.on('--id STRING', 'license owner user id') do |id|
+    options[:id] = id
+  end
+
+  opts.on('-fFLAG', '--flag FLAG', 'license flags, split by "," or use multiple times') do |f|
+    options[:flags] ||= []
+
+    if Array === f
+      options[:flags].push(*f)
+    else
+      options[:flags] << f.to_s
+    end
+  end
+
+  opts.on('-cLICENSE_PATH', '--check LICENSE_PATH', 'Check license') do |path|
+    options[:c] = path
+  end
+end
+parser.parse!
+
+if options.empty?
+  puts parser.help
+  exit 1
+end
+
+manager = XJZLicense.new(File.expand_path('../license_key', __FILE__))
+
+if path = options[:g]
+  if File.exist?(path)
+    $stderr.puts "File #{path} existed"
+    exit 1
+  elsif options[:id] && options[:flags]
+    l = manager.generate_license(options[:id], options[:flags])
+    File.write(path, l)
+  else
+    $stderr.puts "id and flags is required"
+    exit 1
+  end
+end
+
+if path = options[:c]
+  if File.exist?(path)
+    data = File.read(path)
+    if l = manager.decrypt(data)
+      puts "id: #{l[0]}\nflags: #{l[1..-1].join(',')}"
+    else
+      $stderr.puts "Invalid license"
+      exit 1
+    end
+  else
+    $stderr.puts "Not found file #{path}"
+    exit 1
+  end
+end
+
+exit 0

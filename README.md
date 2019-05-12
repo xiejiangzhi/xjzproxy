@@ -72,11 +72,10 @@ XjzProxy
 
 **Other**
 
-- Response disk cache 2d
-- Chinese doc 1d
 - Save proxy config
 - Test version & software sign 2d
-- 混淆 Ruby Code，放入暗桩（正常版本不会运行的或是在激活后一定时间再进行检查），可以通过 ERB 来生成代码 1d
+- 放入暗桩（正常版本不会运行的或是在激活后一定时间再进行检查），可以通过 ERB 来生成代码 1d
+- Chinese doc 1d
 - Auto test all APIs, each apis and send request, see result in history and report 2d
 
 7d
