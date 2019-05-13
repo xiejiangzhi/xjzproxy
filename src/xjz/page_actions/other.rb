@@ -1,6 +1,31 @@
 module Xjz
   WebUI::ActionRouter.register :other do
     namespace 'other' do
+      event 'open_buy_page' do
+        url = $config['home_url']
+        opened = false
+
+        case Gem::Platform.local.os
+        when 'darwin'
+          `open #{url}`
+        else
+          %w{xdg-open firefox google-chrome}.each do |cmd|
+            next unless system("which #{cmd}")
+            `#{cmd} #{url}`
+            opened = true
+            break
+          end
+        end
+
+        unless opened
+          Logger[:auto].error { "Failed to open home url" }
+          send_msg(
+            'alert',
+            type: :error,
+            message: "Failed to open #{url} . please copy it to browser to open"
+          )
+        end
+      end
     end
 
     event 'f_other_tab.click' do

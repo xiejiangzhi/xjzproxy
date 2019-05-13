@@ -18,6 +18,7 @@ module Xjz
       host_whitelist: [:optional, NilClass, [[String]] ],
       template_dir: [:optional, NilClass, String],
       license_path: [:optional, NilClass, String],
+      home_url: String,
 
       webview_debug: [:optional, NilClass, TrueClass],
       ui_window: [:optional, NilClass, TrueClass]

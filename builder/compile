@@ -18,8 +18,8 @@ def license_checker(flags)
     $LOADED_FEATURES.delete_if { |path| path['/openssl.'] }
     require 'openssl.so'
     k = OpenSSL::PKey::RSA.new(#{mix_str(PUBLIC_KEY, 10, 10000)})
-    id, *flags = k.public_decrypt(File.read(lpath)).split(',') rescue nil
-    $config.merge!('.user_id' => id, '.license' => flags)
+    id, *flags, ts = k.public_decrypt(File.read(lpath)).split(',') rescue nil
+    $config.data.merge!('.user_id' => id, '.license' => flags, '.license_ts' => Time.at(ts.to_f))
     (id && (#{flags.inspect} - flags).size > 0) ? true : false rescue false
   RUBY
   encode_code(code, 20, 60).strip

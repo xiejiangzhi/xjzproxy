@@ -4,12 +4,21 @@
     .row.form-group
       label.col-3.col-form-label
         | License
-
-        i.fas.fa-question-circle.ml-1 title='' data-toggle='tooltip'
+        / i.fas.fa-question-circle.ml-1 title='' data-toggle='tooltip'
       .col-9.input-group
         .form-control-plaintext
           - if $config['.license']
+            = 'Pro version - Thanks for your support'
           - else
-            = 'Free version'
+            = 'Free version - '
             a.ml-2 href='#' xjz-id='other.open_buy_page' Buy Pro version
 
+    - if $config['.license']
+      .row.form-group
+        label.col-3.col-form-label
+          | Extended Features
+        .col-9.input-group
+          .form-control-plaintext
+            = $config['.license'].join(',')
+            - if $config['.license'].length < 3
+              a.ml-2 href='#' xjz-id='other.open_buy_page' Buy more feature
