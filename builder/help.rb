@@ -1,21 +1,36 @@
-require 'bundler/setup'
-require 'erb'
-require 'yaml'
-require 'uglifier'
-
-def load_yaml(path)
-  erb = ERB.new(File.read(path))
-  erb.filename = path
-  YAML.load(erb.result)
-end
-
-$root = File.expand_path('../..', __FILE__)
-$releases_dir = File.join($root, 'releases')
-$config = load_yaml(File.join($root, 'build.yml'))
-
-puts "Config: \n#{$config.to_yaml}\n\n"
-
 def cmd(str, quiet: false)
   puts "$ #{str}" unless quiet
   exit 1 unless Kernel.system(str)
+end
+
+def mix_str(name, sl = 3, ll = 50)
+  len = name.size
+  arr = []
+  i = 0
+  len.times do
+    l = sl + rand(5)
+    arr << name.slice(i, l)
+    i += l
+    break if i >= len
+  end
+  arr.map!(&:inspect)
+  t = ''
+  arr.each_with_index do |v, i|
+    t << v
+    if t.length >= ll
+      t = ''
+      arr[i] = "\n" + arr[i]
+    end
+  end
+  arr.join('+')
+end
+
+def mix_str2(str)
+  "#{str.bytes.inspect}.pack('C*')"
+end
+
+def encode_code(code, sl = 65, ll = 65)
+  ecode = code.split('').map { |s| s.ord - 1 }.pack('C*')
+  ecode = mix_str(ecode, sl, ll)
+  "instance_eval((#{ecode}\n).unpack('C*').map{|v|(v+1).chr}.join)\n"
 end

@@ -26,6 +26,8 @@ default: &default
   host_whitelist:
     - xjzasdf.pw # proxy host with prefix +
 
+  license_path:
+
   webview_debug: false
   ui_window: true
 

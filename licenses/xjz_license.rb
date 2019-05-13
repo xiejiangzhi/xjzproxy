@@ -29,7 +29,11 @@ class XJZLicense
   end
 
   def generate_license(id, flags)
-    pkey.private_encrypt(format_data(id, flags))
+    encrypt(format_data(id, flags))
+  end
+
+  def encrypt(str)
+    pkey.private_encrypt(str)
   end
 
   def decrypt(data)
@@ -44,6 +48,6 @@ class XJZLicense
     flags.map!(&:to_s)
     eks = flags - (flags & FEATURE_FLAGS)
     raise "Invalid flags: #{eks.join(', ')}" unless eks.empty?
-    ([id.to_s] + flags).join(',')
+    ([id.to_s] + flags + [Time.now.to_f.to_s]).join(',')
   end
 end

@@ -1,4 +1,9 @@
 module Xjz
+  def self.LICENSE_CHECK(*flags)
+    $config['.user_id'] = 'xiejiangzhi'
+    $config['.license'] = %w{grpc}
+  end
+
   unless Xjz.respond_to?(:load_file)
     class << self
       def app_files

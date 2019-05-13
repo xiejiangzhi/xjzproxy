@@ -14,7 +14,7 @@ parser = OptionParser.new do |opts|
     options[:g] = path
   end
 
-  opts.on('--id STRING', 'license owner user id') do |id|
+  opts.on('-iID', '--id STRING', 'license owner user id') do |id|
     options[:id] = id
   end
 
@@ -30,6 +30,10 @@ parser = OptionParser.new do |opts|
 
   opts.on('-cLICENSE_PATH', '--check LICENSE_PATH', 'Check license') do |path|
     options[:c] = path
+  end
+
+  opts.on('-tPATH', '--test PATH', 'Encrypt test str') do |path|
+    options[:t] = path
   end
 end
 parser.parse!
@@ -48,6 +52,29 @@ if path = options[:g]
   elsif options[:id] && options[:flags]
     l = manager.generate_license(options[:id], options[:flags])
     File.write(path, l)
+  else
+    $stderr.puts "id and flags is required"
+    exit 1
+  end
+elsif path = options[:c]
+  if File.exist?(path)
+    id, *flags = manager.decrypt(File.read(path))
+    if id
+      puts "id: #{id}\nflags: #{flags.join(', ')}"
+    else
+      $stderr.puts "Invalid license"
+      exit 1
+    end
+  else
+    $stderr.puts "Not found file #{path}"
+    exit 1
+  end
+elsif path = options[:t]
+  if File.exist?(path)
+    $stderr.puts "File #{path} existed"
+    exit 1
+  elsif id = options[:id]
+    File.write(path, manager.encrypt(id))
   else
     $stderr.puts "id and flags is required"
     exit 1

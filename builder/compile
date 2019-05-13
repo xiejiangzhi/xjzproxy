@@ -1,16 +1,28 @@
 #! /usr/bin/env ruby
 
 require 'zlib'
+require_relative './help'
 
 app_dir = File.expand_path('../../', __FILE__)
 rbdata = {}
-public_key = File.read(File.join(app_dir, 'licenses/license_key.pub'))
-LICENSE_PREFIX = '__LICENSE_CHECK_'
+require 'openssl'
+PUBLIC_KEY = OpenSSL::PKey::RSA.new(
+  File.read(File.join(app_dir, 'licenses/license_key.pub'))
+).to_der
+LICENSE_REGEXP = /Xjz.LICENSE_CHECK\((%w{([a-z ]+)})?\)/
 
 def license_checker(flags)
-  require 'pry'
-  binding.pry
-  false
+  flags.map! { |f| f.downcase.presence }.compact!
+  code = <<~RUBY.lines.map(&:strip).join(';')
+    lpath = $config['license_path']
+    $LOADED_FEATURES.delete_if { |path| path['/openssl.'] }
+    require 'openssl.so'
+    k = OpenSSL::PKey::RSA.new(#{mix_str(PUBLIC_KEY, 10, 10000)})
+    id, *flags = k.public_decrypt(File.read(lpath)).split(',') rescue nil
+    $config.merge!('.user_id' => id, '.license' => flags)
+    (id && (#{flags.inspect} - flags).size > 0) ? true : false rescue false
+  RUBY
+  encode_code(code, 20, 60).strip
 end
 
 def compile(path)
@@ -18,19 +30,10 @@ def compile(path)
   lines = code.lines.each_with_object([]) do |line, r|
     next if line =~ /^\s*(#.*)?$/
     line.gsub!(/^\s+/, '')
-    if line.start_with?(LICENSE_PREFIX)
-      line.gsub!(/#{LICENSE_PREFIX}(\w+)__/) do |s|
-        flags = s[(LICENSE_PREFIX.length)..-3].split('_')
-        license_checker(flags)
-      end
-    else
-      r << line
-    end
+    line.gsub!(LICENSE_REGEXP) { |s| license_checker($2.to_s.split(' ')) }
+    r << line
   end
   code = lines.join
-
-  require 'pry'
-  binding.pry if  path =~ /config.rb/
 
   RubyVM::InstructionSequence.compile(
     code, path, path

@@ -25,8 +25,16 @@ html
     style = render 'webui/index.css'
 
   body
-    - current_tab = session[:current_tab] || :proxy
-    - feature_names = { proxy: 'Proxy', history: 'History', project: 'Project', report: 'Report' }
+    ruby:
+      current_tab = session[:current_tab] || :proxy
+      feature_names = {
+        proxy: 'Proxy',
+        history: 'History',
+        project: 'Project',
+        report: 'Report', 
+        other: 'Other'
+      }
+
     = render 'webui/navbar.html', current_tab: current_tab, feature_names: feature_names
     
     #app_body.tab-content.container-fluid

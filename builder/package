@@ -1,33 +1,7 @@
 #! /usr/bin/env ruby
 
+require_relative './config'
 require_relative './help'
-
-def mix_str(name, sl = 3, ll = 50)
-  len = name.size
-  arr = []
-  i = 0
-  len.times do
-    arr << name.slice(i, sl)
-    i += sl
-    break if i >= len
-  end
-  arr.map!(&:inspect)
-  t = ''
-  arr.each_with_index do |v, i|
-    t << v
-    if t.length >= ll
-      t = ''
-      arr[i] = "\n" + arr[i]
-    end
-  end
-  arr.join('+')
-end
-
-def encode_code(code)
-  ecode = code.split('').map { |s| s.ord - 1 }.pack('C*')
-  ecode = mix_str(ecode, 65, 65)
-  "eval((#{ecode}\n).unpack('C*').map{|v|(v+1).chr}.join)\n"
-end
 
 $config['platforms'].each do |platform|
   dirname = [platform, $config['app_version']].join('-')
@@ -109,7 +83,7 @@ $config['platforms'].each do |platform|
   # config app
   File.write(
     "#{pkg_dir}/lib/app/config/config.yml",
-    load_yaml('config/config.yml')['prod'].to_yaml
+    load_yaml('config/config.yml', erb: false)['prod'].to_yaml
   )
 
   ssl_dir = "#{ruby_dir}/lib/ruby/2.6.0/openssl"

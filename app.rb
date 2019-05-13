@@ -19,7 +19,7 @@ module Xjz
   class WebUI; end
   class ProxyClient; end
 
-  Xjz::Logger[:auto].debug { "Loading code..." }
+    Xjz::Logger[:auto].debug { "Loading code..." }
   load_file 'xjz/webui/action_runner'
   load_file 'xjz/webui/action_router'
   load_all

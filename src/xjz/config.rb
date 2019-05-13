@@ -17,6 +17,7 @@ module Xjz
       proxy_mode: String,
       host_whitelist: [:optional, NilClass, [[String]] ],
       template_dir: [:optional, NilClass, String],
+      license_path: [:optional, NilClass, String],
 
       webview_debug: [:optional, NilClass, TrueClass],
       ui_window: [:optional, NilClass, TrueClass]

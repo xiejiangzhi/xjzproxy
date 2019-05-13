@@ -14,6 +14,11 @@ ts = Time.now - $app_start_at
 Xjz::Logger[:auto].debug { "Load time cost #{ts.round(3)}s" }
 Xjz::Logger[:app].info { "Environment #{$app_env}" }
 
+Xjz.LICENSE_CHECK()
+Xjz::Logger[:auto].info do
+  "license id: #{$config['.user_id']}, flags #{$config['.license']}"
+end
+
 server = $config.shared_data.app.server = Xjz::Server.new
 server.start
 

@@ -1,0 +1,15 @@
+.row.justify-content-center
+  .col-8.py-4
+
+    .row.form-group
+      label.col-3.col-form-label
+        | License
+
+        i.fas.fa-question-circle.ml-1 title='' data-toggle='tooltip'
+      .col-9.input-group
+        .form-control-plaintext
+          - if $config['.license']
+          - else
+            = 'Free version'
+            a.ml-2 href='#' xjz-id='other.open_buy_page' Buy Pro version
+
