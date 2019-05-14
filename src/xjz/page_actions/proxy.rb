@@ -29,6 +29,7 @@ module Xjz
 
       event 'port.change' do
         $config['proxy_port'] = data['value']
+        $config.save
       end
 
       event 'reset_cert.click' do
@@ -48,10 +49,12 @@ module Xjz
 
       event 'mode.change' do
         $config['proxy_mode'] = data['value']
+        $config.save
       end
 
       event 'host_whitelist.change' do
         $config['host_whitelist'] = data['value'].to_s.strip.lines.map(&:strip)
+        $config.save
       end
 
       event 'alpn_protocol.change' do
@@ -61,11 +64,13 @@ module Xjz
           $config['alpn_protocols'].delete data['name']
         end
         $config['alpn_protocols'].uniq!
+        $config.save
         Resolver::SSL.reset_certs
       end
 
       event 'projects_dir.change' do
         $config['projects_dir'] = data['value'].strip
+        $config.save
         paths = $config.projects_paths
         send_msg('el.html', selector: '#proxy_projects_dir', html: $config['projects_dir'])
         daps = []

@@ -1,8 +1,14 @@
 require 'fileutils'
+require 'openssl'
 
 module Xjz
   class Config
     attr_reader :path
+
+    USER_DIR = ENV['XJZPROXY_USER_DIR'] || "#{Dir.home}/.xjzproxy"
+    USER_PATH = File.join(USER_DIR, 'config.yml')
+    LICENSE_PATH = File.join(USER_DIR, 'license.lcs')
+    PUBLIC_KEY = File.read(ENV['XJZPROXY_PUBKEY_PATH'] || File.join($root, 'config/app.pub'))
 
     SCHEMA = {
       root_ca_path: String,
@@ -17,7 +23,6 @@ module Xjz
       proxy_mode: String,
       host_whitelist: [:optional, NilClass, [[String]] ],
       template_dir: [:optional, NilClass, String],
-      license_path: [:optional, NilClass, String],
       home_url: String,
 
       webview_debug: [:optional, NilClass, TrueClass],
@@ -43,7 +48,7 @@ module Xjz
     def projects_paths
       pojs = data['projects'] || []
       if pd = data['projects_dir'].presence
-        FileUtils.mkdir_p(pd) unless Dir.exist?(pd)
+        init_dir(pd) unless Dir.exist?(pd)
         pojs += Dir[File.join(pd, '*')].select { |dir| Dir.exist?(dir) }
       end
       pojs.uniq
@@ -74,6 +79,7 @@ module Xjz
         r['host_whitelist'] ||= []
         r['logger_level'] ||= {}
         r['alpn_protocols'] ||= %w{h2 http/1.1}
+        r.merge!(valid_license || {})
       end
     end
 
@@ -82,15 +88,67 @@ module Xjz
         erb = ERB.new(File.read(path))
         erb.filename = path
         d = YAML.load(erb.result, filename: path)
-        d[$app_env] || d['default'] || d
+        (d[$app_env] || d['default'] || d).merge(user_data)
       end
     end
 
-    def to_yaml
-      data.reject { |k, v| k[0] == '.' }.to_yaml
+    def user_data
+      @user_data ||= begin
+        if File.exist?(USER_PATH)
+          YAML.load_file(USER_PATH) rescue {}
+        else
+          {}
+        end
+      end
+    end
+
+    def update_license(path)
+      r = valid_license(path)
+      return false unless r
+      data.merge!(r)
+      init_dir(USER_DIR)
+      FileUtils.cp(path, LICENSE_PATH)
+      true
+    end
+
+    def valid_license(path = LICENSE_PATH)
+      return nil unless File.exist?(path)
+      key = OpenSSL::PKey::RSA.new(PUBLIC_KEY)
+      lcs = File.read(path)
+      r = key.public_decrypt(lcs) rescue nil
+      id, edition, ctime, etime = r.to_s.split(',')
+      et = etime.to_s.to_f == 0 ? nil : Time.at(etime.to_f)
+      return nil unless id && (et.nil? || Time.now < et)
+      {
+        '.user_id' => id,
+        '.edition' => edition,
+        '.license_ts' => Time.at(ctime.to_s.to_f),
+        '.license_ex' => et
+      }
+    end
+
+    def changed_to_yaml
+      data.reject { |k, v| k[0] == '.' || v == raw_data[k] }.to_yaml
+    end
+
+    def save
+      if init_dir USER_DIR
+        File.write(USER_PATH, changed_to_yaml)
+      else
+        Logger[:auto].error { "Failed to mkdir dir #{USER_DIR}" }
+      end
     end
 
     private
+
+    def init_dir(dir)
+      unless Dir.exist?(dir)
+        FileUtils.mkdir_p(dir)
+      end
+      true
+    rescue Errno::ENOTSUP, Errno::EPERM
+      false
+    end
 
     # data: support each, first is key, last is value
     #   like hash, array

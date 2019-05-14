@@ -18,6 +18,10 @@ parser = OptionParser.new do |opts|
     options[:id] = id
   end
 
+  opts.on('-eEDITION', '--edition EDITION', 'editions: standard and pro') do |e|
+    options[:e] = e
+  end
+
   opts.on('-fFLAG', '--flag FLAG', 'license flags, split by "," or use multiple times') do |f|
     options[:flags] ||= []
 
@@ -32,8 +36,8 @@ parser = OptionParser.new do |opts|
     options[:c] = path
   end
 
-  opts.on('-tPATH', '--test PATH', 'Encrypt test str') do |path|
-    options[:t] = path
+  opts.on('-tSECONDS', '--time SECONDS', 'Expire in the seconds') do |s|
+    options[:t] = s.to_i
   end
 end
 parser.parse!
@@ -49,34 +53,32 @@ if path = options[:g]
   if File.exist?(path)
     $stderr.puts "File #{path} existed"
     exit 1
-  elsif options[:id] && options[:flags]
-    l = manager.generate_license(options[:id], options[:flags])
+  elsif options[:id] && options[:e]
+    l = manager.generate_license(
+      options[:id], options[:e], flags: options[:flags] || [], expire_in: options[:t]
+    )
     File.write(path, l)
   else
-    $stderr.puts "id and flags is required"
+    $stderr.puts "id and edition is required"
     exit 1
   end
 elsif path = options[:c]
   if File.exist?(path)
-    id, *flags = manager.decrypt(File.read(path))
+    id, e, ts, ex, *flags = manager.decrypt(File.read(path))
     if id
-      puts "id: #{id}\nflags: #{flags.join(', ')}"
+      puts <<~STR
+        id: #{id}
+        edition: #{e}
+        flags: #{flags.join(', ')}
+        ctime: #{Time.at(ts.to_s.to_f).strftime('%F %T')}
+        expire_at: #{ex.to_s.to_f > 0 ? Time.at(ex.to_s.to_f).strftime('%F %T') : nil}
+      STR
     else
       $stderr.puts "Invalid license"
       exit 1
     end
   else
     $stderr.puts "Not found file #{path}"
-    exit 1
-  end
-elsif path = options[:t]
-  if File.exist?(path)
-    $stderr.puts "File #{path} existed"
-    exit 1
-  elsif id = options[:id]
-    File.write(path, manager.encrypt(id))
-  else
-    $stderr.puts "id and flags is required"
     exit 1
   end
 end

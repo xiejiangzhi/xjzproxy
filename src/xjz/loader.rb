@@ -1,7 +1,10 @@
 module Xjz
   def self.LICENSE_CHECK(*flags)
     $config['.user_id'] = 'xiejiangzhi'
-    $config['.license'] = %w{grpc}
+    $config['.edition'] = 'standard'
+    $config['.license_ts'] ||= Time.now
+    $config['.license_ex'] ||= Time.now + 1.day
+    true
   end
 
   unless Xjz.respond_to?(:load_file)

@@ -10,23 +10,22 @@ RSpec.describe XJZLicense do
   end
 
   it 'encrypt/decrypt should work' do
-    data = %w{diff req_res grpc}
-    l = subject.generate_license('idxxx', data)
+    t = Time.now
+    travel_to(t)
+    l = subject.generate_license('idxxx', 'pro')
     expect(l.length).to eql(512)
-    expect(subject.decrypt(l)).to eql(['idxxx'] + data)
+    expect(subject.decrypt(l)).to eql(['idxxx', 'pro', t.to_f.to_s, '0.0'])
     expect(subject.decrypt(l + 'a')).to eql(nil)
   end
 
   it 'encrypt should raise error if give invalid data' do
-    data = %w{diff a b}
     expect {
-      subject.generate_license('idxxx', data)
-    }.to raise_error("Invalid flags: a, b")
+      subject.generate_license('idxxx', 'asd')
+    }.to raise_error("Invalid edition: asd")
   end
 
   it 'decrypt should return nil if give invalid data' do
-    data = %w{diff req_res grpc}
-    l = subject.generate_license('idxxx', data)
+    l = subject.generate_license('idxxx', 'pro')
     l[123] = 'a'
     expect(subject.decrypt(l)).to eql(nil)
   end

@@ -42,6 +42,7 @@ RSpec.describe 'proxy', webpage: true do
   end
 
   it 'port.change should update port' do
+    expect($config).to receive(:save)
     expect {
       emit_msg('proxy.port.change', 'value' => 12342)
     }.to change { $config['proxy_port'] }.to(12342)
@@ -59,18 +60,21 @@ RSpec.describe 'proxy', webpage: true do
   end
 
   it 'mode.change should update port' do
+    expect($config).to receive(:save)
     expect {
       emit_msg('proxy.mode.change', 'value' => 'all')
     }.to change { $config['proxy_mode'] }.to('all')
   end
 
   it 'host_whitelist change should update data' do
+    expect($config).to receive(:save).and_call_original
     expect {
       emit_msg('proxy.host_whitelist.change', 'value' => "xjz.com\nasdffdsa.com")
     }.to change { $config['host_whitelist'] }.to(%w{xjz.com asdffdsa.com})
   end
 
   it 'projects_dir.change should add new project and remove missed projects' do
+    expect($config).to receive(:save).and_call_original
     $config.data['projects'] = []
     path = File.join($root, 'spec')
     expect_runner_send_msg(['el.html', selector: "#proxy_projects_dir", html: path])
@@ -96,6 +100,7 @@ RSpec.describe 'proxy', webpage: true do
   end
 
   it 'alpn_protocol.change update alpn protocols' do
+    expect($config).to receive(:save).exactly(4).times
     expect(Xjz::Resolver::SSL).to receive(:reset_certs)
     expect {
       emit_msg("proxy.alpn_protocol.change", 'value' => false, 'name' => 'h2')

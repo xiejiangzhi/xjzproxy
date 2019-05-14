@@ -1,24 +1,68 @@
+ruby:
+  ver = $config['.edition'] || 'trial'
+  tex = $config['.license_ex'] if ver != 'trial'
+  ver = 'trial' if tex && Time.now >= tex
+
 .row.justify-content-center
-  .col-8.py-4
+  .col-10 style='padding-top: 6rem;'
+    .row
+      ruby: 
+        css_cls = 'bg-info text-white'
+        vfs = {
+          'trial' => {
+            price: 'free',
+            items: <<-LS.lines.map(&:strip)
+              Proxy feature
+              Only allow one API Project
+              Only allow 10 API
+            LS
+          },
+          'standard' => {
+            price: '$32',
+            items: <<-LS.lines.map(&:strip)
+              Free features
+              Unlimited APIs
+              Allow GRPC project
+            LS
+          },
+          'pro' => {
+            price: '$64',
+            items: <<-LS.lines.map(&:strip)
+              Standard features
+              Unlimited API projects
+            LS
+          }
+        }
 
-    .row.form-group
-      label.col-3.col-form-label
-        | License
-        / i.fas.fa-question-circle.ml-1 title='' data-toggle='tooltip'
-      .col-9.input-group
-        .form-control-plaintext
-          - if $config['.license']
-            = 'Pro version - Thanks for your support'
-          - else
-            = 'Free version - '
-            a.ml-2 href='#' xjz-id='other.open_buy_page' Buy Pro version
+      - vfs.each do |k ,v|
+        - css = (k == ver ? css_cls : '')
+        .card.col-4.px-0 class=css
+          strong.card-header
+            | #{k.titleize} Edition
+            - if k != 'trial' && k == ver && tex
+              br
+              |  Before #{tex.strftime("%F %H:%M")}
+          .card-body
+            h5.card-title
+              | Price: #{v[:price]}
+              - if k != 'trial' && ((k != ver && ver != 'pro') || (k == ver && tex))
+                a.ml-2.text-primary href='#' xjz-id='other.open_buy_page' Buy
 
-    - if $config['.license']
-      .row.form-group
-        label.col-3.col-form-label
-          | Extended Features
-        .col-9.input-group
-          .form-control-plaintext
-            = $config['.license'].join(',')
-            - if $config['.license'].length < 3
-              a.ml-2 href='#' xjz-id='other.open_buy_page' Buy more feature
+            .row
+              table.table class=css
+                tbody
+                - v[:items].each do |name|
+                  tr
+                    td = name
+
+
+    - if ver != 'pro'
+      .row.py-3
+        p
+          | Have a license?
+
+          input#other_license_path type='hidden' xjz-id='other.new_license_path'
+          button.btn.btn-primary.ml-2#other_license_path_selector[
+            type='button'
+            xjz-rpc='openfile' data-rpc-target='#other_license_path'
+          ] Add License

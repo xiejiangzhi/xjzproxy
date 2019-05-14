@@ -9,6 +9,10 @@ Bundler.require(:default, :development)
 
 require 'spec_helper'
 
+ENV['XJZPROXY_USER_DIR'] = File.expand_path('../files/app_home', __FILE__)
+`rm -rf spec/files/app_home/config.yml`
+# ENV['XJZPROXY_PUBKEY_PATH'] = 'xxx'
+
 app_path = File.expand_path('../../app.rb', __FILE__)
 if !ENV['PROD_CODE']
   require app_path

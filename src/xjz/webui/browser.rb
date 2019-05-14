@@ -12,12 +12,7 @@ module Xjz
       return true if @app_process
       cmd = [
         File.expand_path('ext/webview/webview', $root),
-        '-url', Shellwords.escape(url),
-        '-title',
-        [
-          $app_name, $config['.license'].present? ? 'Pro' : 'Free',
-          $config['.user_id'].present? ? "- For #{$config['.user_id']}" : nil
-        ].compact.join(' ')
+        '-url', Shellwords.escape(url)
       ]
       cmd << '-debug' if $config['webview_debug']
       exec_cmd(cmd.join(' '))

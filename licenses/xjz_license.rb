@@ -5,9 +5,8 @@ class XJZLicense
 
   DIGEST = 'SHA256'
   KEY_SIZE = 1024 * 8
-  FEATURE_FLAGS = %w{
-    grpc diff req_res
-  }
+  EDITIONS = %w{trial standard pro}
+  FLAGS = %w{}
 
   def initialize(pkey_path)
     @pkey_path ||= pkey_path
@@ -28,8 +27,9 @@ class XJZLicense
     @public_key ||= pkey.public_key
   end
 
-  def generate_license(id, flags)
-    encrypt(format_data(id, flags))
+  def generate_license(id, edition, expire_at: nil, expire_in: nil, flags: nil)
+    expire_at ||= Time.now + expire_in.to_i if expire_in
+    encrypt(gen_data(id, edition, expire_at: expire_at, flags: flags))
   end
 
   def encrypt(str)
@@ -44,10 +44,13 @@ class XJZLicense
 
   private
 
-  def format_data(id, flags)
+  def gen_data(id, edition, flags: nil, expire_at: nil)
+    flags ||= []
     flags.map!(&:to_s)
-    eks = flags - (flags & FEATURE_FLAGS)
+    eks = flags - (flags & FLAGS)
     raise "Invalid flags: #{eks.join(', ')}" unless eks.empty?
-    ([id.to_s] + flags + [Time.now.to_f.to_s]).join(',')
+    edition = edition.to_s.downcase
+    raise "Invalid edition: #{edition}" unless EDITIONS.include?(edition)
+    ([id.to_s, edition, Time.now.to_f.to_s, expire_at.to_f.to_s] + flags).join(',')
   end
 end
