@@ -39,9 +39,7 @@ ruby:
         .card.col-4.px-0 class=css
           strong.card-header
             | #{k.titleize} Edition
-            - if k != 'trial' && k == ver && tex
-              br
-              |  Before #{tex.strftime("%F %H:%M")}
+            
           .card-body
             h5.card-title
               | Price: #{v[:price]}
@@ -56,10 +54,31 @@ ruby:
                     td = name
 
 
+    - if ver != 'trial'
+      .row.mt-4
+        .col-4 License ID
+        .col-8 = $config['.user_id']
+
+      .row.mt-2
+        .col-4 License Issued At
+        .col-8 = $config['.license_ts'].strftime("%F %H:%M")
+
+      .row.mt-2
+        .col-4 License Expire At
+        .col-8
+          - if tex
+            = tex.strftime("%F %H:%M")
+          - else
+            | Never
+
+
     - if ver != 'pro'
-      .row.py-3
+      .row.mt-4
         p
-          | Have a license?
+          - if ver == 'trial'
+            | Have a license?
+          - else
+            | Have a new license?
 
           input#other_license_path type='hidden' xjz-id='other.new_license_path'
           button.btn.btn-primary.ml-2#other_license_path_selector[

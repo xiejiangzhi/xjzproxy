@@ -116,8 +116,8 @@ module Xjz
       key = OpenSSL::PKey::RSA.new(PUBLIC_KEY)
       lcs = File.read(path)
       r = key.public_decrypt(lcs) rescue nil
-      id, edition, ctime, etime = r.to_s.split(',')
-      et = etime.to_s.to_f == 0 ? nil : Time.at(etime.to_f)
+      id, edition, ctime, etime, *_flags = r.to_s.split(',')
+      et = etime.to_s.to_f > 0 ? Time.at(etime.to_f) : nil
       return nil unless id && (et.nil? || Time.now < et)
       {
         '.user_id' => id,

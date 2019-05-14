@@ -57,6 +57,7 @@ if path = options[:g]
     l = manager.generate_license(
       options[:id], options[:e], flags: options[:flags] || [], expire_in: options[:t]
     )
+    path += '.lcs' unless path.end_with?('.lcs')
     File.write(path, l)
   else
     $stderr.puts "id and edition is required"

@@ -31,6 +31,8 @@ module Xjz
       event 'new_license_path.change' do
         if $config.update_license(data[:value])
           $config.save
+          send_msg('alert', type: :success, message: "Successfully update license")
+          send_msg('el.html', selector: '#f_other', html: render('webui/other/index.html'))
         else
           send_msg(
             'alert',
