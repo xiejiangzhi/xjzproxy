@@ -198,5 +198,42 @@ RSpec.describe Xjz::ApiProject::Parser do
         "types" => Xjz::ApiProject::DataType.default_types
       )
     end
+
+    describe 'edition' do
+      it 'should parse over 10 apis' do
+        r = subject.parse({
+          project: { url: 'http://xjz.pw' },
+          apis: 12.times.map do |i|
+            {
+              method: 'get',
+              path: "/path/#{i}",
+              response: { success: 'hello' }
+            }
+          end
+        }.deep_stringify_keys)
+
+        expect(r['apis'][%r{\Ahttp://xjz.pw\Z}]['GET'].map { |r| r['path'] }).to \
+          eql(12.times.map { |i| "/path/#{i}" })
+      end
+
+      it 'should parse 10 apis for trial edition' do
+        allow($config).to receive(:data).and_return($config.data.dup)
+        $config['.edition'] = nil
+
+        r = subject.parse({
+          project: { url: 'http://xjz.pw' },
+          apis: 12.times.map do |i|
+            {
+              method: 'get',
+              path: "/path/#{i}",
+              response: { success: 'hello' }
+            }
+          end
+        }.deep_stringify_keys)
+
+        expect(r['apis'][%r{\Ahttp://xjz.pw\Z}]['GET'].map { |r| r['path'] }).to \
+          eql(10.times.map { |i| "/path/#{i}" })
+      end
+    end
   end
 end

@@ -2,8 +2,10 @@ require 'fileutils'
 
 RSpec.describe Xjz::FileWatcher, stub_config: true do
   let(:dir) { File.join($root, 'tmp/fw_test') }
+
   describe 'start' do
     before :each do |exp|
+      $config['.edition'] = 'pro'
       `rm -rf #{dir}/*`
       stub_const('Xjz::FileWatcher::INTERVAL', 0.1)
       data = $config.data.dup
@@ -34,10 +36,29 @@ RSpec.describe Xjz::FileWatcher, stub_config: true do
     end
 
     it 'should add project when add new project dir' do
+      $config['.api_projects'] = []
       pdir = "#{dir}/p1"
+      pdir2 = "#{dir}/p2"
       expect($config.shared_data.app.webui).to receive(:emit_message) \
-        .with('project.add', path: pdir)
+        .with('project.add', path: pdir).and_call_original
+      expect($config.shared_data.app.webui).to receive(:emit_message) \
+        .with('project.add', path: pdir2).and_call_original
       `mkdir #{pdir}; touch #{pdir}/a.yml`
+      `mkdir #{pdir2}; touch #{pdir2}/a.yml`
+      sleep 0.2
+    end
+
+    it 'should not add project if projects > 0 & edition is not pro' do
+      $config['.edition'] = 'standard'
+      $config['.api_projects'] = []
+      pdir = "#{dir}/p1"
+      pdir2 = "#{dir}/p2"
+      p = double('path', '==' => nil)
+      allow(p).to receive('==') { |v| [pdir, pdir2].include?(v) }
+      expect($config.shared_data.app.webui).to receive(:emit_message) \
+        .with('project.add', path: p).and_call_original
+      `mkdir #{pdir}; touch #{pdir}/a.yml`
+      `mkdir #{pdir2}; touch #{pdir2}/a.yml`
       sleep 0.2
     end
 

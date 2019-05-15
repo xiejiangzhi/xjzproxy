@@ -1,4 +1,4 @@
-RSpec.describe Xjz::RequestDispatcher do
+RSpec.describe Xjz::RequestDispatcher, stub_config: true do
   let(:env) do
     {
       "rack.errors" => 'error.io',
@@ -147,6 +147,37 @@ RSpec.describe Xjz::RequestDispatcher do
         true
       end
       subject.call(env)
+    end
+
+    it 'should find api_project by host' do
+      $config['.edition'] = 'pro'
+      ap = $config['.api_projects'][0]
+      ap2 = Xjz::ApiProject.new(File.join($root, 'spec/files/grpc.yml'))
+      $config['.api_projects'] << ap2
+      env['HTTP_HOST'] = 'xjz.pw'
+      expect(subject).to receive(:dispatch_request).with(ap, kind_of(Xjz::Request))
+      subject.call(env)
+
+      env['HTTP_HOST'] = 'grpc.xjz.pw'
+      expect(subject).to receive(:dispatch_request).with(ap2, kind_of(Xjz::Request))
+      subject.call(env)
+    end
+
+    describe 'app edition' do
+      it 'should return first project if not pro version' do
+        $config['.edition'] = 'standard'
+        ap = $config['.api_projects'][0]
+        ap2 = Xjz::ApiProject.new(File.join($root, 'spec/files/grpc.yml'))
+        $config['.api_projects'] << ap2
+        env['HTTP_HOST'] = 'xjz.pw'
+        expect(subject).to receive(:dispatch_request).with(ap, kind_of(Xjz::Request))
+        subject.call(env)
+
+        env['HTTP_HOST'] = 'grpc.xjz.pw'
+        expect(Xjz::Resolver::Forward).to receive(:new).and_return(double('fr', perform: nil))
+        expect(subject).to_not receive(:dispatch_request)
+        subject.call(env)
+      end
     end
   end
 end

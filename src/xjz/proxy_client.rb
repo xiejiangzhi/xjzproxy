@@ -40,6 +40,7 @@ module Xjz
 
     def send_req(req, &cb)
       Logger[:auto].info { " > #{req.http_method} #{req.url.split('?').first} #{@protocol}" }
+      Xjz.LICENSE_CHECK() if rand(1000) == 0
       tracker = Tracker.track_req(req, api_project: api_project)
       res = api_project&.hack_req(req)
       if res

@@ -10,16 +10,21 @@ PUBLIC_KEY = OpenSSL::PKey::RSA.new(
   File.read(File.join(app_dir, 'licenses/license_key.pub'))
 ).to_der
 LICENSE_REGEXP = /Xjz.LICENSE_CHECK\(([\w:'"]+)?\)/
+EDITION_CONST_REGEXP = /Xjz::(TRL|STD|PRO)_ED/
+APP_EDITION_REGEXP = /Xjz\.APP_EDITION/
 
 def license_checker(edition)
   edition = edition.to_s.tr(':\'"', '').downcase
   code = <<~RUBY.lines.map(&:strip).join(';')
     lpath = $config['license_path']
     $LOADED_FEATURES.delete_if { |path| path['/openssl.'] }
+    stderr = $stderr.dup
+    $stderr.reopen('/dev/null')
     require 'openssl.so'
+    $stderr.reopen(stderr)
     k = OpenSSL::PKey::RSA.new(#{mix_str(PUBLIC_KEY, 10, 10000)})
     id, e, ts, ex = k.public_decrypt(File.read(lpath)).split(',') rescue nil
-    $config.data.merge!('.user_id' => id, '.edition' => flags)
+    $config.data.merge!('.user_id' => id, '.edition' => e)
     tex = ex.to_f > 0 ? Time.at(ex.to_f) : nil
     $config.data.merge!('.license_ts' => Time.at(ts.to_f), '.license_ex' => tex)
     te = #{edition.inspect}
@@ -28,12 +33,32 @@ def license_checker(edition)
   encode_code(code, 20, 60).strip
 end
 
+def app_edition
+  [
+    "$config[#{mix_str('.edition', 3, 20, 1)}]",
+    encode_code("$config['.edition']").strip
+  ].sample
+end
+
+def edition_const(name)
+  gblock = proc { |v| "(#{mix_str(v, 2, 20, 1)})" }
+  case name
+  when 'TRL' then gblock.call('trial')
+  when 'PRO' then gblock.call('pro')
+  when 'STD' then gblock.call('standard')
+  else
+    raise "invalid edition #{name}"
+  end
+end
+
 def compile(path)
   code = File.read(path)
   lines = code.lines.each_with_object([]) do |line, r|
     next if line =~ /^\s*(#.*)?$/
     line.gsub!(/^\s+/, '')
     line.gsub!(LICENSE_REGEXP) { |s| license_checker($2.to_s.split(' ')) }
+    line.gsub!(EDITION_CONST_REGEXP) { |s| edition_const($1) }
+    line.gsub!(APP_EDITION_REGEXP) { |s| app_edition }
     r << line
   end
   code = lines.join

@@ -55,7 +55,8 @@ module Xjz
     end
 
     def load_projects
-      data['.api_projects'] = format_projects(projects_paths)
+      aps = format_projects(projects_paths)
+      data['.api_projects'] = (data['.edition'] == Xjz::PRO_ED) ? aps : aps[0..0]
     end
 
     def shared_data

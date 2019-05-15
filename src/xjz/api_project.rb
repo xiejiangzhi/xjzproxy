@@ -61,6 +61,7 @@ module Xjz
 
     def grpc
       return unless data['project']['.grpc_module']
+      return unless Xjz.APP_EDITION
       @grpc ||= ApiProject::GRPC.new(self)
     end
 

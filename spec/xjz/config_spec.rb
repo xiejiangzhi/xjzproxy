@@ -1,6 +1,13 @@
 RSpec.describe Xjz::Config do
   let(:config) { Xjz::Config.new($config.path) }
   let(:user_dir) { File.join($root, 'tmp/user_idr') }
+  let(:user_path) { File.join(user_dir, 'config.yml') }
+
+  before :each do
+    `rm -rf #{user_dir}`
+    stub_const('Xjz::Config::USER_DIR', user_dir)
+    stub_const('Xjz::Config::USER_PATH', user_path)
+  end
 
   after clean_user_dir: true do
     `rm -rf #{user_dir}`
@@ -30,14 +37,41 @@ RSpec.describe Xjz::Config do
     )
   end
 
-  it '#load_projects should return formatted private data' do
-    expect {
-      config.load_projects
-    }.to change { config.data['.api_projects'] }.to(kind_of(Array))
+  describe '#load_projects', log: false do
+    let(:pd) { config['projects_dir'] }
 
-    expect(config.data['.api_projects'].map(&:repo_path)).to eql(
-      config.data['projects']
-    )
+    before :each do
+      config['projects_dir'] = File.join($root, "tmp/projects_dir_test")
+      `rm -rf #{pd}/*`
+      `mkdir #{pd}/a; touch #{pd}/a/a.yml`
+    end
+
+    after :each do
+      `rm -rf #{pd}/*`
+    end
+
+    it '#load_projects should return formatted private data' do
+      config['.edition'] = 'pro'
+      expect {
+        config.load_projects
+      }.to change { config.data['.api_projects'] }.to(kind_of(Array))
+
+      expect(config.data['.api_projects'].map(&:repo_path)).to eql(
+        config.data['projects'] + ["#{pd}/a"]
+      )
+    end
+
+    it '#load_projects should return first project if current is not pro edition' do
+      config['.edition'] = 'standard'
+
+      expect {
+        config.load_projects
+      }.to change { config.data['.api_projects'] }.to(kind_of(Array))
+
+      expect(config.data['.api_projects'].map(&:repo_path)).to eql(
+        config.data['projects']
+      )
+    end
   end
 
   it '#[] should return value' do
@@ -82,10 +116,8 @@ RSpec.describe Xjz::Config do
     expect(config.shared_data.webui.ws).to eql(123)
   end
 
-  it '#save should save config to user_dir' do
+  it '#save should save config to user_dir', clean_user_dir: true do
     path = File.join(user_dir, 'config.yml')
-    stub_const('Xjz::Config::USER_DIR', user_dir)
-    stub_const('Xjz::Config::USER_PATH', path)
     `rm -rf #{user_dir}`
     expect {
       config.save

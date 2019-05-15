@@ -50,6 +50,7 @@ module Xjz
     def parse_apis(apis, env)
       r = env['apis']
       purl = env['project']['url']
+      Xjz.LICENSE_CHECK()
       apis.each_with_index do |api, i|
         m = api['method'].to_s.upcase
         url = (api['url'] ||= purl)
@@ -60,6 +61,7 @@ module Xjz
         expand_api['method'] = m
         expand_api['.index'] = i
         (r[url_regexp][m] ||= []) << expand_api
+        break if Xjz.APP_EDITION.blank? && i >= (3 + 7 - 1)
       end
     end
 

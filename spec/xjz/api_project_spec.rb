@@ -2,6 +2,7 @@ RSpec.describe Xjz::ApiProject do
   let(:file_path) { File.join($root, 'spec/files/project.yml') }
   let(:dir_path) { File.join($root, 'spec/files/project') }
   let(:ap) { Xjz::ApiProject.new(file_path) }
+  let(:grpc_poj_path) { File.join($root, 'spec/files/grpc.yml') }
 
   describe '#hack_req' do
     it 'should generate response for a valid req' do
@@ -85,8 +86,7 @@ RSpec.describe Xjz::ApiProject do
     end
 
     it 'should return a response for grpc request' do
-      file_path = File.join($root, 'spec/files/grpc.yml')
-      ap = Xjz::ApiProject.new(file_path)
+      ap = Xjz::ApiProject.new(grpc_poj_path)
       r = ap.hack_req(Xjz::Request.new(
         'HTTP_HOST' => 'grpc.xjz.pw',
         'HTTP_CONTENT_TYPE' => 'application/grpc',
@@ -169,6 +169,20 @@ RSpec.describe Xjz::ApiProject do
 
     it 'should return false if not match host' do
       expect(ap.match_host?('asdf.pw')).to eql(false)
+    end
+  end
+
+  describe '#grpc' do
+    let(:ap) { Xjz::ApiProject.new(grpc_poj_path) }
+
+    it 'should return grpc instance' do
+      expect(ap.grpc).to be_a(Xjz::ApiProject::GRPC)
+    end
+
+    it 'should return nil if for trial edition' do
+      allow($config).to receive(:data).and_return($config.data.dup)
+      $config['.edition'] = nil
+      expect(ap.grpc).to eql(nil)
     end
   end
 

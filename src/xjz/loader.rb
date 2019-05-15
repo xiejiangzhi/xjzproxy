@@ -1,7 +1,21 @@
+# this file load only dev environment
 module Xjz
-  def self.LICENSE_CHECK(*flags)
+  # ====  auto compile string start ===
+  # ac str Xjz::TRL_ED
+  TRL_ED = 'trial'
+  # ac str Xjz::STD_ED
+  STD_ED = 'standard'
+  # ac str Xjz::PRO_ED
+  PRO_ED = 'pro'
+
+  def self.LICENSE_CHECK(edition = nil)
     true
   end
+
+  def self.APP_EDITION
+    $config['.edition']
+  end
+  # ====  auto compile string end ===
 
   unless Xjz.respond_to?(:load_file)
     class << self

@@ -1,10 +1,5 @@
-RSpec.describe 'proxy', webpage: true do
+RSpec.describe 'proxy', webpage: true, stub_config: true do
   let(:server) { $config.shared_data.app.server }
-
-  before :each do
-    cdata = $config.data.deep_dup
-    allow($config).to receive(:data).and_return(cdata)
-  end
 
   it 'status.change should start proxy if value true' do
     expect(server).to receive(:start_proxy)
