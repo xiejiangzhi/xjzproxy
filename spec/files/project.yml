@@ -1,6 +1,6 @@
 ---
 project:
-  url: https?://xjz.pw
+  host: xjz\.pw
   desc: desc
 
 types:
@@ -88,7 +88,6 @@ apis:
     desc: show a user's info
     enabled: true
     method: get
-    url: http://asdf.com
     path: /api/v1/users/\d+
     labels: ['auth']
     query:

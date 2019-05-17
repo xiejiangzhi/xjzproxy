@@ -16,8 +16,9 @@ module Xjz
 
     def match_host?(host)
       return false if data['.enabled'] == false
-      _, t = data['apis'].find { |k, v| k.match?("https://#{host}") || k.match?("http://#{host}") }
-      t ? true : false
+      r = data['project']['.host_regexp']
+      return true if r && r.match?(host)
+      false
     end
 
     # Return nil if don't hijack
@@ -27,11 +28,14 @@ module Xjz
       res = if grpc
         grpc.res_desc(req.path)
       else
-        api = find_api(req.http_method, req.scheme, req.host, req.path)
-        if api.nil? || api['.enabled'] == false || api['enabled'] == false
+        api = find_api(req.http_method, req.path)
+        return unless api
+        if api['.enabled'] == false || api['enabled'] == false
           nil
         else
-          api&.dig('response', 'success')
+          r = api['response']
+          return unless r
+          r[r['.default'] || 'success']
         end
       end
       return unless res
@@ -39,18 +43,11 @@ module Xjz
       @response_renderer.render(req, res)
     end
 
-    def find_api(http_method, scheme, host, path)
-      h_apis = if scheme.nil? && host.nil?
-        data['apis'].values
-      else
-        data['apis'].select { |k, v| k.match?("#{scheme}://#{host}") }.map(&:last)
-      end
-      return if h_apis.empty?
-      h_apis.each do |t|
-        apis = t[http_method.upcase]
-        next unless apis
-        api = apis.find { |a| a['.path_regexp'].match?(path) }
-        return api if api
+    def find_api(http_method, path)
+      data['apis'].each do |api|
+        next unless api['method'] == http_method.to_s.upcase
+        next unless api['.path_regexp'].match?(path)
+        return api
       end
       nil
     end
@@ -72,9 +69,9 @@ module Xjz
     def raw_data
       @raw_data ||= begin
         if File.directory?(repo_path)
-          load_dir(repo_path).tap { |d| (d['project'] || {})['dir'] ||= repo_path }
+          load_dir(repo_path).tap { |d| (d['project'] || {})['.dir'] ||= repo_path }
         else
-          load_file(repo_path).tap { |d| (d['project'] || {})['dir'] ||= File.dirname(repo_path) }
+          load_file(repo_path).tap { |d| (d['project'] || {})['.dir'] ||= File.dirname(repo_path) }
         end
       end
     end

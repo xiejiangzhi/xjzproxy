@@ -41,8 +41,11 @@
       margin-top: 1.5em;
       margin-bottom: 0.5em;
     }
-    .sub-title-icon {
+    .sub-title-icon, .api-res-icon, .api-req-icon {
       margin-right: 0.25em;
+    }
+    .api_res_radio {
+      margin-left: 1em;
     }
   }
   .detail_toc {

@@ -9,7 +9,7 @@ module Xjz
     attr_reader :pb_cache
 
     PROTOC_CMD = 'bundle exec grpc_tools_ruby_protoc' +
-      " --ruby_out=%{out_path} --grpc_out=%{out_path} -I%{lib_path}"
+      " --ruby_out=%{out_path} --grpc_out=%{out_path} -I%{lib_path} %{protoc_args}"
 
     CACHE_FILENAME = 'protos.yml'
 
@@ -63,7 +63,8 @@ module Xjz
     def generate_rb_files
       base_cmd = PROTOC_CMD % {
         out_path: Shellwords.escape(output_path),
-        lib_path: Shellwords.escape(protos_path)
+        lib_path: Shellwords.escape(protos_path),
+        protoc_args: options[:protoc_args]
       }
       files = []
       options['proto_files'].each do |matcher|

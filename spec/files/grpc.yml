@@ -1,6 +1,6 @@
 ---
 project:
-  url: https://grpc.xjz.pw
+  host: grpc.xjz.pw
   desc: desc
   # all protocols: http1, http2
   protocol: http1

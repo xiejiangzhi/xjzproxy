@@ -31,7 +31,7 @@ module Xjz
         )
       end
 
-      event(/^status_switch.(?<ap_id>\d+).change$/) do
+      event(/^status_switch\.(?<ap_id>\d+)\.change$/) do
         ap_id = match_data['ap_id'].to_i
         ap = $config['.api_projects'].find { |obj| obj.object_id == ap_id }
         ap.data['.enabled'] = !!data['value']
@@ -42,6 +42,14 @@ module Xjz
             html: render('webui/project/doc_tab.html', ap: ap)
           )
         end
+      end
+
+      event(/^(?<ap_id>\d+)\.choose_api_res\.(?<api_index>\d+)\.change$/) do
+        ap_id = match_data['ap_id'].to_i
+        ap = $config['.api_projects'].find { |obj| obj.object_id == ap_id }
+        api_index = match_data['api_index'].to_i
+        api = ap.data['apis'][api_index]
+        api['response']['.default'] = data[:value]
       end
     end
 

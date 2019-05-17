@@ -94,7 +94,7 @@ module Xjz
           res_desc = grpc.res_desc(req.path)
           res_desc ? [:grpc, res_desc] : []
         else
-          res_desc = api_project.find_api(req.http_method, req.scheme, req.host, req.path)
+          res_desc = api_project.find_api(req.http_method, req.path)
           res_desc ? [:http, res_desc] : []
         end
       end

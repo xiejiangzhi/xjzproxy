@@ -3,10 +3,20 @@
 ---------------
 % end
 
+### Project
+
+|field|value|
+|-----|-----|
+% data['project'].each do |k, v|
+% next if k[0] == '.'
+|<%= k %>|<%= v.inspect %>|
+% end
+
+
 ### APIs
 
-% apis_each do |host_regexp, api|
-<%= render('xjzapidoc/api.md', host_regexp: host_regexp, api: api) %>
+% data['apis'].each do |api|
+<%= render('xjzapidoc/api.md', api: api) %>
 % end
 
 

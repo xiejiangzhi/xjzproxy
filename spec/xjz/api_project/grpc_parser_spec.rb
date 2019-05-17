@@ -22,6 +22,18 @@ RSpec.describe Xjz::ApiProject::GRPCParser do
       expect { Hw2::Reply }.to raise_error(NameError)
     end
 
+    it 'should use protoc_args' do
+      subject = described_class.new(dir, 'dir' => './project_protobufs', protoc_args: '-xxx=asdf')
+      %w{hello2.proto dir/messages.proto hello.proto}.each do |file|
+        expect(subject).to receive(:generate_pbfiles).with(
+          "bundle exec grpc_tools_ruby_protoc --ruby_out=#{File.join($root, 'spec/files/.xjzapi/protos')}" +
+            " --grpc_out=#{$root}/spec/files/.xjzapi/protos" +
+            " -I#{$root}/spec/files/project_protobufs -xxx=asdf",
+          "#{$root}/spec/files/project_protobufs/#{file}").and_return([])
+      end
+      subject.parse
+    end
+
     it 'should not regenerate protos if cache is valid' do
       subject = described_class.new(dir, 'dir' => './project_protobufs')
       subject.parse

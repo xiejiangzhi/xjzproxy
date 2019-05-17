@@ -13,7 +13,7 @@
 % end
 
 
-**Request**
+**<%= api_req_icon %>Request**
 
 ```
 <%= api['method'].to_s.upcase %> <%= api['path'] %>
@@ -28,15 +28,15 @@
 % end
 
 % api['response'].each do |name, res|
-% next if res.blank?
-**<%= name.titleize %> Response**
+% next if res.blank? || res[0] == '.'
+**<%= api_res_icon + name.titleize %> Response<%= id_tag("api_res_#{api['.index']}_#{name}") %>**
 
 <%= render 'xjzapidoc/_data.md', data: res %>
 
 Example
 
 ```json
-<%= render_project_data('apis', [host_regexp, api['method'], api['path'], name]) %>
+<%= render_project_data('apis', [api['.index'], name]) %>
 ```
 % end
 

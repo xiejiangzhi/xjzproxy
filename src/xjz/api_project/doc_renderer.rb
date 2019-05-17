@@ -63,37 +63,23 @@ module Xjz
       end
 
       # call('responses', 'xxname')
-      # call('apis', [/hostreg/, 'post', '/path/to/xxx', 'success'])
+      # call('apis', [index, 'success'])
       def render_project_data(category, id)
-        c = category.to_s
-        cdata = project.data[c]
-        data = case c
+        ctg = category.to_s
+        ctg_data = project.data[ctg]
+        data = case ctg
         when 'apis'
-          apis = cdata.dig(id[0], id[1].upcase)
-          apis.find { |api| api['path'] == id[2] }['response'][id[3]]['data']
+          ctg_data.dig(id[0], 'response', id[1], 'data')
         when 'responses'
-          cdata[id.to_s]['data']
+          ctg_data[id.to_s]['data']
         else
-          cdata[id.to_s]
+          ctg_data[id.to_s]
         end
+
         if data
           JSON.pretty_generate(project.response_renderer.render_body(data)).html_safe
         else
           nil
-        end
-      end
-
-      def apis_each(&block)
-        raise "block is required" unless block
-        rapis = project.raw_data['apis']
-        project.data['apis'].each do |regexp, data|
-          apis = []
-          data.map { |m, as| apis.concat(([m] * as.length).zip(as)) }
-          apis.sort_by! { |m, api| api['path'] }
-          apis.each do |m, parsed_api|
-            api = rapis[parsed_api['.index']]
-            block.call(regexp, api)
-          end
         end
       end
 
@@ -124,7 +110,23 @@ module Xjz
       end
 
       def sub_title_icon
-        "<i class='sub-title-icon fas fa-list-alt'></i>"
+        icon_tag('list-alt', 'sub-title-icon')
+      end
+
+      def api_res_icon
+        icon_tag('reply', 'api-res-icon')
+      end
+
+      def api_req_icon
+        icon_tag('share', 'api-req-icon')
+      end
+
+      def id_tag(tid)
+        "<br tid='#{tid}' style='display: none;' />"
+      end
+
+      def icon_tag(name, cls = nil)
+        "<i class='#{cls} fas fa-#{name}'></i>"
       end
 
       def _save_data_line(k, v, result, prefix = nil)

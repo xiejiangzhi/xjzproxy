@@ -111,9 +111,7 @@ RSpec.describe Xjz::ApiProject::DocRenderer do
       allow(types['avatar']).to receive(:generate).and_return('https://xxx.com/path/to/1.png')
       allow(types['text']).to receive(:generate).and_return('some text')
 
-      expect(subject.render_project_data(
-        'apis', [ap.data['apis'].keys[1], 'GET', "/api/v1/users/\\d+", 'success']
-      )).to eql(<<~JSON.strip)
+      expect(subject.render_project_data('apis', [1, 'success'])).to eql(<<~JSON.strip)
         {
           "id": 123,
           "nickname": "ssstring",

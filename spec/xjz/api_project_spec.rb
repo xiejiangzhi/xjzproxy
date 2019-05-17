@@ -13,10 +13,7 @@ RSpec.describe Xjz::ApiProject do
       allow(dts['avatar']).to receive(:generate).and_return('http://a.com/a.png')
 
       r = ap.hack_req(Xjz::Request.new(
-        'HTTP_HOST' => 'xjz.pw',
-        'rack.url_scheme' => 'https',
-        'PATH_INFO' => '/api/v1/users',
-        'REQUEST_METHOD' => 'GET'
+        'PATH_INFO' => '/api/v1/users', 'REQUEST_METHOD' => 'GET'
       ))
       expect(r).to be_a(Xjz::Response)
       expect(r.code).to eql(200)
@@ -44,18 +41,34 @@ RSpec.describe Xjz::ApiProject do
       expect(r.h1_headers).to eql([["content-type", "application/json"], ["content-length", "479"]])
     end
 
+    it 'should generate response for specified res name' do
+      dts = ap.data['types']
+      allow(dts['integer']).to receive(:generate).and_return(123)
+      allow(dts['text']).to receive(:generate).and_return('some text')
+      allow(dts['string']).to receive(:generate).and_return('asdf')
+      allow(dts['avatar']).to receive(:generate).and_return('http://a.com/a.png')
+
+      r = ap.data['apis'][0]['response']
+      allow(r).to receive(:[]) { |k| k == '.default' ? 'error' : r.fetch(k) }
+
+      r = ap.hack_req(Xjz::Request.new(
+        'PATH_INFO' => '/api/v1/users', 'REQUEST_METHOD' => 'GET'
+      ))
+      expect(r).to be_a(Xjz::Response)
+      expect(r.code).to eql(400)
+      expect(JSON.parse(r.body)).to eql("code" => 1, "msg" => 'Invalid token')
+      expect(r.h1_headers).to eql([["content-type", "application/json"], ["content-length", "32"]])
+    end
+
     it 'should return nil for a invalid req' do
       r = ap.hack_req(Xjz::Request.new(
-        'HTTP_HOST' => 'xjz.pw',
-        'rack.url_scheme' => 'https',
-        'PATH_INFO' => '/api/v4/uers',
-        'REQUEST_METHOD' => 'GET'
+        'PATH_INFO' => '/api/v4/uers', 'REQUEST_METHOD' => 'GET'
       ))
       expect(r).to be_nil
     end
 
     it 'should return nil if api.enabled == false' do
-      ap.data['apis'].values.map(&:values).flatten.each do |api|
+      ap.data['apis'].each do |api|
         om = api.method(:[])
         allow(api).to receive(:[]) do |name|
           name == 'enabled' ? false : om.call(name)
@@ -63,24 +76,18 @@ RSpec.describe Xjz::ApiProject do
       end
 
       r = ap.hack_req(Xjz::Request.new(
-        'HTTP_HOST' => 'xjz.pw',
-        'rack.url_scheme' => 'https',
-        'PATH_INFO' => '/api/v1/users',
-        'REQUEST_METHOD' => 'GET'
+        'PATH_INFO' => '/api/v1/users', 'REQUEST_METHOD' => 'GET'
       ))
       expect(r).to be_nil
     end
 
-    it 'should return nil if data[.enabled] == false' do
+    it 'should return nil if ap[.enabled] == false' do
       data = ap.data.deep_dup
       allow(ap).to receive(:data).and_return(data)
       data['.enabled'] = false
 
       r = ap.hack_req(Xjz::Request.new(
-        'HTTP_HOST' => 'xjz.pw',
-        'rack.url_scheme' => 'https',
-        'PATH_INFO' => '/api/v1/users',
-        'REQUEST_METHOD' => 'GET'
+        'PATH_INFO' => '/api/v1/users', 'REQUEST_METHOD' => 'GET'
       ))
       expect(r).to be_nil
     end
@@ -88,10 +95,8 @@ RSpec.describe Xjz::ApiProject do
     it 'should return a response for grpc request' do
       ap = Xjz::ApiProject.new(grpc_poj_path)
       r = ap.hack_req(Xjz::Request.new(
-        'HTTP_HOST' => 'grpc.xjz.pw',
         'HTTP_CONTENT_TYPE' => 'application/grpc',
         'HTTP_ACCEPT' => 'application/grpc',
-        'rack.url_scheme' => 'https',
         'PATH_INFO' => '/Hw.Greeter/SayHello',
         'REQUEST_METHOD' => 'POST'
       ))
@@ -109,7 +114,7 @@ RSpec.describe Xjz::ApiProject do
       erb = ERB.new(File.read(file_path))
       erb.filename = file_path
       data = YAML.load(erb.result, filename: file_path)
-      data['project']['dir'] = File.dirname(file_path)
+      data['project']['.dir'] = File.dirname(file_path)
       expect(ap.raw_data).to eql(data)
     end
 
@@ -118,7 +123,7 @@ RSpec.describe Xjz::ApiProject do
       erb = ERB.new(File.read(file_path))
       erb.filename = File.join(dir_path, 'config.yml')
       data = YAML.load(erb.result, filename: dir_path)
-      data['project']['dir'] = dir_path
+      data['project']['.dir'] = dir_path
       expect(ap.raw_data).to eql(data)
     end
 
@@ -158,17 +163,20 @@ RSpec.describe Xjz::ApiProject do
   end
 
   describe '.match_host?' do
-    it 'should return true if match host' do
+    it 'should return boolean according to host' do
       expect(ap.match_host?('xjz.pw')).to eql(true)
+
+      k = '.host_regexp'
+      allow(ap).to receive(:data).and_return('project' => { k => %r{.+\.xjz\.pw} })
+      expect(ap.match_host?('xjz.pw')).to eql(false)
+      expect(ap.match_host?('blog.xjz.pw')).to eql(true)
+
+      expect(ap.match_host?('asdf.pw')).to eql(false)
     end
 
-    it 'should return true if data[.enabled] == false ' do
+    it 'should return false if data[.enabled] == false ' do
       allow(ap).to receive(:data).and_return('.enabled' => false)
       expect(ap.match_host?('xjz.pw')).to eql(false)
-    end
-
-    it 'should return false if not match host' do
-      expect(ap.match_host?('asdf.pw')).to eql(false)
     end
   end
 
@@ -188,25 +196,14 @@ RSpec.describe Xjz::ApiProject do
 
   describe '#find_api' do
     it 'should return api desc' do
-      expect(ap.find_api('get', 'https', 'xjz.pw', '/api/v1/users')['title']).to \
-        eql('Get all users')
-      expect(ap.find_api('get', 'http', 'xjz.pw', '/api/v1/users')['title']).to \
-        eql('Get all users')
-      expect(ap.find_api('get', 'http', 'asdf.com', '/api/v1/users/123')['title']).to \
-        eql('Get user')
+      expect(ap.find_api('get', '/api/v1/users')['title']).to eql('Get all users')
+      expect(ap.find_api('get', '/api/v1/users/123')['title']).to eql('Get user')
     end
 
     it 'should return nil if not found any' do
-      expect(ap.find_api('get', 'https', 'xjz.pw123', '/api/v1/users')).to be_nil
-      expect(ap.find_api('get', 'hxxp', 'xjz.pw', '/api/v1/users')).to be_nil
-      expect(ap.find_api('get', 'https', 'asdf.com', '/api/v1/users/123')).to be_nil
-      expect(ap.find_api('get', 'http', 'asdf.com', '/api/v2/users/123')).to be_nil
-      expect(ap.find_api('get', nil, 'asdf.com', '/api/v2/users/123')).to be_nil
-    end
-
-    it 'should return api if have not scheme and host' do
-      expect(ap.find_api('get', nil, nil, '/api/v1/users')['title']).to eql('Get all users')
-      expect(ap.find_api('get', nil, nil, '/api/v1/users/3')['title']).to eql('Get user')
+      expect(ap.find_api('post', '/api/v1/users/123')).to be_nil
+      expect(ap.find_api('get', '/api/v2/users/123')).to be_nil
+      expect(ap.find_api('get', '/api/v2/users/123')).to be_nil
     end
   end
 

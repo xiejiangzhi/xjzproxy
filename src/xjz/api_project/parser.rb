@@ -47,28 +47,32 @@ module Xjz
       end
     end
 
+    # Extend data:
+    #   api['method'].upcase
+    #   api['.path_regexp']
+    #   api['.index']
     def parse_apis(apis, env)
-      r = env['apis']
-      purl = env['project']['url']
+      env['apis'] = []
       Xjz.LICENSE_CHECK()
       apis.each_with_index do |api, i|
         m = api['method'].to_s.upcase
-        url = (api['url'] ||= purl)
-        url_regexp = Regexp.new('\A' + url.to_s + '\Z')
-        r[url_regexp] ||= {}
         expand_api = expand_hash(api, env)
-        expand_api['.path_regexp'] = Regexp.new('\A' + expand_api['path'] + '(\.\w+)?\Z')
         expand_api['method'] = m
+        expand_api['.path_regexp'] = Regexp.new('\A' + expand_api['path'] + '(\.\w+)?\Z')
         expand_api['.index'] = i
-        (r[url_regexp][m] ||= []) << expand_api
+        env['apis'] << expand_api
         break if Xjz.APP_EDITION.blank? && i >= (3 + 7 - 1)
       end
     end
 
+    # Extend data:
+    #   pj['.host_regexp']
+    #   pj['.grpc_module']
     def parse_project(project, env)
       pj = env['project'] = project.deep_dup
+      pj['.host_regexp'] = Regexp.new('\A' + pj['host'].to_s + '\Z')
       if grpc_options = pj['grpc']
-        pj['.grpc_module'] = ApiProject::GRPCParser.new(pj['dir'], grpc_options).parse
+        pj['.grpc_module'] = ApiProject::GRPCParser.new(pj['.dir'], grpc_options).parse
       end
     end
 
@@ -157,7 +161,7 @@ module Xjz
           raise "Invalid variable #{var}"
         end
       elsif type == '.f'
-        path = File.join(env['project']['dir'], name)
+        path = File.join(env['project']['.dir'], name)
         if File.exist?(path)
           File.read(path)
         else

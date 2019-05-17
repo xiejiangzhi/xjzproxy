@@ -81,8 +81,7 @@ RSpec.describe Xjz::Tracker do
       ap = double('ap', find_api: nil, grpc: nil)
       allow(req_tracker).to receive(:request).and_return(req)
       allow(req_tracker).to receive(:api_project).and_return(ap)
-      expect(ap).to receive(:find_api) \
-        .with('hm', 'https', 'xjz.pw', 'ppp').and_return(v: 'desc')
+      expect(ap).to receive(:find_api).with('hm', 'ppp').and_return(v: 'desc')
       expect(req_tracker.api_desc).to eql([:http, { v: 'desc' }])
     end
 
@@ -129,8 +128,7 @@ RSpec.describe Xjz::Tracker do
       allow(req_tracker).to receive(:request).and_return(req)
       allow(req_tracker).to receive(:response).and_return(res)
       allow(req_tracker).to receive(:api_project).and_return(ap)
-      expect(ap).to receive(:find_api) \
-        .with('hm', 'https', 'xjz.pw', 'ppp').and_return(api_desc)
+      expect(ap).to receive(:find_api).with('hm', 'ppp').and_return(api_desc)
 
       pd = double("params diff", diff: "err")
       expect(Xjz::ParamsDiff).to receive(:new).with({}).and_return(pd).exactly(5).times

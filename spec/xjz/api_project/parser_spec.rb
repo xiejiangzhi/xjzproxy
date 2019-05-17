@@ -77,10 +77,11 @@ RSpec.describe Xjz::ApiProject::Parser do
     end
 
     it 'should copy project data' do
-      expect(subject.parse(raw_data)['project'].select { |k, v| k[0] != '.' }).to eql(
-        'url' => 'https?://xjz.pw',
+      expect(subject.parse(raw_data)['project']).to eql(
+        'host' => 'xjz\.pw',
+        '.host_regexp' => /\Axjz\.pw\Z/,
         'desc' => 'desc',
-        "dir" => File.join($root, "spec/files"),
+        ".dir" => File.join($root, "spec/files"),
       )
     end
 
@@ -123,68 +124,58 @@ RSpec.describe Xjz::ApiProject::Parser do
 
     it 'should parse apis' do
       r = subject.parse(raw_data)
-      expect(r['apis']).to eql(
-        %r{\Ahttps?://xjz.pw\Z} => {
-          'GET' => [
-            {
-              "title" => "Get all users",
-              "desc" => "more desc of this API",
-              "method" => "GET",
-              "path" => "/api/v1/users",
-              ".path_regexp" => %r{\A/api/v1/users(\.\w+)?\Z},
-              "labels" => ['auth'],
-              "query" => {
-                "page" => 1,
-                ".page" => { 'optional' => true },
-                "q" => 123,
-                "status" => r['types']['integer'],
-                ".status" => { "optional" => { "unless" => "q" }, "rejected" => { "if" => "q" } }
-              },
-              '.index' => 0,
-              'url' => 'https?://xjz.pw',
-              "response" => {
-                "success" => r['responses']['list_users'],
-                'r2' => {
-                  http_code: 200,
-                  data: {
-                    items: [r['partials']['user']] * 2,
-                    total: r['types']['integer']
-                  }
-                }.deep_stringify_keys,
-                'r3' => {
-                   data: {
-                    items: [r['partials']['user']] * 2,
-                    '.items' => { 'desc' => 'some desc' },
-                    total: r['types']['integer'],
-                    '.total' => { 'desc' => 'some desc' }
-                  }
-                }.deep_stringify_keys,
-                "error" => r['responses']['invalid_token']
+      expect(r['apis']).to eql([
+        {
+          "title" => "Get all users",
+          "desc" => "more desc of this API",
+          "method" => "GET",
+          "path" => "/api/v1/users",
+          ".path_regexp" => %r{\A/api/v1/users(\.\w+)?\Z},
+          "labels" => ['auth'],
+          "query" => {
+            "page" => 1,
+            ".page" => { 'optional' => true },
+            "q" => 123,
+            "status" => r['types']['integer'],
+            ".status" => { "optional" => { "unless" => "q" }, "rejected" => { "if" => "q" } }
+          },
+          '.index' => 0,
+          "response" => {
+            "success" => r['responses']['list_users'],
+            'r2' => {
+              http_code: 200,
+              data: {
+                items: [r['partials']['user']] * 2,
+                total: r['types']['integer']
               }
-            }
-          ],
+            }.deep_stringify_keys,
+            'r3' => {
+               data: {
+                items: [r['partials']['user']] * 2,
+                '.items' => { 'desc' => 'some desc' },
+                total: r['types']['integer'],
+                '.total' => { 'desc' => 'some desc' }
+              }
+            }.deep_stringify_keys,
+            "error" => r['responses']['invalid_token']
+          }
         },
-        %r{\Ahttp://asdf.com\Z} => {
-          'GET' => [
-            {
-              "title" => "Get user",
-              "desc" => "show a user's info",
-              'enabled' => true,
-              "method" => "GET",
-              "url" => 'http://asdf.com',
-              "path" => '/api/v1/users/\d+',
-              ".path_regexp" => %r{\A/api/v1/users/\d+(\.\w+)?\Z},
-              "labels" => ['auth'],
-              "query" => nil,
-              '.index' => 1,
-              "response" => {
-                "success" => r['responses']['show_user'],
-                "error" => r['responses']['invalid_token']
-              }
-            }
-          ]
+        {
+          "title" => "Get user",
+          "desc" => "show a user's info",
+          'enabled' => true,
+          "method" => "GET",
+          "path" => '/api/v1/users/\d+',
+          ".path_regexp" => %r{\A/api/v1/users/\d+(\.\w+)?\Z},
+          "labels" => ['auth'],
+          "query" => nil,
+          '.index' => 1,
+          "response" => {
+            "success" => r['responses']['show_user'],
+            "error" => r['responses']['invalid_token']
+          }
         }
-      )
+      ])
     end
 
     it 'should skip if data is nil' do
@@ -202,7 +193,7 @@ RSpec.describe Xjz::ApiProject::Parser do
     describe 'edition' do
       it 'should parse over 10 apis' do
         r = subject.parse({
-          project: { url: 'http://xjz.pw' },
+          project: { host: 'xjz\.pw' },
           apis: 12.times.map do |i|
             {
               method: 'get',
@@ -212,8 +203,7 @@ RSpec.describe Xjz::ApiProject::Parser do
           end
         }.deep_stringify_keys)
 
-        expect(r['apis'][%r{\Ahttp://xjz.pw\Z}]['GET'].map { |r| r['path'] }).to \
-          eql(12.times.map { |i| "/path/#{i}" })
+        expect(r['apis'].map { |r| r['path'] }).to eql(12.times.map { |i| "/path/#{i}" })
       end
 
       it 'should parse 10 apis for trial edition' do
@@ -221,7 +211,7 @@ RSpec.describe Xjz::ApiProject::Parser do
         $config['.edition'] = nil
 
         r = subject.parse({
-          project: { url: 'http://xjz.pw' },
+          project: { host: 'xjz\.pw' },
           apis: 12.times.map do |i|
             {
               method: 'get',
@@ -231,8 +221,7 @@ RSpec.describe Xjz::ApiProject::Parser do
           end
         }.deep_stringify_keys)
 
-        expect(r['apis'][%r{\Ahttp://xjz.pw\Z}]['GET'].map { |r| r['path'] }).to \
-          eql(10.times.map { |i| "/path/#{i}" })
+        expect(r['apis'].map { |r| r['path'] }).to eql(10.times.map { |i| "/path/#{i}" })
       end
     end
   end
