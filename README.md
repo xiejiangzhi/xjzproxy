@@ -14,14 +14,14 @@ XjzProxy
 - [ ] ------ 1 ------ (7.0 - 5.0)
 - [o] 3.0 GRPC on http2
 - [o] 2.0 document renderer api project
-- [ ] 2.0 diff request params & response data, and generate report
+- [o] 2.0 diff request params & response data, and generate report
 - [ ] ------ 2 ------ (15)
 - [o] 15  GUI: GTK3 
 - [ ] ------ 3 ------ (11)
-- [ ] 2.0 diff request params & response data, and generate report
+- [o] 2.0 diff request params & response data, and generate report
 - [o] 5.0 build portable ruby
-- [ ] 2.0 link history & api, diff, export, etc in history page
-- [ ] 2.0 apdate request/response before process
+- [-] 2.0 link history & api, diff, export, etc in history page
+- [ ] 2.0 update request/response before process
 - [ ] 2.0 make better forward_streams. Fiber(better)/Thread 
 - [ ] 2.0 For QA, easy to change data
 - [o] 2.0 protect code
@@ -30,6 +30,7 @@ XjzProxy
 - [ ] 0.5 script types
 - [ ] 1.0 Resend Request
 - [ ] 1.0 Export as PDF, HTML
+- [ ] 根据文档自动生成测试代码，写测试代码时，直接调用接口来检查数据。expect(JSON.parse(response.body)).to match_doc(:r_list_users)
 
 ### V2
 
@@ -79,6 +80,19 @@ XjzProxy
 - Auto test all APIs, each apis and send request, see result in history and report 2d
 
 7d
+
+
+**todo**
+
+
+
+
+### V3
+
+- Document
+- IO forward
+- response 切换
+- check license online, allow most two people online
 
 
 

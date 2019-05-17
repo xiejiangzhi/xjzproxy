@@ -54,8 +54,6 @@ module Xjz
       elsif $config['.api_projects'].empty? || Xjz.APP_EDITION == Xjz::PRO_ED
         $config.shared_data.app.webui.emit_message('project.add', path: repo_path)
         Logger[:auto].info { "Add project #{repo_path}" }
-      else
-        binding.pry
       end
     end
   end
