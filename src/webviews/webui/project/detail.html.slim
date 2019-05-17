@@ -24,15 +24,16 @@
           autolink: true, tables: true, fenced_code_blocks: true
         ).render(ap.cache[:doc_markdown]) \
           .gsub('<h3', '<h3 class="top-title text-info text-center"') \
-          .gsub('<h4', '<h4 class="sub-title"') \
-            .gsub(/<br tid='api_res_(\d+)_(\w+)'[^>]+>/) do |str|
-              html = "<input type='radio' name='api_res_#{$1}' value='#{$2}'"
-              res = ap.data.dig('apis', $1.to_i, 'response')
-              html << " checked" if $2 == (res['.default'] || 'success')
-              html << " class='api_res_radio'"
-              html << " xjz-id='project.#{ap.object_id}.choose_api_res.#{$1}'"
-              html << " />"
-            end
+          .gsub('<h4', '<h4 class="sub-title"')
+        
+        doc_html = doc_html.gsub(/<br tid='api_res_(\d+)_(\w+)'[^>]+>/) do |str|
+          html = "<input type='radio' name='api_res_#{$1}' value='#{$2}'"
+          res = ap.data.dig('apis', $1.to_i, 'response')
+          html << " checked" if $2 == (res['.default'] || 'success')
+          html << " class='api_res_radio'"
+          html << " xjz-id='project.#{ap.object_id}.choose_api_res.#{$1}'"
+          html << " />"
+        end
 
       .custom-control.custom-switch
         - id = "project_status_switch-#{ap.object_id}"

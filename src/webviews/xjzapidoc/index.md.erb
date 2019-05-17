@@ -3,16 +3,6 @@
 ---------------
 % end
 
-### Project
-
-|field|value|
-|-----|-----|
-% data['project'].each do |k, v|
-% next if k[0] == '.'
-|<%= k %>|<%= v.inspect %>|
-% end
-
-
 ### APIs
 
 % data['apis'].each do |api|
