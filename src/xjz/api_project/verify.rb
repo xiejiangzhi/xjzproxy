@@ -31,16 +31,10 @@ module Xjz
     }.stringify_keys
 
     PLUGIN_SCHEMA = {
-      filter: {
-        include_labels: [:optional, NilClass, [[String]] ],
-        exclude_labels: [:optional, NilClass, [[String]] ],
-        path: [:optional, NilClass, String],
-        methods: [:optional, NilClass, [[String]] ],
-      },
-      query: [:optional, NilClass, String, Hash],
-      body: [:optional, NilClass, String, Hash],
-      body_type: [:optional, NilClass, String],
-      headers: [:optional, NilClass, Hash],
+      title: String,
+      desc: [:optional, NilClass, String],
+      labels: Array,
+      template: [:optional, NilClass, Hash],
       script: [:optional, NilClass, String]
     }.stringify_keys
 
@@ -63,7 +57,7 @@ module Xjz
           ]]
         }
       ]],
-      plugins: [:optional, NilClass, Hash]
+      plugins: [:optional, NilClass, [[Hash]] ]
     }.deep_stringify_keys
 
     REF_NAMES_MAPPING = {
@@ -86,7 +80,6 @@ module Xjz
       errors = valid_hash(raw_data, RAW_DATA_SCHEMA)
       [
         ['responses', RESPONSE_SCHEMA],
-        ['plugins', PLUGIN_SCHEMA],
         ['types', TYPE_SCHEMA],
       ].each do |name, schema|
         next unless raw_data[name]
@@ -94,8 +87,14 @@ module Xjz
           errors.push(*valid_hash(val, schema, %Q{#{path}["#{name}"]["#{key}"]}))
         end
       end
-      (raw_data['apis'] || []).each_with_index do |val, i|
-        errors.push(*valid_hash(val, API_SCHEMA, %Q{#{path}["apis"][#{i}]}))
+
+      [
+        ['plugins', PLUGIN_SCHEMA],
+        ['apis', API_SCHEMA]
+      ].each do |name, schema|
+        (raw_data[name] || []).each_with_index do |val, i|
+          errors.push(*valid_hash(val, schema, %Q{#{path}[#{name.inspect}][#{i}]}))
+        end
       end
       errors.empty? ? nil : errors
     end

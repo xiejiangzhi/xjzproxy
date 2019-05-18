@@ -1,19 +1,18 @@
-#### <%= sub_title_icon + toc_id(api['title'] || api['path'], [:api, api.object_id]) %>
+#### <%= icon_tag('list-alt') + toc_id(api['title'], [:api, api['.index']]) %>
 
 <%= api['desc'] %>
 
 % if project.grpc
-[GRPC Info](#<%= api['path'] %>)
+[GRPC Info](#<%= get_ref_id("grpc-#{api['path']}") %>)
 % end
 
 % if api['labels'].present?
-**Labels**
+**<%= icon_tag('tag') %>Labels**
 
-<%= api['labels'].map { |name| "`#{name}`" }.join(' - ') %>
+<%= api['labels'].map { |name| "<span class='badge badge-info'>#{name}</span>" }.join(' ') %>
 % end
 
-
-**<%= api_req_icon %>Request**
+**<%= icon_tag('share') %>Request**
 
 ```
 <%= api['method'].to_s.upcase %> <%= api['path'] %>
@@ -21,7 +20,7 @@
 
 % %w{query body params}.each do |name|
 % if api[name].present?
-**<%= name.titleize %>**
+**<%= icon_tag('hashtag') +  name.titleize %>**
 
 <%= render 'xjzapidoc/_data.md', data: api[name] %>
 % end
@@ -29,14 +28,37 @@
 
 % api['response'].each do |name, res|
 % next if res.blank? || res[0] == '.'
-**<%= api_res_icon + name.titleize %> Response<%= id_tag("api_res_#{api['.index']}_#{name}") %>**
+% display_res = raw_data.dig('apis', api['.index'], 'response', name) || res
+% if display_res =~ /^\.\w\//
+% title = "Response: #{name} [#{md_escape(display_res)}](##{get_ref_id(display_res)})"
+**<%= icon_tag('reply') %><%= title %><%= id_tag("api_res_#{api['.index']}_#{name}") %>**
 
-<%= render 'xjzapidoc/_data.md', data: res %>
+% else
+**<%= icon_tag('reply') %>Response: <%= name.titleize %><%= id_tag("api_res_#{api['.index']}_#{name}") %>**
+
+HTTP Code: `<%= res['http_code'] || 200 %>`
+
+% if display_res['headers']
+HTTP Headers
+
+<%= render 'xjzapidoc/_data.md', data: display_res['headers'] %>
+% end
+
+HTTP Body
+
+<%= render 'xjzapidoc/_data.md', data: display_res['data'] %>
 
 Example
 
+% if String === res['data']
+```
+<%= res['data'] %>
+```
+% else
 ```json
 <%= render_project_data('apis', [api['.index'], name]) %>
 ```
-% end
+% end # data is string
+% end # is ref link
+% end # each res
 

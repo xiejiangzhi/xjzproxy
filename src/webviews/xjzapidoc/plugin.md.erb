@@ -1,0 +1,17 @@
+#### <%= icon_tag('list-alt') + toc_id(plugin['title'], [:plugin, plugin['.index']]) %>
+
+<%= plugin['desc'] %>
+
+% if plugin['labels'].present?
+**<%= icon_tag('tag') %>Labels**
+
+<%= plugin['labels'].map { |name| "`#{name}`" }.join(' - ') %>
+% end
+
+
+% if plugin['template']
+**<%= icon_tag('list') %>Template**
+
+<%= render 'xjzapidoc/_data.md', data: plugin['template'] %>
+% end
+

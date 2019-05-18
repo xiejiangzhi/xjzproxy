@@ -89,10 +89,10 @@ XjzProxy
 
 ### V3
 
-- Document
-- response 切换
-- IO forward
-- check license online, allow most two people online
+- [ ] Document
+- [x] response 切换 
+- [ ] IO forward
+- [ ] check license online, allow most two people online
 
 
 

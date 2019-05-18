@@ -14,7 +14,7 @@ module Xjz
       end
 
       def table(header, body)
-        html = "<table class='table'><thead>"
+        html = "<table class='table table-borderless table-striped border border-info'><thead>"
         html << header.to_s
         html << "</thead>"
         html << "<tbody>"

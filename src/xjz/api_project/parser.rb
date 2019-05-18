@@ -48,24 +48,6 @@ module Xjz
     end
 
     # Extend data:
-    #   api['method'].upcase
-    #   api['.path_regexp']
-    #   api['.index']
-    def parse_apis(apis, env)
-      env['apis'] = []
-      Xjz.LICENSE_CHECK()
-      apis.each_with_index do |api, i|
-        m = api['method'].to_s.upcase
-        expand_api = expand_hash(api, env)
-        expand_api['method'] = m
-        expand_api['.path_regexp'] = Regexp.new('\A' + expand_api['path'] + '(\.\w+)?\Z')
-        expand_api['.index'] = i
-        env['apis'] << expand_api
-        break if Xjz.APP_EDITION.blank? && i >= (3 + 7 - 1)
-      end
-    end
-
-    # Extend data:
     #   pj['.host_regexp']
     #   pj['.grpc_module']
     def parse_project(project, env)
@@ -77,13 +59,35 @@ module Xjz
     end
 
     def parse_plugins(plugins, env)
-      r = env['plugins']
-      plugins.each do |key, val|
-        r[key] = expand_hash(val, env)
+      r = (env['plugins'] = [])
+      lip = (env['.label_indexed_plugins'] = {})
+
+      plugins.each_with_index do |plugin, i|
+        expand_plugin = expand_hash(plugin, env)
+        expand_plugin['.index'] = i
+        r << expand_plugin
+        (expand_plugin['labels'] || []).each { |label| (lip[label] ||= []) << expand_plugin }
       end
     end
 
-    #
+    # Extend data:
+    #   api['method'].upcase
+    #   api['.path_regexp']
+    #   api['.index']
+    def parse_apis(apis, env)
+      env['apis'] = []
+      Xjz.LICENSE_CHECK()
+      apis.each_with_index do |api, i|
+        m = api['method'].to_s.upcase
+        expand_api = expand_hash(api_merge_plugins(api, env), env)
+        expand_api['method'] = m
+        expand_api['.path_regexp'] = Regexp.new('\A' + expand_api['path'] + '(\.\w+)?\Z')
+        expand_api['.index'] = i
+        env['apis'] << expand_api
+        break if Xjz.APP_EDITION.blank? && i >= (3 + 7 - 1)
+      end
+    end
+
     # key:
     #   val: 123 # const
     #
@@ -184,6 +188,20 @@ module Xjz
       end
       raise "Circular dependencies." if r.empty?
       r + sort_by_dependents!(data, ref_prefix, keys)
+    end
+
+    def api_merge_plugins(api, env)
+      template = {}
+      (api['labels'] || []).each do |label|
+        plgs = (env['.label_indexed_plugins'] || {})[label]
+        next unless plgs
+        plgs.each do |plg|
+          t = plg['template']
+          template.deep_merge!(t) if t
+        end
+      end
+
+      template.deep_merge!(api)
     end
   end
 end

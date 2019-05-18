@@ -3,25 +3,25 @@ project:
   host: xjz\.pw
   desc: desc
 plugins:
-  auth:
-    filter:
-      include_labels:
-      - all
-      exclude_labels:
-      - no_auth
-      path: "/api/v1"
-      methods:
-      - GET
-      - POST
-    query: 
-    body: 
+- title: auth token
+  labels:
+  - auth
+  - l1
+  template:
     params:
       token: ".t/string"
-      ".token.required": true
-    headers: 
-  other:
-    filter:
-      include_labels:
-      - all
-      path: "/api/v1"
-    script: ".f/test.rb"
+- title: script
+  labels:
+  - l1
+  script: ".f/test.rb"
+- title: l1 plug
+  labels:
+  - l1
+  - l2
+  template:
+    response:
+      err:
+        http_code: 400
+        data:
+          code: 1
+          msg: err

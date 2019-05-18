@@ -1,13 +1,27 @@
-#### <%= sub_title_icon + toc_id(name.titleize, [:res]) %>
+#### <%= icon_tag('list-alt') + toc_id(name.titleize, [:res]) %>
 
 <%= response['desc'] %>
 
-**HTTP Status Code**: `<%= response['http_code'] || 200 %>`
+HTTP Code: **<%= response['http_code'] || 200 %>**
+
+% if response['headers']
+HTTP Headers
+
+<%= render 'xjzapidoc/_data.md', data: response['headers'] %>
+% end
+
+HTTP Body
 
 <%= render 'xjzapidoc/_data.md', data: response['data'] %>
 
 Example
 
+% if String === response['data']
 ```
+<%= response['data'] %>
+```
+% else
+```json
 <%= render_project_data('responses', name) %>
 ```
+% end

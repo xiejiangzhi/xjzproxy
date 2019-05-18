@@ -2,6 +2,10 @@ RSpec.describe Xjz::ApiProject::GRPC do
   let(:ap) { Xjz::ApiProject.new(File.join($root, 'spec/files/grpc.yml')) }
   let(:subject) { Xjz::ApiProject::GRPC.new(ap) }
 
+  before :all do
+    `rm -rf #{$root}/spec/files/.xjzapi`
+  end
+
   describe 'find_rpc' do
     it 'should return a rpc object' do
       rpc = subject.find_rpc('/Hw.Greeter/SayHello')
@@ -96,6 +100,7 @@ RSpec.describe Xjz::ApiProject::GRPC do
 
       m = Class.new { include GRPC::GenericService }
       subject.grpc.const_set("GxxxxService", m)
+      subject.instance_eval { @services = nil }
       expect(subject.services.length).to eql(2)
       ms = [
         /^Xjz::ApiProject::GRPCParser::ParsedModule_\w+::Hw::Greeter::Service$/,

@@ -56,7 +56,7 @@ module Xjz
     end
 
     def services
-      ObjectSpace.each_object(Class).select do |c|
+      @services ||= ObjectSpace.each_object(Class).select do |c|
         c.included_modules.include?(GRPC::GenericService) &&
           c.parents.include?(grpc)
       end

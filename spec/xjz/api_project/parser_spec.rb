@@ -99,26 +99,31 @@ RSpec.describe Xjz::ApiProject::Parser do
 
     it 'should parse plugins' do
       r = subject.parse(raw_data)
-      expect(r['plugins']).to eql(
-        "auth" => {
-          "body" => nil,
-          "filter" => {
-            "exclude_labels" => ['no_auth'],
-            "include_labels" => ['all'],
-            "methods" => ['GET', 'POST'],
-            "path" => "/api/v1"
-          },
-          "headers" => nil,
-          "params" => {
-            ".token" => { "required" => true },
-            "token" => r['types']['string']
-          },
-          "query" => nil
+      types = r['types']
+      expect(r['plugins']).to eql([
+        {
+          "title" => "auth token",
+          "labels" => ["auth", "l1"],
+          "template" => { "params" => { "token" => types['string'] } },
+          ".index" => 0
         },
-        "other" => {
-          "filter" => { "include_labels" => ['all'], "path" => "/api/v1" },
-          "script" => "\nputs 'hello'\n"
+        { "title" => "script", "labels" => ["l1"], "script" => "\nputs 'hello'\n", ".index" => 1 },
+        {
+          "title" => "l1 plug",
+          "labels" => ["l1", "l2"],
+          "template" => {
+            "response" => {
+              "err" => { "http_code" => 400, "data" => { "code" => 1, "msg" => "err" } }
+            }
+          },
+          ".index" => 2
         }
+      ])
+
+      expect(r['.label_indexed_plugins']).to eql(
+        'auth' => [r['plugins'][0]],
+        'l1' => r['plugins'],
+        'l2' => [r['plugins'][2]]
       )
     end
 
@@ -139,6 +144,7 @@ RSpec.describe Xjz::ApiProject::Parser do
             "status" => r['types']['integer'],
             ".status" => { "optional" => { "unless" => "q" }, "rejected" => { "if" => "q" } }
           },
+          "params" => { 'token' => r['types']['string'] },
           '.index' => 0,
           "response" => {
             "success" => r['responses']['list_users'],
@@ -167,12 +173,17 @@ RSpec.describe Xjz::ApiProject::Parser do
           "method" => "GET",
           "path" => '/api/v1/users/\d+',
           ".path_regexp" => %r{\A/api/v1/users/\d+(\.\w+)?\Z},
-          "labels" => ['auth'],
+          "labels" => ['auth', 'l1'],
+          "params" => { 'token' => r['types']['string'] },
           "query" => nil,
           '.index' => 1,
           "response" => {
             "success" => r['responses']['show_user'],
-            "error" => r['responses']['invalid_token']
+            "error" => r['responses']['invalid_token'],
+            "err" => {
+              "http_code" => 400,
+              "data" => { "code" => 1, "msg" => "err" }
+            }
           }
         }
       ])

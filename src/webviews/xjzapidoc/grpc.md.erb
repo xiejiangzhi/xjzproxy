@@ -1,6 +1,6 @@
-#### <%= sub_title_icon + toc_id(path, [:grpc]) %>
+#### <%= icon_tag('list-alt') + toc_id(path, [:grpc]) %>
 
-**Input `<%= input_name %>`**
+**<%= icon_tag('share') %>Input `<%= input_name %>`**
 
 % if rpc_input
 <%= render 'xjzapidoc/_data.md', data: rpc_input %>
@@ -9,7 +9,7 @@ None
 % end
 
 
-**Output `<%= output_name %>`**
+**<%= icon_tag('reply') %>Output `<%= output_name %>`**
 
 % if rpc_output
 <%= render 'xjzapidoc/_data.md', data: rpc_output %>

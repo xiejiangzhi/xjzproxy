@@ -34,6 +34,7 @@ apis:
   path: "/api/v1/users/\\d+"
   labels:
   - auth
+  - l1
   query: 
   response:
     success: ".r/show_user"

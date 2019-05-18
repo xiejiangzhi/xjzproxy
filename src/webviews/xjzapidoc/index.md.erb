@@ -37,3 +37,13 @@ render(
 Empty
 % end
 % end
+
+### Plugins
+
+% if plgs = raw_data['plugins']
+%   raw_data['plugins'].each do |plug|
+<%= render("xjzapidoc/plugin.md", plugin: plug) %>
+%   end
+% else
+Empty
+% end

@@ -6,7 +6,7 @@
 %   type = if type_oper == '*' 
 %     "array of [#{md_escape(t)}](##{t})"
 %   else
-%     t.to_s =~ /^\.\w\// ? "[#{md_escape(t)}](##{t})" : t
+%     t.to_s =~ /^\.\w\// ? "[#{md_escape(t)}](##{get_ref_id(t)})" : t
 %   end
 %   val = opts['val']
 |<%= k -%>

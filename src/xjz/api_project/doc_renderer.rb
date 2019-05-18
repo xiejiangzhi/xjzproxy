@@ -62,6 +62,19 @@ module Xjz
         str.gsub('_', '\\_')
       end
 
+      def get_ref_id(ref)
+        text = case ref
+        when /^\.r\/(.+)$/ then toc_id($1.titleize, [:res])
+        when /^\.p\/(.+)$/ then toc_id($1.titleize, [:partial])
+        when /^\.t\/(.+)$/ then toc_id($1.titleize, [:type])
+        when /^grpc-(.+)$/ then toc_id($1, [:grpc])
+        else
+          return
+        end
+
+        Xjz::ProjectRender.text_to_id(text)
+      end
+
       # call('responses', 'xxname')
       # call('apis', [index, 'success'])
       def render_project_data(category, id)
@@ -109,23 +122,11 @@ module Xjz
         "<i style='display: none;'>#{id}</i> #{title}"
       end
 
-      def sub_title_icon
-        icon_tag('list-alt', 'sub-title-icon')
-      end
-
-      def api_res_icon
-        icon_tag('reply', 'api-res-icon')
-      end
-
-      def api_req_icon
-        icon_tag('share', 'api-req-icon')
-      end
-
       def id_tag(tid)
         "<br tid='#{tid}' style='display: none;' />"
       end
 
-      def icon_tag(name, cls = nil)
+      def icon_tag(name, cls = 'title-icon')
         "<i class='#{cls} fas fa-#{name}'></i>"
       end
 
