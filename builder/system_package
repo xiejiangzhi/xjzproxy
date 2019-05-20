@@ -1,6 +1,7 @@
 #! /usr/bin/env ruby
 
 require_relative './config'
+require_relative './help'
 
 def build_osx_app(pkg_dir)
   pname = "XJZProxy.app"
