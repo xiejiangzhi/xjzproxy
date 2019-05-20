@@ -5,9 +5,7 @@
 - border_color = '#f5f5f5;'
 
 - if res
-  - border_color = '#17a2b8' if res.code < 300
-  - border_color ||= '#ffc107' if res.code < 400
-  - border_color ||= '#dc3545'
+  - border_color = res.code < 400 ? '#17a2b8' : '#dc3545'
 - elsif rt.error_msg
   - border_color = '#dc3545'
 

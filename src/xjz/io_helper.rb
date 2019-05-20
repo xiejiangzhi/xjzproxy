@@ -136,13 +136,13 @@ module Xjz
       if IO.select([ssl_sock], nil, nil, $config['proxy_timeout'])
         retry
       else
-        raise "Timeout to connection remote SSL"
+        raise SocketError.new("Timeout to connection remote SSL")
       end
     rescue IO::WaitWritable
       if IO.select(nil, [ssl_sock], nil, $config['proxy_timeout'])
         retry
       else
-        raise "Timeout to connection remote SSL"
+        raise SocketError.new("Timeout to connection remote SSL")
       end
     end
 

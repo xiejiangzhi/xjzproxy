@@ -2,10 +2,6 @@ RSpec.describe Xjz::ApiProject::GRPC do
   let(:ap) { Xjz::ApiProject.new(File.join($root, 'spec/files/grpc.yml')) }
   let(:subject) { Xjz::ApiProject::GRPC.new(ap) }
 
-  before :all do
-    `rm -rf #{$root}/spec/files/.xjzapi`
-  end
-
   describe 'find_rpc' do
     it 'should return a rpc object' do
       rpc = subject.find_rpc('/Hw.Greeter/SayHello')

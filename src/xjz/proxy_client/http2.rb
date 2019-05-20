@@ -22,6 +22,7 @@ module Xjz
     end
 
     def ping
+      return false unless remote_sock
       v = []
       client.ping('a' * 8) { v << 1 }
       IOHelper.forward_streams(
@@ -30,11 +31,12 @@ module Xjz
       )
       v.present?
     rescue Errno::EPROTOTYPE => e
-      Logger[:auto].error { e.log_inspect }
+      Logger[:auto].error { e.message }
       false
     end
 
     def send_req(req, &cb_stream)
+      return unless remote_sock
       stream = client.new_stream
       res_header = []
       res_buffer = []
@@ -89,6 +91,9 @@ module Xjz
           sock
         end
       end
+    rescue SocketError, Errno::ETIMEDOUT, Errno::EHOSTUNREACH => e
+      Logger[:auto].error { e.message }
+      nil
     end
 
     private

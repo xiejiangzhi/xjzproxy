@@ -21,7 +21,7 @@
     onMessage: function(type, data){
       var $el, $html;
       if (data.selector) { $el = $(data.selector); }
-      if (data.html) {
+      if (data.html || data.html == 0) {
         $html = $($.parseHTML(data.html.toString()));
         this.initElem($html);
       }
@@ -72,6 +72,13 @@
       this.initEvents();
       this.initDynamicEvents(this.$container);
       this.initRPC();
+
+      var that = this;
+      window.setInterval(function(){
+        if ($('#navbar_total_conns').html() > 0) {
+          that.ws.sendMsg('history.update_total_proxy_conns', {})
+        }
+      }, 3000)
     },
 
     initEvents: function() {

@@ -8,6 +8,7 @@ module Xjz
     def initialize(req, ap = nil)
       @api_project = ap
       @req = req
+      @ssl_ctxes = {}
     end
 
     def perform
@@ -59,7 +60,7 @@ module Xjz
         server_protocols = $config['alpn_protocols'] || %w{h2 http/1.1}
         ctx.alpn_select_cb = lambda do |protocols|
           Logger[:auto].info { "Client protocols #{protocols} & Server protocols #{server_protocols}" }
-          (server_protocols & protocols).first || 'http/1.1'
+          (protocols & server_protocols).first || 'http/1.1'
         end
         block.call(ctx) if block
         ctx

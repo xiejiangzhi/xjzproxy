@@ -128,9 +128,14 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
       expect(res.h2_headers).to eql(res_headers + [['content-length', '5']])
       expect(res.body).to eql('hello')
     end
+
+    it 'should return nil if remote_sock is nil ' do
+      allow(subject).to receive(:remote_sock).and_return(nil)
+      expect(subject.send_req(req)).to eql(nil)
+    end
   end
 
-  describe 'remote_socket' do
+  describe '#remote_sock' do
     it 'should return ssl sock if use ssl' do
       pclient = described_class.new(req.host, req.port, ssl: true)
       expect(pclient.remote_sock).to be_a(OpenSSL::SSL::SSLSocket)
@@ -141,13 +146,36 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
       expect(pclient.remote_sock).to be_a(Socket)
     end
 
-    it 'should timeout if cannot connect to remote' do
+    it 'should timeout if cannot connect to remote', log: false do
       s = TCPServer.new(0)
       addr = s.local_address
       pclient = described_class.new(addr.ip_address, addr.ip_port, ssl: true)
-      expect {
-        pclient.remote_sock
-      }.to raise_error("Timeout to connection remote SSL")
+      expect(pclient.remote_sock).to eql(nil)
+    end
+
+    it 'should return nil for invalid host name', log: false do
+      pclient = described_class.new('alksjdfkljaks12lk3jl1kj2kj31.asdf', 12352, ssl: true)
+      expect(pclient.remote_sock).to eql(nil)
+    end
+  end
+
+  describe '#ping' do
+    it 'should return false if remote_sock is nil' do
+      allow(subject).to receive(:remote_sock).and_return(nil)
+      expect(subject.ping).to eql(false)
+    end
+
+    it 'should return true for a valid request' do
+      server_client, local_remote = FakeIO.pair
+      h2s = new_http2_server(server_client) do |stream, headers, buffer|
+        data = buffer.join
+        stream.headers(res_headers + [['content-length', data.bytesize.to_s]])
+        stream.data(data)
+      end
+      server_client.reply_data = proc { |data, io| Xjz::WriterIO.new(h2s) << data if data }
+
+      allow(subject).to receive(:remote_sock).and_return(local_remote)
+      expect(subject.ping).to eql(true)
     end
   end
 end

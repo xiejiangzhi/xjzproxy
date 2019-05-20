@@ -74,6 +74,14 @@ module Xjz
       "#{addr.ip_address}:#{addr.ip_port}"
     end
 
+    def total_proxy_conns
+      proxy_thread_pool.instance_exec do
+        @pool.size - @pool.count do |w|
+          w.instance_eval { @thread.inspect =~ /sleep_forever>$/ }
+        end
+      end
+    end
+
     private
 
     def stop_server(name)

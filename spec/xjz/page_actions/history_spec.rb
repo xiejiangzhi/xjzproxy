@@ -55,6 +55,11 @@ RSpec.describe 'history', webpage: true do
     }.to change { session[:history_filter]&.filters_str }.to('xxx')
   end
 
+  it 'update_total_proxy_conns should update conns' do
+    expect_runner_send_msg(['el.html', selector: '#navbar_total_conns', html: '0'])
+    emit_msg("history.update_total_proxy_conns")
+  end
+
   describe 'server.tracker' do
     before :each do
       rt
@@ -63,6 +68,7 @@ RSpec.describe 'history', webpage: true do
     it 'new_request should update status bar' do
       allow(Xjz::Tracker.instance.history).to receive(:count).and_return(321)
       expect_runner_send_msg(['el.html', selector: '#navbar_total_requests', html: '321'])
+      expect_runner_send_msg(['el.html', selector: '#navbar_total_conns', html: '0'])
       expect_runner_render(
         ['webui/history/request_tab.html', request_tracker: rt, group_id: nil], 'htmlxzz'
       )
@@ -75,6 +81,7 @@ RSpec.describe 'history', webpage: true do
       session[:history_group_by] = 'conn'
       group_id = "rt_conn_#{rt.request.user_socket.object_id}"
       expect_runner_send_msg(['el.html', selector: '#navbar_total_requests', html: '1'])
+      expect_runner_send_msg(['el.html', selector: '#navbar_total_conns', html: '0'])
       expect_runner_render(
         ['webui/history/request_group_tab.html', request: req, group_id: group_id], 'htmlxxx'
       )

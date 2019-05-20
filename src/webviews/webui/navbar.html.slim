@@ -35,9 +35,8 @@ header#app_header.navbar.navbar-expand.navbar-light.bg-light.fixed-top
       span.mr-2 | 
 
       a.disabled.mr-3
-        - ms = total_reqs > 0 ? ((tracker.history.map(&:cost).sum / total_reqs) * 1000).to_i : 0
-        strong#navbar_total_requests = ms
-        |  ms/req
+        strong#navbar_total_conns = $config.shared_data.app.server.total_proxy_conns
+        |  Conns
 
       a.btn.btn-warning.nav-text. xjz-id='history.clean_all' Reset
 

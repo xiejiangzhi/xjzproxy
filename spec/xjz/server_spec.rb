@@ -37,6 +37,12 @@ RSpec.describe Xjz::Server do
     end
   end
 
+  describe '#total_proxy_conns' do
+    it 'should return a number' do
+      expect($config.shared_data.app.server.total_proxy_conns).to eql(0)
+    end
+  end
+
   describe 'start_proxy' do
     it 'should not raise error if port was used', log: false do
       s = Xjz::Server.new

@@ -34,32 +34,43 @@ RSpec.describe Xjz::ProxyClient do
     allow($config.shared_data.app.webui).to receive(:emit_message)
   end
 
-  it 'should create client for http1' do
-    c = Xjz::ProxyClient.new '127.0.0.1', 0, protocol: 'http1'
-    expect(c.client).to be_a(Xjz::ProxyClient::HTTP1)
-    expect(c.client).to receive(:send_req).with(req).and_return(res)
-    c.send_req(req)
-  end
+  describe '#send_req' do
+    it 'should create client for http1' do
+      c = Xjz::ProxyClient.new '127.0.0.1', 0, protocol: 'http1'
+      expect(c.client).to be_a(Xjz::ProxyClient::HTTP1)
+      expect(c.client).to receive(:send_req).with(req).and_return(res)
+      c.send_req(req)
+    end
 
-  it 'should create client for http2' do
-    c = Xjz::ProxyClient.new '127.0.0.1', 123, protocol: 'http2'
-    expect(c.client).to be_a(Xjz::ProxyClient::HTTP2)
-    expect(c.client).to receive(:send_req).with(req).and_return(res)
-    c.send_req(req)
-  end
+    it 'should create client for http2' do
+      c = Xjz::ProxyClient.new '127.0.0.1', 123, protocol: 'http2'
+      expect(c.client).to be_a(Xjz::ProxyClient::HTTP2)
+      expect(c.client).to receive(:send_req).with(req).and_return(res)
+      c.send_req(req)
+    end
 
-  it 'should use ApiProject response if hack_req return a response' do
-    ap = Xjz::ApiProject.new('repopath')
-    c = Xjz::ProxyClient.new '1.1.1.1', 0, protocol: 'http1', api_project: ap
-    config_data['.api_projects'] = [ap]
-    allow(ap).to receive(:hack_req).and_return(nil)
+    it 'should use ApiProject response if hack_req return a response' do
+      ap = Xjz::ApiProject.new('repopath')
+      c = Xjz::ProxyClient.new '1.1.1.1', 0, protocol: 'http1', api_project: ap
+      config_data['.api_projects'] = [ap]
+      allow(ap).to receive(:hack_req).and_return(nil)
 
-    allow(c.client).to receive(:send_req).with(req).and_return(res)
-    expect(c.send_req(req)).to eql(res)
+      allow(c.client).to receive(:send_req).with(req).and_return(res)
+      expect(c.send_req(req)).to eql(res)
 
-    res2 = Xjz::Response.new({}, ['asdf'], 201)
-    allow(ap).to receive(:hack_req).and_return(res2)
-    expect(c.send_req(req)).to eql(res2)
+      res2 = Xjz::Response.new({}, ['asdf'], 201)
+      allow(ap).to receive(:hack_req).and_return(res2)
+      expect(c.send_req(req)).to eql(res2)
+    end
+
+    it 'should catch net timeout error and return 504' do
+      c = Xjz::ProxyClient.new '127.0.0.1', 123, protocol: 'http1'
+      allow(c.client).to receive(:send_req).with(req).and_raise(Net::OpenTimeout.new('err'))
+      expect(c.send_req(req).code).to eql(504)
+
+      allow(c.client).to receive(:send_req).with(req).and_raise(Net::ReadTimeout.new('err'))
+      expect(c.send_req(req).code).to eql(504)
+    end
   end
 
   describe '.auto_new_client' do
@@ -162,7 +173,7 @@ RSpec.describe Xjz::ProxyClient do
       t.join
     end
 
-    it 'should return protocol and client if server do not support h2' do
+    it 'should return protocol and client if server do not support h2', log: false do
       config_data['alpn_protocols'] = ['http/1.1']
       t = Thread.new do
         ssl_server = OpenSSL::SSL::SSLServer.new(@server, Xjz::Resolver::SSL.ssl_ctx)
@@ -220,7 +231,7 @@ RSpec.describe Xjz::ProxyClient do
       expect(c.client.upgrade).to eql(false)
     end
 
-    it 'should return protocol and client if api_project is http2 and req upgrade' do
+    it 'should return protocol and client if api_project is http2 and req upgrade', log: false do
       ap = Xjz::ApiProject.new('a_dir')
       allow(ap).to receive(:data).and_return('project' => {})
       allow(ap).to receive(:grpc).and_return('grpc')

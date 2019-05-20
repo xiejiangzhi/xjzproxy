@@ -8,7 +8,7 @@ default: &default
   alpn_protocols:
     # - h2
     - http/1.1
-  max_threads: 128
+  max_threads: 256
   logger_level:
     default: info
   home_url: https://xjz.pw
@@ -46,6 +46,7 @@ dev:
     default: debug
     io_helper.rb: info
 
+  proxy_timeout: 10
   proxy_mode: all
 
   license_path: <%= File.join($root, 'licenses/xjz.lcs') %>

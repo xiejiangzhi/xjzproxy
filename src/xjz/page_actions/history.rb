@@ -70,6 +70,14 @@ module Xjz
         next if data[:name] == session[:history_detail_tab]
         session[:history_detail_tab] = data[:name]
       end
+
+      event 'update_total_proxy_conns' do
+        send_msg(
+          'el.html',
+          selector: '#navbar_total_conns',
+          html: $config.shared_data.app.server.total_proxy_conns.to_s
+        )
+      end
     end
 
     namespace 'server.tracker' do
@@ -79,6 +87,11 @@ module Xjz
         history = Tracker.instance.history
         total_reqs = history.count
         send_msg('el.html', selector: '#navbar_total_requests', html: total_reqs.to_s)
+        send_msg(
+          'el.html',
+          selector: '#navbar_total_conns',
+          html: $config.shared_data.app.server.total_proxy_conns.to_s
+        )
 
         rt = data[:rt]
         req = rt.request

@@ -52,16 +52,29 @@ module Xjz
       # end
 
       conn.on(:stream) do |stream|
-        header = []
-        buffer = []
+        perform_stream(stream)
+      end
+      conn
+    end
 
-        stream.on(:headers) { |h| header.push(*h) }
-        stream.on(:data) { |d| buffer << d }
+    def perform_stream(stream)
+      header = []
+      buffer = []
+      tpool = $config.shared_data.app.server&.proxy_thread_pool
 
-        stream.on(:half_close) do
-          Logger[:auto].debug { "Recv HTTP2 Request" }
-          req = Request.new_for_h2(original_req.env, header, buffer)
+      stream.on(:headers) do |h|
+        header.push(*h)
+      end
 
+      stream.on(:data) do |d|
+        buffer << d
+      end
+
+      stream.on(:half_close) do
+        Logger[:auto].debug { "Recv HTTP2 Request" }
+        req = Request.new_for_h2(original_req.env, header, buffer)
+
+        performer = proc do
           if remote_support_h2?
             proxy_http2_stream(stream, req)
           else
@@ -69,8 +82,9 @@ module Xjz
           end
           Logger[:auto].debug { "Finished HTTP2 Request" }
         end
+
+        tpool ? tpool.post(&performer) : performer.call
       end
-      conn
     end
 
     def remote_support_h2?

@@ -7,6 +7,10 @@ RSpec.describe Xjz::ApiProject::GRPCParser do
       FileUtils.rm_f(cache_path)
     end
 
+    after :all do
+      FileUtils.rm_f(File.join($root, 'spec/files/.xjzapi/protos/protos.yml'))
+    end
+
     it 'should return grpc module' do
       subject = described_class.new(dir, 'dir' => './project_protobufs')
       gm = subject.parse
