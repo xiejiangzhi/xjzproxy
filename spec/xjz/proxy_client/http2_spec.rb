@@ -33,7 +33,17 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
     )
   end
 
+  after :each do
+    subject.close
+  end
+
   describe '#send_req' do
+    def forward_test_conns(server_client, h2s, subject)
+      Thread.new do
+        Xjz::IOHelper.forward_streams(server_client => Xjz::WriterIO.new(h2s))
+      end
+    end
+
     it 'should return response' do
       server_client, local_remote = FakeIO.pair
       res_headers = [[':status', '200'], ['content-type', 'text/plain']]
@@ -43,16 +53,48 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
         stream.headers(res_headers + [['content-length', data.bytesize.to_s]])
         stream.data(data)
       end
-
-      server_client.reply_data = proc { |data, io| Xjz::WriterIO.new(h2s) << data if data }
-
       allow(subject).to receive(:remote_sock).and_return(local_remote)
+      t = forward_test_conns(server_client, h2s, subject)
+
+      stream = subject.client.new_stream
+      allow(subject.client).to receive(:new_stream).and_return(stream)
+      expect(stream).to receive(:headers).with(kind_of(Array), end_stream: false).and_call_original
+      expect(stream).to receive(:data).with(kind_of(String)).and_call_original
+
       res = subject.send_req(req)
       expect(res).to be_a(Xjz::Response)
       expect(res.code).to eql(200)
       expect(res.h2_headers).to eql(res_headers + [['content-length', '5']])
       expect(res.body).to eql('hello')
+      t.kill
     end
+
+    it 'should return response with empty body' do
+      server_client, local_remote = FakeIO.pair
+      res_headers = [[':status', '200'], ['content-type', 'text/plain']]
+
+      h2s = new_http2_server(server_client) do |stream, headers, buffer|
+        data = buffer.join
+        stream.headers(res_headers + [['content-length', data.bytesize.to_s]])
+        stream.data(data)
+      end
+      allow(subject).to receive(:remote_sock).and_return(local_remote)
+      t = forward_test_conns(server_client, h2s, subject)
+
+      stream = subject.client.new_stream
+      allow(subject.client).to receive(:new_stream).and_return(stream)
+      expect(stream).to receive(:headers).with(kind_of(Array), end_stream: true).and_call_original
+      expect(stream).to_not receive(:data)
+
+      allow(req).to receive(:body).and_return('')
+      res = subject.send_req(req)
+      expect(res).to be_a(Xjz::Response)
+      expect(res.code).to eql(200)
+      expect(res.h2_headers).to eql(res_headers + [['content-length', '0']])
+      expect(res.body).to eql('')
+      t.kill
+    end
+
 
     it 'should request with callback' do
       server_client, local_remote = FakeIO.pair
@@ -63,10 +105,9 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
         stream.headers(res_headers + [['content-length', data.bytesize.to_s]])
         stream.data(data)
       end
-
-      server_client.reply_data = proc { |data, io| Xjz::WriterIO.new(h2s) << data if data }
-
       allow(subject).to receive(:remote_sock).and_return(local_remote)
+      t = forward_test_conns(server_client, h2s, subject)
+
       data = []
       res = subject.send_req(req) { |*args| data << args }
       expect(data.inspect).to eql([
@@ -81,6 +122,7 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
       expect(res.code).to eql(200)
       expect(res.h2_headers).to eql(res_headers + [['content-length', '5']])
       expect(res.body).to eql('hello')
+      t.kill
     end
 
     it 'should send upgrade request if upgrade is ture' do
@@ -111,7 +153,7 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
         stream.headers(res_headers + [['content-length', data.bytesize.to_s]])
         stream.data(data)
       end
-      server_client.reply_data = proc { |msg, io| Xjz::WriterIO.new(h2s) << msg if msg }
+      t = forward_test_conns(server_client, h2s, subject)
 
       data = []
       res = subject.send_req(req) { |*args| data << args }
@@ -127,11 +169,35 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
       expect(res.code).to eql(200)
       expect(res.h2_headers).to eql(res_headers + [['content-length', '5']])
       expect(res.body).to eql('hello')
+      t.kill
     end
 
     it 'should return nil if remote_sock is nil ' do
       allow(subject).to receive(:remote_sock).and_return(nil)
       expect(subject.send_req(req)).to eql(nil)
+    end
+
+    it 'should work for concurrent' do
+      server_client, local_remote = FakeIO.pair
+      res_headers = [[':status', '200'], ['content-type', 'text/plain']]
+
+      h2s = new_http2_server(server_client) do |stream, headers, buffer|
+        data = buffer.join
+        stream.headers(res_headers + [['content-length', data.bytesize.to_s]])
+        stream.data(data)
+      end
+      allow(subject).to receive(:remote_sock).and_return(local_remote)
+      t = forward_test_conns(server_client, h2s, subject)
+
+      rs = []
+      ts = %w{c a b hello world}.map do |str|
+        r = req.dup
+        allow(r).to receive(:body).and_return(str)
+        Thread.new { rs << subject.send_req(r) }
+      end
+      ts.each(&:join)
+      expect(rs.map(&:body).sort).to eql(%w{a b c hello world})
+      t.kill
     end
   end
 
@@ -165,6 +231,19 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
       expect(subject.ping).to eql(false)
     end
 
+    it 'should return false if remote_sock is closed' do
+      server_client, local_remote = FakeIO.pair
+      server_client.close
+      allow(subject).to receive(:remote_sock).and_return(local_remote)
+      expect(subject.ping).to eql(false)
+    end
+
+    it 'should return false when timeout' do
+      _server_client, local_remote = FakeIO.pair
+      allow(subject).to receive(:remote_sock).and_return(local_remote)
+      expect(subject.ping).to eql(false)
+    end
+
     it 'should return true for a valid request' do
       server_client, local_remote = FakeIO.pair
       h2s = new_http2_server(server_client) do |stream, headers, buffer|
@@ -176,6 +255,24 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
 
       allow(subject).to receive(:remote_sock).and_return(local_remote)
       expect(subject.ping).to eql(true)
+    end
+  end
+
+  describe '#closed?' do
+    it 'should return false for valid connection' do
+      a, _ = FakeIO.pair
+      allow(subject).to receive(:remote_sock).and_return(a)
+      expect(subject.closed?).to eql(false)
+    end
+
+    it 'should return true for invalid connection' do
+      a, _ = FakeIO.pair
+      allow(subject).to receive(:remote_sock).and_return(nil)
+      expect(subject.closed?).to eql(true)
+
+      a.close
+      allow(subject).to receive(:remote_sock).and_return(a)
+      expect(subject.closed?).to eql(true)
     end
   end
 end

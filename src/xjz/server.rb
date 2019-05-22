@@ -75,11 +75,7 @@ module Xjz
     end
 
     def total_proxy_conns
-      proxy_thread_pool.instance_exec do
-        @pool.size - @pool.count do |w|
-          w.instance_eval { @thread.inspect =~ /sleep_forever>$/ }
-        end
-      end
+      proxy_thread_pool.total_active_workers
     end
 
     private
@@ -110,27 +106,30 @@ module Xjz
       start_msg = ['New', name, 'connection'].join(' ')
       end_msg = ['Close', name, 'connection'].join(' ')
 
-      thread_pool = Concurrent::ThreadPoolExecutor.new(
-        min_threads: 2,
-        max_threads: $config['max_threads'],
-        max_queue: 256,
-        fallback_policy: :discard
-      )
+      thread_pool = ThreadPool.new($config['max_threads'])
 
       t = Thread.new do
+        conn = nil
         loop do
-          conn = server_sock.accept rescue nil
+          conn ||= server_sock.accept rescue nil
           break unless conn
           begin
-            thread_pool.post do
+            is_enqueue = thread_pool.post(conn) do |my_conn|
               Logger[:auto].info { start_msg }
-              HTTPParser.parse_request(conn) { |env| app.call(env) }
+              HTTPParser.parse_request(my_conn) { |env| app.call(env) }
             rescue Exception => e
               Logger[:auto].error { e.log_inspect }
             ensure
               Logger[:auto].info { end_msg }
               Logger[:auto].reset_ts
-              conn.close unless conn.closed?
+              my_conn.close unless my_conn.closed?
+            end
+
+            if is_enqueue
+              conn = nil
+            else
+              # wait and try to process next time
+              sleep 0.1
             end
           rescue Exception => e
             Logger[:auto].error { e.log_inspect }

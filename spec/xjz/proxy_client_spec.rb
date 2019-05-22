@@ -243,4 +243,19 @@ RSpec.describe Xjz::ProxyClient do
       expect(c.client.upgrade).to eql(true)
     end
   end
+
+  describe 'general methods' do
+    let(:s) { FakeIO.server_pair.first }
+    let(:h1) { Xjz::ProxyClient.new '127.0.0.1', s.local_address.ip_port, protocol: 'http1' }
+    let(:h2) { Xjz::ProxyClient.new '127.0.0.1', s.local_address.ip_port, protocol: 'http2' }
+
+    %w{close closed? wait_finish}.each do |name|
+      it "should allow call #{name}" do
+        [h1, h2].each do |h|
+          expect(h).to receive(name).and_call_original
+          h.send(name)
+        end
+      end
+    end
+  end
 end

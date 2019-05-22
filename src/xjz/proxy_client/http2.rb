@@ -1,3 +1,5 @@
+require 'set'
+
 module Xjz
   class ProxyClient::HTTP2
     attr_reader :client, :host, :port, :use_ssl, :upgrade
@@ -18,17 +20,18 @@ module Xjz
       @use_ssl = ssl
       @upgrade = upgrade
       @client = HTTP2::Client.new
+      @mutex = Mutex.new
+      @conn_thread = nil
+      @closed = nil
       init_client(@client)
     end
 
     def ping
-      return false unless remote_sock
+      return false if closed?
       v = []
       client.ping('a' * 8) { v << 1 }
-      IOHelper.forward_streams(
-        { remote_sock => WriterIO.new(client) },
-        stop_wait_cb: proc { v.present? }
-      )
+      wake_up_conn_forwarder
+      wait_to { v.present? || closed? }
       v.present?
     rescue Errno::EPROTOTYPE => e
       Logger[:auto].error { e.message }
@@ -36,12 +39,12 @@ module Xjz
     end
 
     def send_req(req, &cb_stream)
-      return unless remote_sock
-      stream = client.new_stream
+      return if closed?
+      stream = @mutex.synchronize { client.new_stream }
       res_header = []
       res_buffer = []
       res = nil
-      stop_wait = false
+      closed_flag = []
 
       stream.on(:headers) do |h, f|
         res_header.push(*h)
@@ -52,28 +55,41 @@ module Xjz
         cb_stream.call(:data, d, f) if cb_stream
       end
       stream.on(:close) do
-        stop_wait = true
-        res = Response.new(res_header, res_buffer)
-        cb_stream.call(:close) if cb_stream
+        Logger[:auto].debug { "Stream #{req.path} close" }
+        closed_flag << 1
       end
 
-      Logger[:auto].debug { "Send request stream #{req.headers.inspect} #{req.body.inspect}" }
+      Logger[:auto].debug { "Proxy request stream #{req.headers.inspect} #{req.body.inspect}" }
       if req.body.empty?
-        stream.headers(req.headers)
+        stream.headers(req.headers, end_stream: true)
       else
         stream.headers(req.headers, end_stream: false)
         stream.data(req.body)
       end
 
-      IOHelper.forward_streams(
-        { remote_sock => WriterIO.new(client) },
-        stop_wait_cb: proc { stop_wait }
-      )
+      wake_up_conn_forwarder
+      wait_to { closed_flag.present? }
+
+      res = Response.new(res_header, res_buffer) if res_header.present?
+      cb_stream.call(:close) if cb_stream
+
       res
     end
 
     def close
+      return if @closed
+      Logger[:auto].info { "Close remote socket" }
+      @closed = true
+      @conn_thread.kill if @conn_thread && @conn_thread.alive? && @conn_thread != Thread.current
       @remote_sock&.close
+    end
+
+    def closed?
+      @closed || !remote_sock || remote_sock.closed?
+    end
+
+    def wait_finish
+      @conn_thread&.join
     end
 
     def remote_sock
@@ -91,7 +107,7 @@ module Xjz
           sock
         end
       end
-    rescue SocketError, Errno::ETIMEDOUT, Errno::EHOSTUNREACH => e
+    rescue SocketError, Errno::ETIMEDOUT, Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
       Logger[:auto].error { e.message }
       nil
     end
@@ -99,6 +115,7 @@ module Xjz
     private
 
     def init_client(client)
+      return if closed?
       if @upgrade
         upgrade_req = (UPGRADE_DATA % {
           host: host,
@@ -115,16 +132,25 @@ module Xjz
 
       client.on(:frame) do |bytes|
         begin
-          remote_sock << bytes
+          unless closed?
+            remote_sock << bytes
+            remote_sock.flush
+          end
         rescue Errno::EPIPE => e
-          Logger[:auto].error { e.log_inspect }
+          Logger[:auto].error { e.message }
+          close
         end
       end
+
+      client.on(:goaway) do
+        close
+      end
+
       # client.on(:frame_sent) do |frame|
       #   Logger[:auto].debug { "-> #{frame.inspect}" }
       # end
       # client.on(:frame_received) do |frame|
-      #   Logger[:auto].debug { "<- #{frame.inspect}" }
+      #   Logger[:auto].debug { "<- #{frame.except(:payload).inspect}" }
       # end
 
       # client.on(:promise) do |promise|
@@ -140,6 +166,27 @@ module Xjz
       #     Logger[:auto].info { "promise data chunk: <<#{d.size}>>" }
       #   end
       # end
+    end
+
+    def wait_to(&block)
+      interval = 0.1
+      ($config['proxy_timeout'] / interval).to_i.times do
+        break if block.call
+        sleep interval
+      end
+    end
+
+    def wake_up_conn_forwarder
+      return if @conn_thread
+      return if closed?
+
+      @mutex.synchronize do
+        @conn_thread = Thread.new do
+          IOHelper.forward_streams(remote_sock => WriterIO.new(@client))
+        ensure
+          close
+        end
+      end
     end
   end
 end

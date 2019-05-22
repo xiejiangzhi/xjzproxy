@@ -15,6 +15,7 @@ module Xjz
 
     def initialize
       @history = []
+      @mutex = Mutex.new
     end
 
     def clean_all
@@ -23,7 +24,7 @@ module Xjz
 
     def track_req(*args)
       RequestTracker.new(*args).tap do |rt|
-        @history << rt
+        @mutex.synchronize { @history << rt }
         $config.shared_data.app.webui.emit_message('tracker.new_request', rt: rt)
       end
     end

@@ -163,6 +163,9 @@ module Xjz
         return [rs, ws, []] if (rs && !rs.empty?) || (ws && !ws.empty?)
         return [[], [], es] if es && !es.empty?
         return if (Time.now - st) >= timeout
+      rescue IOError
+        readers.delete_if(&:closed?)
+        writers.delete_if(&:closed?)
       end
     end
   end

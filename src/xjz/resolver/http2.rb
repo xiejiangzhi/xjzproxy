@@ -8,6 +8,8 @@ module Xjz
       'Upgrade: h2c'
     ].join("\r\n") + "\r\n\r\n"
 
+    MAX_CONCURRENT_STREAMS = 6
+
     def initialize(req, ap = nil)
       @api_project = ap
       @original_req = req
@@ -17,6 +19,7 @@ module Xjz
       @req_scheme = req.scheme
       @remote_support_h2 = nil
       @proxy_client = nil
+      @thread_pool = ThreadPool.new(MAX_CONCURRENT_STREAMS, MAX_CONCURRENT_STREAMS)
     end
 
     def perform
@@ -24,8 +27,15 @@ module Xjz
       check_remote_server
       upgrade_to_http2 if original_req.upgrade_flag
       resolver_server << HTTP2_REQ_HEADER
-      IOHelper.forward_streams(@user_conn => WriterIO.new(resolver_server))
+
+      IOHelper.forward_streams(
+        { @user_conn => WriterIO.new(resolver_server) },
+        stop_wait_cb: proc { @proxy_client&.closed? }
+      )
+      proxy_client.wait_finish
     ensure
+      Logger[:auto].debug { 'End HTTP2 resolover' }
+      @thread_pool.shutdown
       @proxy_client&.close
     end
 
@@ -34,7 +44,7 @@ module Xjz
     attr_reader :user_conn, :resolver_server, :req_scheme
 
     def init_h2_resolver
-      conn = HTTP2::Server.new
+      conn = HTTP2::Server.new(settings_max_concurrent_streams: MAX_CONCURRENT_STREAMS)
       conn.on(:frame) do |bytes|
         begin
           user_conn << bytes unless user_conn.closed?
@@ -52,7 +62,11 @@ module Xjz
       # end
 
       conn.on(:stream) do |stream|
-        perform_stream(stream)
+        if proxy_client.closed?
+          conn.goaway
+        else
+          perform_stream(stream)
+        end
       end
       conn
     end
@@ -60,7 +74,6 @@ module Xjz
     def perform_stream(stream)
       header = []
       buffer = []
-      tpool = $config.shared_data.app.server&.proxy_thread_pool
 
       stream.on(:headers) do |h|
         header.push(*h)
@@ -83,7 +96,10 @@ module Xjz
           Logger[:auto].debug { "Finished HTTP2 Request" }
         end
 
-        tpool ? tpool.post(&performer) : performer.call
+        loop do
+          break if @thread_pool.post(&performer)
+          sleep 0.1
+        end
       end
     end
 
@@ -119,6 +135,9 @@ module Xjz
           stream.data(data, end_stream: flags.include?(:end_stream))
         end
       end
+    rescue HTTP2::Error::StreamClosed => e
+      Logger[:auto].error { e.message }
+      # ignore it, client closed the stream
     end
 
     def proxy_http1_stream(stream, req)

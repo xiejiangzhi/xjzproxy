@@ -6,6 +6,7 @@ module Xjz
       default: [{}, "#{$app_name} failed to get response", 500],
       timeout: [{}, "#{$app_name} get response expired", 504],
       addr: [{}, "#{$app_name} nodename nor servname provided, or not known", 500],
+      closed: [{}, "#{$app_name} Cannot connect to remote or remote close the connection", 500],
     }
 
     def self.auto_new_client(req, ap = nil)
@@ -59,9 +60,9 @@ module Xjz
       res ? tracker.finish(res) : tracker.error('error') if tracker
     end
 
-    def close
-      client.close
-    end
+    def close; client.close; end
+    def closed?; client.closed?; end
+    def wait_finish; client.wait_finish; end
 
     private
 
@@ -92,7 +93,13 @@ module Xjz
         process_res_callback(res, cb) if cb
         res
       else
-        @client.send_req(req, &cb) || Response.new(*ERR_RES[:default])
+        res = @client.send_req(req, &cb)
+        return res if res
+        if client.closed?
+          Response.new(*ERR_RES[:closed])
+        else
+          Response.new(*ERR_RES[:default])
+        end
       end
     rescue Net::OpenTimeout, Net::ReadTimeout => e
       Logger[:auto].error { e.message }

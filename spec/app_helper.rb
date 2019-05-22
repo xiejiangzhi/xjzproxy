@@ -66,9 +66,6 @@ RSpec.configure do |config|
       next if t == $server.ui_thread
       t.kill
     end
-    $config.shared_data.app.server.proxy_thread_pool.instance_eval do
-      ns_kill_execution
-    end
     $webui.page_manager.session.clear
     Xjz::Tracker.instance.clean_all
   end

@@ -10,7 +10,9 @@ module Support
           stream.on(:headers) { |h| header.push(*h) }
           stream.on(:data) { |d| buffer << d }
           stream.on(:half_close) do
-            res_block.call(stream, header, buffer)
+            Thread.new do
+              res_block.call(stream, header, buffer)
+            end
           end
         end
       end

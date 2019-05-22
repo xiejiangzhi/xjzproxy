@@ -8,7 +8,7 @@ default: &default
   alpn_protocols:
     # - h2
     - http/1.1
-  max_threads: 256
+  max_threads: 1024
   logger_level:
     default: info
   home_url: https://xjz.pw
@@ -52,7 +52,7 @@ dev:
   license_path: <%= File.join($root, 'licenses/xjz.lcs') %>
 
   webview_debug: true
-  ui_window: true
+  ui_window: <%= ENV['UI'] || true %>
 
 test:
   <<: *default

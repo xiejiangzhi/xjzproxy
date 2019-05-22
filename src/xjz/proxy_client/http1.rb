@@ -23,7 +23,8 @@ module Xjz
       Response.new(res.headers.to_hash, res.body, res.code)
     end
 
-    def close
-    end
+    def close; end
+    def closed?; end
+    def wait_finish; end
   end
 end
