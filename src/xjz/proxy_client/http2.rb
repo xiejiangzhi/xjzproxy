@@ -143,6 +143,7 @@ module Xjz
       end
 
       client.on(:goaway) do
+        Logger[:auto].debug { "Remote server goaway" }
         close
       end
 
