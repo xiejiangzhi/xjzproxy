@@ -49,15 +49,28 @@ module Xjz
       Logger[:auto].info { " > #{req.http_method} #{req.url.split('?').first} #{@protocol}" }
       Xjz.LICENSE_CHECK() if rand(1000) == 0
       tracker = Tracker.track_req(req, api_project: api_project)
-      res = fetch_res(req, cb)
 
-      Logger[:auto].info do
-        suffix = res.conn_close? ? ' - close' : ''
-        " < #{res.code} #{res.body.to_s.bytesize} bytes #{suffix}"
+      finish_performer = proc do |res|
+        Logger[:auto].info do
+          suffix = res.conn_close? ? ' - close' : ''
+          " < #{res.code} #{res.body.to_s.bytesize} bytes #{suffix}"
+        end
+      ensure
+        res ? tracker.finish(res) : tracker.error('error') if tracker
       end
-      res
-    ensure
-      res ? tracker.finish(res) : tracker.error('error') if tracker
+
+      if cb
+        fetch_res(req) do |*args|
+          args[0] == :close ? finish_performer.call(args[1]) : cb.call(*args)
+        end
+      else
+        fetch_res(req).tap do |res|
+          finish_performer.call(res)
+        end
+      end
+    rescue => e
+      tracker.error('error') if tracker
+      raise e
     end
 
     def close; client.close; end
@@ -87,14 +100,14 @@ module Xjz
       end
     end
 
-    def fetch_res(req, cb)
+    def fetch_res(req, &cb)
       res = api_project&.hack_req(req)
       if res
         process_res_callback(res, cb) if cb
         res
       else
         res = @client.send_req(req, &cb)
-        return res if res
+        return res if res || cb
         if client.closed?
           Response.new(*ERR_RES[:closed])
         else

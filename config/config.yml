@@ -43,7 +43,7 @@ prod:
 dev:
   <<: *default
   logger_level:
-    default: debug
+    default: info
     io_helper.rb: info
 
   proxy_timeout: 10

@@ -95,7 +95,6 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
       t.kill
     end
 
-
     it 'should request with callback' do
       server_client, local_remote = FakeIO.pair
       res_headers = [[':status', '200'], ['content-type', 'text/plain']]
@@ -110,18 +109,18 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
 
       data = []
       res = subject.send_req(req) { |*args| data << args }
-      expect(data.inspect).to eql([
+      sleep 0.1
+      expect(data.length).to eql(3)
+      expect(data[0..1].to_json).to eql([
         [
           :headers,
           [[":status", "200"], ["content-type", "text/plain"], ["content-length", "5"]], [:end_headers]
         ],
-        [:data, "hello", [:end_stream]],
-        [:close]
-      ].inspect)
-      expect(res).to be_a(Xjz::Response)
-      expect(res.code).to eql(200)
-      expect(res.h2_headers).to eql(res_headers + [['content-length', '5']])
-      expect(res.body).to eql('hello')
+        [:data, HTTP2::Buffer.new("hello"), [:end_stream]],
+      ].to_json)
+      expect(data[2][0]).to eql(:close)
+      expect(data[2][1]).to be_a(Xjz::Response)
+      expect(res).to eql(nil)
       t.kill
     end
 
@@ -156,19 +155,18 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
       t = forward_test_conns(server_client, h2s, subject)
 
       data = []
-      res = subject.send_req(req) { |*args| data << args }
-      expect(data.inspect).to eql([
+      subject.send_req(req) { |*args| data << args }
+      sleep 0.1
+      expect(data.length).to eql(3)
+      expect(data[0..1].to_json).to eql([
         [
           :headers,
           [[":status", "200"], ["content-type", "text/plain"], ["content-length", "5"]], [:end_headers]
         ],
-        [:data, "hello", [:end_stream]],
-        [:close]
-      ].inspect)
-      expect(res).to be_a(Xjz::Response)
-      expect(res.code).to eql(200)
-      expect(res.h2_headers).to eql(res_headers + [['content-length', '5']])
-      expect(res.body).to eql('hello')
+        [:data, HTTP2::Buffer.new("hello"), [:end_stream]],
+      ].to_json)
+      expect(data[2][0]).to eql(:close)
+      expect(data[2][1]).to be_a(Xjz::Response)
       t.kill
     end
 

@@ -38,25 +38,26 @@ module Xjz
       false
     end
 
-    def send_req(req, &cb_stream)
+    def send_req(req, &stream_cb)
       return if closed?
       stream = @mutex.synchronize { client.new_stream }
       res_header = []
       res_buffer = []
-      res = nil
-      closed_flag = []
+      rdata = []
 
       stream.on(:headers) do |h, f|
         res_header.push(*h)
-        cb_stream.call(:headers, h, f) if cb_stream
+        stream_cb.call(:headers, h, f) if stream_cb
       end
       stream.on(:data) do |d, f|
         res_buffer << d
-        cb_stream.call(:data, d, f) if cb_stream
+        stream_cb.call(:data, d, f) if stream_cb
       end
       stream.on(:close) do
         Logger[:auto].debug { "Stream #{req.path} close" }
-        closed_flag << 1
+        rdata << Response.new(res_header, res_buffer)
+      ensure
+        stream_cb.call(:close, rdata.first) if stream_cb
       end
 
       Logger[:auto].debug { "Proxy request stream #{req.headers.inspect} #{req.body.inspect}" }
@@ -68,12 +69,11 @@ module Xjz
       end
 
       wake_up_conn_forwarder
-      wait_to { closed_flag.present? }
 
-      res = Response.new(res_header, res_buffer) if res_header.present?
-      cb_stream.call(:close) if cb_stream
-
-      res
+      unless stream_cb
+        wait_to { rdata.present? || closed? }
+        rdata.first
+      end
     end
 
     def close

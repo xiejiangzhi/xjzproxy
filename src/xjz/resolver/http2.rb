@@ -8,8 +8,6 @@ module Xjz
       'Upgrade: h2c'
     ].join("\r\n") + "\r\n\r\n"
 
-    MAX_CONCURRENT_STREAMS = 6
-
     def initialize(req, ap = nil)
       @api_project = ap
       @original_req = req
@@ -19,7 +17,6 @@ module Xjz
       @req_scheme = req.scheme
       @remote_support_h2 = nil
       @proxy_client = nil
-      @thread_pool = ThreadPool.new(MAX_CONCURRENT_STREAMS, MAX_CONCURRENT_STREAMS)
     end
 
     def perform
@@ -35,7 +32,6 @@ module Xjz
       proxy_client.wait_finish
     ensure
       Logger[:auto].debug { 'End HTTP2 resolover' }
-      @thread_pool.shutdown
       @proxy_client&.close
     end
 
@@ -44,7 +40,7 @@ module Xjz
     attr_reader :user_conn, :resolver_server, :req_scheme
 
     def init_h2_resolver
-      conn = HTTP2::Server.new(settings_max_concurrent_streams: MAX_CONCURRENT_STREAMS)
+      conn = HTTP2::Server.new
       conn.on(:frame) do |bytes|
         begin
           user_conn << bytes unless user_conn.closed?
@@ -87,19 +83,12 @@ module Xjz
         Logger[:auto].debug { "Recv HTTP2 Request" }
         req = Request.new_for_h2(original_req.env, header, buffer)
 
-        performer = proc do
-          if remote_support_h2?
-            proxy_http2_stream(stream, req)
-          else
-            proxy_http1_stream(stream, req)
-          end
-          Logger[:auto].debug { "Finished HTTP2 Request" }
+        if remote_support_h2?
+          proxy_http2_stream(stream, req)
+        else
+          proxy_http1_stream(stream, req)
         end
-
-        loop do
-          break if @thread_pool.post(&performer)
-          sleep 0.1
-        end
+        Logger[:auto].debug { "Finished HTTP2 Request" }
       end
     end
 
@@ -123,7 +112,7 @@ module Xjz
     end
 
     def proxy_http2_stream(stream, req)
-      _res = proxy_client.send_req(req) do |event, data, flags|
+      proxy_client.send_req(req) do |event, data, flags|
         case event
         when :headers
           stream.headers(

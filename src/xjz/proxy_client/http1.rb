@@ -10,6 +10,7 @@ module Xjz
     end
 
     def send_req(req, &cb)
+      r = nil
       opts = {
         headers: req.h1_proxy_headers,
         timeout: $config['proxy_timeout'],
@@ -20,7 +21,9 @@ module Xjz
       Logger[:auto].debug { "Send http1 request #{}" }
       Logger[:auto].debug { [req.http_method, req.url, opts].inspect }
       res = @client.send(req.http_method, req.url, opts)
-      Response.new(res.headers.to_hash, res.body, res.code)
+      r = Response.new(res.headers.to_hash, res.body, res.code)
+    ensure
+      cb.call(:close, r) if cb
     end
 
     def close; end
