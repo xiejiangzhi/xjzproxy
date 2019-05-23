@@ -17,3 +17,7 @@ group :development do
 
   gem 'rubocop', '~> 0.65.0'
 end
+
+group :license_server do
+  gem 'bloomfilter-rb', github: 'xiejiangzhi/bloomfilter-rb', ref: 'e6907fd'
+end

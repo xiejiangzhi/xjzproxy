@@ -42,6 +42,17 @@ class XJZLicense
     nil
   end
 
+  def verify(str)
+    id, e, ts, ex, *flags = decrypt(str)
+    fex = ex.to_s.to_f
+
+    if id && (fex == 0 || Time.now < Time.at(fex))
+      [id, e, ts, ex, *flags]
+    else
+      nil
+    end
+  end
+
   private
 
   def gen_data(id, edition, flags: nil, expire_at: nil)

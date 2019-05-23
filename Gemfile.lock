@@ -1,4 +1,11 @@
 GIT
+  remote: git://github.com/xiejiangzhi/bloomfilter-rb.git
+  revision: e6907fda596ba1796358a43822c8dd18ddc14e14
+  ref: e6907fd
+  specs:
+    bloomfilter-rb (2.1.2)
+
+GIT
   remote: git://github.com/xiejiangzhi/http-2.git
   revision: 45b7456ca402aa7dec82e48679ebddaa781be86e
   ref: 45b7456ca40
@@ -124,6 +131,7 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport (~> 5.2.2)
+  bloomfilter-rb!
   builder (~> 3.2.3)
   classy_hash (~> 0.2.1)
   concurrent-ruby (~> 1.1.4)

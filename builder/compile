@@ -3,6 +3,7 @@
 require 'zlib'
 require 'uri'
 require_relative './help'
+require_relative './config'
 
 app_dir = File.expand_path('../../', __FILE__)
 rbdata = {}
@@ -18,7 +19,7 @@ APP_EDITION_REGEXP = /Xjz\.APP_EDITION/
 def license_checker(edition)
   edition = edition.to_s.tr(':\'"', '').downcase
   code = <<~RUBY.lines.map(&:strip).join(';')
-    lpath = $config['license_path']
+    lpath = Xjz::Config::LICENSE_PATH
     $LOADED_FEATURES.delete_if { |path| path['/openssl.'] }
     stderr = $stderr.dup
     $stderr.reopen('/dev/null')
@@ -36,18 +37,24 @@ def license_checker(edition)
 end
 
 def license_online_checker
-  uri = URI.parse('https://l.xjz.pw/v')
+  uri = URI.parse($config['online_verify_url'])
   code = <<~RUBY.lines.map(&:strip).join(';')
-    lpath = $config['license_path']
+    require 'base64'
+    lpath = Xjz::Config::LICENSE_PATH
     c = Xjz::ProxyClient::HTTP1.new(#{uri.host.inspect}, #{uri.port}, ssl: true).client
-    ids = Gem::Platform.local.to_a[0..1] + [Socket.gethostname, Dir.home]
-    id = OpenSSL::Digest::SHA256.hexdigest(ids.join(','))
-    l = File.read(lpath) rescue nil
+    cid = (Gem::Platform.local.to_a[0..1] + [Socket.gethostname, Dir.home]).join(',')
+    cid = OpenSSL::Digest::SHA256.hexdigest(cid)
+    l = Base64.strict_encode64(File.read(lpath))
     if l
       Thread.new do
-        r = c.post(#{uri.to_s.inspect}, l: l, id: id) { |req| req.options.timeout = 15 }
+        r = c.post(#{uri.to_s.inspect}) do |req|
+          req.options.timeout = 15
+          req.body = { l: l, id: cid }.to_query
+        end
         json = JSON.parse(r.body) if r.status == 200
-        if json && json['valid'] != true
+        if json && !json['valid']
+          $config.data.merge!('.user_id' => nil, '.edition' => nil)
+          $config.data.merge!('.license_ts' => nil, '.license_ex' => nil)
           FileUtils.rm_rf(lpath)
         end
       end

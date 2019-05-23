@@ -8,3 +8,5 @@ platforms:
   # - linux-x86
   # - linux-x86_64
 
+online_verify_url: https://l.xjz.pw/v
+# online_verify_url: http://localhost:8080/v
