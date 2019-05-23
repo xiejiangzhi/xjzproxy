@@ -92,7 +92,7 @@ XjzProxy
 - [x] Document
 - [x] response 切换 
 - [x] IO forward
-- [ ] check license online, allow most two people online
+- [x] check license online, allow most two people online
 
 
 

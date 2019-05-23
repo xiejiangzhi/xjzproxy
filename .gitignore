@@ -31,5 +31,5 @@ xjzapidoc.md
 
 .DS_Store
 /licenses.csv
-/licenses/license_key*
+/licenses/license_key
 /licenses/*.lcs
