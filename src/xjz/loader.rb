@@ -12,6 +12,9 @@ module Xjz
     true
   end
 
+  def self.LICENSE_ONLINE_CHECK
+  end
+
   def self.APP_EDITION
     $config['.edition']
   end

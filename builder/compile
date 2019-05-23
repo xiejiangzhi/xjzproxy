@@ -1,6 +1,7 @@
 #! /usr/bin/env ruby
 
 require 'zlib'
+require 'uri'
 require_relative './help'
 
 app_dir = File.expand_path('../../', __FILE__)
@@ -10,6 +11,7 @@ PUBLIC_KEY = OpenSSL::PKey::RSA.new(
   File.read(File.join(app_dir, 'licenses/license_key.pub'))
 ).to_der
 LICENSE_REGEXP = /Xjz.LICENSE_CHECK\(([\w:'"]+)?\)/
+ONLINE_LICENSE_REGEXP = /Xjz.LICENSE_ONLINE_CHECK/
 EDITION_CONST_REGEXP = /Xjz::(TRL|STD|PRO)_ED/
 APP_EDITION_REGEXP = /Xjz\.APP_EDITION/
 
@@ -29,6 +31,27 @@ def license_checker(edition)
     $config.data.merge!('.license_ts' => Time.at(ts.to_f), '.license_ex' => tex)
     te = #{edition.inspect}
     (id && (te == e || te.empty?) && (tex.nil? || Time.now < tex)) ? true : false rescue false
+  RUBY
+  encode_code(code, 20, 60).strip
+end
+
+def license_online_checker
+  uri = URI.parse('https://l.xjz.pw/v')
+  code = <<~RUBY.lines.map(&:strip).join(';')
+    lpath = $config['license_path']
+    c = Xjz::ProxyClient::HTTP1.new(#{uri.host.inspect}, #{uri.port}, ssl: true).client
+    ids = Gem::Platform.local.to_a[0..1] + [Socket.gethostname, Dir.home]
+    id = OpenSSL::Digest::SHA256.hexdigest(ids.join(','))
+    l = File.read(lpath) rescue nil
+    if l
+      Thread.new do
+        r = c.post(#{uri.to_s.inspect}, l: l, id: id) { |req| req.options.timeout = 15 }
+        json = JSON.parse(r.body) if r.status == 200
+        if json && json['valid'] != true
+          FileUtils.rm_rf(lpath)
+        end
+      end
+    end
   RUBY
   encode_code(code, 20, 60).strip
 end
@@ -59,6 +82,7 @@ def compile(path)
     line.gsub!(LICENSE_REGEXP) { |s| license_checker($2.to_s.split(' ')) }
     line.gsub!(EDITION_CONST_REGEXP) { |s| edition_const($1) }
     line.gsub!(APP_EDITION_REGEXP) { |s| app_edition }
+    line.gsub!(ONLINE_LICENSE_REGEXP) { license_online_checker }
     r << line
   end
   code = lines.join

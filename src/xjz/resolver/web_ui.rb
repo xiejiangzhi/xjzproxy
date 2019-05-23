@@ -5,6 +5,7 @@ module Xjz
     NOT_FOUND_RES = [{ 'Connection' => 'close' }, ["Not Found"], 404]
 
     def initialize(req, ap = nil)
+      rand < 0.3 && Xjz.LICENSE_ONLINE_CHECK
       @api_project = ap
       @req = req
     end

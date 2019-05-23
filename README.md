@@ -89,14 +89,31 @@ XjzProxy
 
 ### V3
 
-- [ ] Document
+- [x] Document
 - [x] response 切换 
-- [ ] IO forward
+- [x] IO forward
 - [ ] check license online, allow most two people online
+
+
+
+## License verify server
+
+uri: `l.xjz.pw/v`
+
+params:
+
+* l: license text
+* id: user computer id
+
+response:
+
+```
+{
+  valid: true, // false will remove the license
+}
+```
 
 
 
 ## TODO Libraries
 
-15
-* https://github.com/filewatcher/filewatcher
