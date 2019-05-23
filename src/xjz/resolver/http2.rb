@@ -122,6 +122,8 @@ module Xjz
           )
         when :data
           stream.data(data, end_stream: flags.include?(:end_stream))
+        when :close
+          stream.data('', end_stream: true) if stream.state != :closed
         end
       end
     rescue HTTP2::Error::StreamClosed => e

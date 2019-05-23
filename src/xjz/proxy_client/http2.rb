@@ -60,7 +60,7 @@ module Xjz
         stream_cb.call(:close, rdata.first) if stream_cb
       end
 
-      Logger[:auto].debug { "Proxy request stream #{req.headers.inspect} #{req.body.inspect}" }
+      Logger[:auto].debug { "New proxy stream #{stream.id} for #{req.url}" }
       if req.body.empty?
         stream.headers(req.headers, end_stream: true)
       else
@@ -147,12 +147,12 @@ module Xjz
         close
       end
 
-      # client.on(:frame_sent) do |frame|
-      #   Logger[:auto].debug { "-> #{frame.inspect}" }
-      # end
-      # client.on(:frame_received) do |frame|
-      #   Logger[:auto].debug { "<- #{frame.except(:payload).inspect}" }
-      # end
+      client.on(:frame_sent) do |frame|
+        Logger[:auto].debug { "-> #{frame.except(:payload).inspect}" }
+      end
+      client.on(:frame_received) do |frame|
+        Logger[:auto].debug { "<- #{frame.except(:payload).inspect}" }
+      end
 
       # client.on(:promise) do |promise|
       #   promise.on(:promise_headers) do |h|
