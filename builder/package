@@ -3,126 +3,127 @@
 require_relative './config'
 require_relative './help'
 
-$config['platforms'].each do |platform|
-  dirname = [platform, $config['app_version']].join('-')
-  pkg_dir = File.join($releases_dir, dirname)
-  app_dir = "#{pkg_dir}/lib/app"
-  ruby_dir = "#{pkg_dir}/lib/ruby"
-  ruby_pkg_name = "#{platform}-#{$config['ruby_version']}"
-  ruby_binary_dir = File.join($config['packages_dir'], ruby_pkg_name)
-  unless Dir.exist?(ruby_binary_dir)
-    $stderr.puts "Cannot build #{platform}, not found ruby binary in #{ruby_binary_dir.inspect}"
-    next
-  end
+pl = Gem::Platform.local
+platform = [pl.os, pl.cpu].join('-')
 
-  puts "Building #{dirname}"
-
-  # init folders
-  cmd "mkdir -p #{app_dir}"
-
-  # install ruby
-  cmd "rsync -rtl --delete-before #{ruby_binary_dir}/ #{ruby_dir}"
-
-  # install app
-  cmd "rsync -rtl --delete-before --exclude-from=.buildignore ./ #{app_dir}"
-  cmd "cp -pR Gemfile.prod #{app_dir}/Gemfile"
-  cmd "cp -pR Gemfile.lock #{app_dir}/Gemfile.lock"
-  cmd "cp -pR builder/wrapper  #{pkg_dir}/run"
-
-  ruby_vdir = `ls #{ruby_dir}/lib/ruby`.split.find { |name| name =~ /^2\.\d+\.\d+$/ }
-
-  # use gem cache
-  gem_path = Gem.dir
-  if gem_path && gem_path["gems/#{ruby_vdir}"]
-    target_cache_dir = "#{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}"
-    cmd "mkdir -p #{target_cache_dir}"
-    cmd "ln -sf #{gem_path}/cache #{target_cache_dir}/cache"
-  end
-
-  # install gems
-  Bundler.with_clean_env do
-    Dir.chdir(app_dir) do
-      cmd "BUNDLE_IGNORE_CONFIG=1 bundle install --path ../vendor --without development test"
-    end
-  end
-
-  # compile js
-  Dir["#{app_dir}/src/static/xjz_*.js"].each do |path|
-    File.write(path, Uglifier.compile(File.read(path)))
-  end
-
-  # clean gem cache
-  cmd "rm -rf #{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/cache"
-
-  # clean compile tempfiles
-  gems_dir = "#{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/gems"
-  puts "rm -rf #{gems_dir}/ext/**/*.{o,h,c,hpp,cpp}"
-  Dir["#{gems_dir}/*/ext/**/*.{o,h,c,hpp,cpp}"].each do |path|
-    cmd "rm -f #{Shellwords.escape(path)}", quiet: true
-  end
-
-  cmd "rm -rf #{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/gems/*/spec"
-  cmd "rm -rf #{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/gems/*/test"
-
-  {
-    'x86-linux' => 'linux-x86',
-    'x86-windows' => '',
-    'x86_64-macos' => 'osx-x86_64',
-    'x86-macos' => '',
-    'x86_64-linux' => 'linux-x86_64',
-    'x86_64-windows' => ''
-  }.each do |dir, pf|
-    next if pf == platform
-    cmd "rm -rf #{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/gems/grpc-tools-1.*/bin/#{dir}"
-  end
-
-  %w{2.2 2.3 2.4 2.5}.each do |version|
-    cmd "rm -rf #{pkg_dir}/lib/vendor/ruby/#{ruby_vdir}/gems/grpc-1.*/src/ruby/lib/grpc/#{version}"
-  end
-
-  # config app
-  File.write(
-    "#{pkg_dir}/lib/app/config/config.yml",
-    load_yaml('config/config.yml', erb: false)['prod'].to_yaml
-  )
-
-  ssl_dir = "#{ruby_dir}/lib/ruby/2.6.0/openssl"
-  files = [
-    ['digest.rb', /^( +)alg.each/],
-    ['ssl.rb', /^( +)METHODS_MAP = /, /^( +)def verify_hostname/],
-    ['x509.rb', /^( +)TypeAndValue = /],
-    ['config.rb', /^( +)def extract_reference/, /^( +)def unescape_value/]
-  ]
-  [
-    <<~RUBY,
-      class OpenSSL::PKey::RSA
-        Object::ODC = instance_method(#{mix_str('public_decrypt')})
-      end
-    RUBY
-    encode_code("$sdcm = OpenSSL::PKey::RSA.instance_method(:public_decrypt)"),
-    "class OpenSSL::PKey::RSA; alias_method :rt, #{mix_str('public_decrypt')}; end",
-    encode_code("class OpenSSL::PKey::RSA; alias_method :cp, #{mix_str('public_decrypt')}; end"),
-  ].each do |code|
-    filename, *matchs = files.delete_at(rand(files.length))
-    path = File.join(ssl_dir, filename)
-
-    sl = File.read(path)
-    m = matchs.sample
-    sl.gsub!(m) do |str|
-      prefix = $1.delete_prefix("\n")
-      ecode = code.lines.map { |l| prefix + l }.join
-      v = if str['def ']
-        ecode + "\n" + str
-      else
-        ecode + str
-      end
-      puts "Write code to #{path}:\n #{v}"
-      v
-    end
-    File.write(path, sl)
-  end
-
-  puts "-" * 40
-  puts "Finish #{platform}"
-  puts "-" * 40
+dirname = [platform, $config['app_version']].join('-')
+pkg_dir = File.join($releases_dir, dirname)
+app_dir = "#{pkg_dir}/lib/app"
+ruby_dir = "#{pkg_dir}/lib/ruby"
+ruby_pkg_name = "#{platform}-#{$config['ruby_version']}"
+ruby_binary_dir = File.join($config['packages_dir'], ruby_pkg_name)
+unless Dir.exist?(ruby_binary_dir)
+  $stderr.puts "Cannot build #{platform}, not found ruby binary in #{ruby_binary_dir.inspect}"
+  exit 1
 end
+
+puts "Building #{dirname}"
+
+# init folders
+cmd "mkdir -p #{app_dir}"
+
+# install ruby
+cmd "rsync -rtl --delete-before #{ruby_binary_dir}/ #{ruby_dir}"
+
+# install app
+cmd "rsync -rtl --delete-before --exclude-from=.buildignore ./ #{app_dir}"
+cmd "cp -pR Gemfile.prod #{app_dir}/Gemfile"
+cmd "cp -pR Gemfile.lock #{app_dir}/Gemfile.lock"
+cmd "cp -pR builder/wrapper  #{pkg_dir}/run"
+
+gem_ver_name = '2.6.0'
+gem_root_dir = "#{ruby_dir}/lib/ruby/gems/#{gem_ver_name}"
+
+gem_path = Gem.dir
+if gem_path && gem_path["gems/#{gem_ver_name}"] && Dir.exist?(gem_path)
+  target_cache_dir = "#{gem_root_dir}/cache"
+  cmd "rm -rf #{target_cache_dir}"
+  cmd "ln -sf #{gem_path}/cache #{target_cache_dir}"
+end
+
+# install gems
+Bundler.with_clean_env do
+  Dir.chdir(app_dir) do
+    cmd "BUNDLE_IGNORE_CONFIG=1 #{ruby_dir}/bin/bundle install --without development test -j 4"
+  end
+end
+
+# compile js
+Dir["#{app_dir}/src/static/xjz_*.js"].each do |path|
+  File.write(path, Uglifier.compile(File.read(path)))
+end
+
+# clean gem cache
+cmd "rm #{gem_root_dir}/cache"
+
+# clean compile tempfiles
+gems_dir = "#{gem_root_dir}/gems"
+puts "rm -rf #{gems_dir}/ext/**/*.{o,h,c,hpp,cpp}"
+Dir["#{gems_dir}/*/ext/**/*.{o,h,c,hpp,cpp}"].each do |path|
+  cmd "rm -f #{Shellwords.escape(path)}", quiet: true
+end
+
+cmd "rm -rf #{gems_dir}/*/spec"
+cmd "rm -rf #{gems_dir}/*/test"
+
+{
+  'x86-linux' => 'linux-x86',
+  'x86-windows' => '',
+  'x86_64-macos' => 'osx-x86_64',
+  'x86-macos' => '',
+  'x86_64-linux' => 'linux-x86_64',
+  'x86_64-windows' => ''
+}.each do |dir, pf|
+  next if pf == platform
+  cmd "rm -rf #{gems_dir}/gems/grpc-tools-1.*/bin/#{dir}"
+end
+
+%w{2.2 2.3 2.4 2.5}.each do |version|
+  cmd "rm -rf #{gems_dir}/gems/grpc-1.*/src/ruby/lib/grpc/#{version}"
+end
+
+# config app
+File.write(
+  "#{pkg_dir}/lib/app/config/config.yml",
+  load_yaml('config/config.yml', erb: false)['prod'].to_yaml
+)
+
+ssl_dir = "#{ruby_dir}/lib/ruby/2.6.0/openssl"
+files = [
+  ['digest.rb', /^( +)alg.each/],
+  ['ssl.rb', /^( +)METHODS_MAP = /, /^( +)def verify_hostname/],
+  ['x509.rb', /^( +)TypeAndValue = /],
+  ['config.rb', /^( +)def extract_reference/, /^( +)def unescape_value/]
+]
+[
+  <<~RUBY,
+    class OpenSSL::PKey::RSA
+      Object::ODC = instance_method(#{mix_str('public_decrypt')})
+    end
+  RUBY
+  encode_code("$sdcm = OpenSSL::PKey::RSA.instance_method(:public_decrypt)"),
+  "class OpenSSL::PKey::RSA; alias_method :rt, #{mix_str('public_decrypt')}; end\n",
+  encode_code("class OpenSSL::PKey::RSA; alias_method :cp, #{mix_str('public_decrypt')}; end"),
+].each do |code|
+  filename, *matchs = files.delete_at(rand(files.length))
+  path = File.join(ssl_dir, filename)
+
+  sl = File.read(path)
+  m = matchs.sample
+  sl.gsub!(m) do |str|
+    prefix = $1.delete_prefix("\n")
+    ecode = code.lines.map { |l| prefix + l }.join
+    v = if str['def ']
+      ecode + "\n" + str
+    else
+      ecode + str
+    end
+    puts "Write code to #{path}:\n #{v}"
+    v
+  end
+  File.write(path, sl)
+end
+
+puts "-" * 40
+puts "Finish #{platform}"
+puts "-" * 40

@@ -23,7 +23,7 @@ xjzapidoc.md
 # build
 
 /releases/linux-*
-/releases/osx-*
+/releases/darwin-*
 /releases/windows-*
 
 # compile

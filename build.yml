@@ -1,12 +1,7 @@
 ---
 app_name: XJZProxy
-app_version: 0.1.3
+app_version: 0.1.4
 ruby_version: <%= File.read('./.ruby-version') %>
 packages_dir: <%= File.join(Dir.home, 'Documents/Ruby-Binary') %>
-platforms:
-  - osx-x86_64
-  # - linux-x86
-  # - linux-x86_64
-
 online_verify_url: https://l.xjz.pw/v
 # online_verify_url: http://localhost:8080/v
