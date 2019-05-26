@@ -2,12 +2,13 @@
 
 require 'zlib'
 require 'uri'
+require 'xjz_loader/packer'
+require 'openssl'
+
 require_relative './help'
 require_relative './config'
 
 app_dir = File.expand_path('../../', __FILE__)
-rbdata = {}
-require 'openssl'
 PUBLIC_KEY = OpenSSL::PKey::RSA.new(
   File.read(File.join(app_dir, 'licenses/license_key.pub'))
 ).to_der
@@ -15,6 +16,7 @@ LICENSE_REGEXP = /Xjz.LICENSE_CHECK\(([\w:'"]+)?\)/
 ONLINE_LICENSE_REGEXP = /Xjz.LICENSE_ONLINE_CHECK/
 EDITION_CONST_REGEXP = /Xjz::(TRL|STD|PRO)_ED/
 APP_EDITION_REGEXP = /Xjz\.APP_EDITION/
+$packer = XjzLoader::Packer.new
 
 def license_checker(edition)
   edition = edition.to_s.tr(':\'"', '').downcase
@@ -50,8 +52,8 @@ def license_online_checker
         r = c.post(#{uri.to_s.inspect}) do |req|
           req.options.timeout = 15
           req.body = { l: l, id: cid }.to_query
-        end
-        json = JSON.parse(r.body) if r.status == 200
+        end rescue nil
+        json = JSON.parse(r.body) if r&.status == 200
         if json && !json['valid']
           $config.data.merge!('.user_id' => nil, '.edition' => nil)
           $config.data.merge!('.license_ts' => nil, '.license_ex' => nil)
@@ -82,8 +84,7 @@ def edition_const(name)
 end
 
 def compile(path)
-  code = File.read(path)
-  lines = code.lines.each_with_object([]) do |line, r|
+  File.read(path).lines.each_with_object([]) do |line, r|
     next if line =~ /^\s*(#.*)?$/
     line.gsub!(/^\s+/, '')
     line.gsub!(LICENSE_REGEXP) { |s| license_checker($2.to_s.split(' ')) }
@@ -91,45 +92,25 @@ def compile(path)
     line.gsub!(APP_EDITION_REGEXP) { |s| app_edition }
     line.gsub!(ONLINE_LICENSE_REGEXP) { license_online_checker }
     r << line
-  end
-  code = lines.join
-
-  RubyVM::InstructionSequence.compile(
-    code, path, path
-  ).to_binary
+  end.join
 end
 
 Dir.chdir(app_dir) do
   Dir[*%w{*.rb src/xjz/**/*.rb}].each do |path|
     next if path == 'src/xjz/loader.rb'
-    rbdata[path] = compile(path)
+    $packer.add_code path, compile(path)
   end
-  puts "Compiled Ruby Code"
+  puts "Finish Compile Ruby Code"
 
   Dir[*%w{src/static/**/* src/webviews/**/*}].each do |path|
     next if File.directory?(path)
-    rbdata[path] = File.read(path)
+    $packer.add_data path, File.read(path)
   end
   puts "Saved JS and Templates"
 end
 
-data = rbdata.map do |k, v|
-  is_utf8 = v.encoding == Encoding::UTF_8 ? 1 : 0
-  [
-    [1, k.bytesize].pack("CN"), k,
-    [is_utf8, v.bytesize].pack("CN"), v.force_encoding('binary')
-  ].join
-end.join
-
 out_path = File.join(app_dir, 'data')
-n = 9 + rand(128)
-data = [
-  [n].pack('C'),
-  Random.bytes(n),
-  Zlib::Deflate.deflate(data),
-  Random.bytes(n)
-].join
-File.write(out_path, data)
+File.write(out_path, $packer.result)
 
 puts "Output #{out_path}"
 

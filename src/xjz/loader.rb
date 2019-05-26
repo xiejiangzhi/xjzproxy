@@ -1,4 +1,5 @@
 # this file load only dev environment
+
 module Xjz
   # ====  auto compile string start ===
   # ac str Xjz::TRL_ED
@@ -18,9 +19,12 @@ module Xjz
   def self.APP_EDITION
     $config['.edition']
   end
+end
+
+module XjzLoader
   # ====  auto compile string end ===
 
-  unless Xjz.respond_to?(:load_file)
+  unless self.respond_to?(:load_file)
     class << self
       def app_files
         @app_files ||= begin
@@ -55,6 +59,10 @@ module Xjz
         end
       end
 
+      def has_res?(path)
+        return path if String === path && File.exist?(path)
+      end
+
       def load_file(path)
         if path =~ /^(xjz)\//
           path = "src/#{path}"
@@ -69,6 +77,6 @@ module Xjz
       end
     end
 
-    Object::MYRES = {}
+    Object.instance_eval { @myres = {} }
   end
 end

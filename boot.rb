@@ -4,8 +4,8 @@ $app_start_at ||= Time.now
 $root = File.expand_path('..', __FILE__)
 Dir.chdir($root)
 
-if defined?(Xjz) && Xjz.respond_to?(:load_file)
-  Xjz.load_file './app'
+if defined?(XjzLoader) && XjzLoader.respond_to?(:load_file)
+  XjzLoader.load_file './app'
 else
   require_relative './app'
 end

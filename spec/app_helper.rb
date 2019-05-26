@@ -13,16 +13,16 @@ ENV['XJZPROXY_USER_DIR'] = File.expand_path('../files/app_home', __FILE__)
 `rm -rf spec/files/app_home/config.yml`
 # ENV['XJZPROXY_PUBKEY_PATH'] = 'xxx'
 
-app_path = File.expand_path('../../app.rb', __FILE__)
-if !ENV['PROD_CODE']
-  require app_path
-else
+if ENV['PROD_CODE']
   $root = File.expand_path('../..', __FILE__)
   ENV['TOUCH_APP'] = '1'
-  require './ext/loader/loader'
-  Xjz.init
-  MYISEQS.delete 'boot.rb'
-  Xjz.load_file './app.rb'
+  require 'xjz_loader'
+  XjzLoader.root = $root
+  XjzLoader.init
+  XjzLoader.delete_code 'boot.rb'
+  XjzLoader.load_file './app.rb'
+else
+  require File.expand_path('../../app.rb', __FILE__)
 end
 
 Dir[File.expand_path('../support/*.rb', __FILE__)].each do |path|

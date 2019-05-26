@@ -5,7 +5,6 @@ set -ex
 root="$(pwd)"
 
 ./builder/compile
-./builder/loader
 ./builder/package
 
 echo "Finished all"

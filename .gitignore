@@ -16,6 +16,7 @@ xjzapidoc.md
 
 # C extensions
 /ext/**/*.bundle
+/ext/**/*.so
 /ext/**/Makefile
 /ext/**/*.o
 /ext/webview/webview

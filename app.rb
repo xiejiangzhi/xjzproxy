@@ -1,13 +1,17 @@
 $app_name = 'XJZProxy'
+
+# for testing, load this file without $root
 $root ||= File.expand_path('..', __FILE__)
 
-require File.expand_path('src/xjz/loader', $root) unless defined?(Xjz) && Xjz.respond_to?(:load_file)
+unless defined?(XjzLoader) && XjzLoader.respond_to?(:load_file)
+  require File.expand_path('../src/xjz/loader', __FILE__)
+end
 
 module Xjz
-  load_file './env'
+  XjzLoader.load_file './env'
 
-  load_file 'xjz/logger'
-  load_file 'xjz/config'
+  XjzLoader.load_file 'xjz/logger'
+  XjzLoader.load_file 'xjz/config'
   config_path = ENV['CONFIG_PATH'] || File.join($root, 'config/config.yml')
   $config = Xjz::Config.new(config_path)
 
@@ -19,10 +23,10 @@ module Xjz
   class WebUI; end
   class ProxyClient; end
 
-    Xjz::Logger[:auto].debug { "Loading code..." }
-  load_file 'xjz/webui/action_runner'
-  load_file 'xjz/webui/action_router'
-  load_all
+  Xjz::Logger[:auto].debug { "Loading code..." }
+  XjzLoader.load_file 'xjz/webui/action_runner'
+  XjzLoader.load_file 'xjz/webui/action_router'
+  XjzLoader.load_all
 end
 
 Xjz::Logger[:auto].debug { "Verify config..." }

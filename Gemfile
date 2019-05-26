@@ -20,4 +20,5 @@ end
 
 group :license_server do
   gem 'bloomfilter-rb', github: 'xiejiangzhi/bloomfilter-rb', ref: 'e6907fd'
+  gem 'puma', '~> 3.12.1'
 end

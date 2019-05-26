@@ -1,4 +1,4 @@
-require 'bundler/setup'
+require 'bundler'
 require 'erb'
 require 'yaml'
 

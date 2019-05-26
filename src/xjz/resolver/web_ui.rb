@@ -56,7 +56,7 @@ module Xjz
         when /css$/ then 'text/css'
         when /png$/ then 'image/png'
         end
-        res = Xjz.get_res(path)
+        res = XjzLoader.get_res(path)
         if res
           [{ 'content-type' => content_type }.compact, [res], 200]
         else

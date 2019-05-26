@@ -29,7 +29,7 @@ RSpec.describe Xjz::Helper::Webview do
     end
 
     it 'should read read from Xjz.get_res' do
-      expect(Xjz).to receive(:get_res).and_call_original
+      expect(XjzLoader).to receive(:get_res).and_call_original
       expect(m.render('block.html', &(proc { 123 }))).to eql('<div>123</div>')
     end
 
@@ -42,10 +42,11 @@ RSpec.describe Xjz::Helper::Webview do
       )
     end
 
-    it 'should not raise error if MYRES include the template(for prod)' do
+    it 'should not raise error if myres include the template(for prod)' do
       path = 'src/webviews/not_found_xxasdf.html.erb'
-      stub_const('MYRES',  path => '123')
-      expect(Xjz).to receive(:get_res).with(path).and_return('xxx')
+      regexp = /^src\/webviews\/not_found_xxasdf.html.(erb|slim|scss)$/
+      expect(XjzLoader).to receive(:has_res?).with(regexp).and_return(path)
+      expect(XjzLoader).to receive(:get_res).with(path).and_return('xxx')
       expect {
         m.render('not_found_xxasdf.html')
       }.to_not raise_error

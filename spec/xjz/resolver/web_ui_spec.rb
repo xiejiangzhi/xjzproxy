@@ -93,7 +93,7 @@ RSpec.describe Xjz::Resolver::WebUI do
     end
 
     it 'GET /static/xjz_view.js should return static resource' do
-      expect(Xjz).to receive(:get_res).with('src/static/xjz_view.js').and_return('hello static')
+      expect(XjzLoader).to receive(:get_res).with('src/static/xjz_view.js').and_return('hello static')
       client.reply_data = proc { |msg, io| http_parser << msg }
       client.close_write
       req.env['PATH_INFO'] = '/static/xjz_view.js'
@@ -110,7 +110,7 @@ RSpec.describe Xjz::Resolver::WebUI do
     end
 
     it 'GET invalid static res should return 404' do
-      expect(Xjz).to receive(:get_res).with('src/static/xjz_view.js').and_return(nil)
+      expect(XjzLoader).to receive(:get_res).with('src/static/xjz_view.js').and_return(nil)
       client.reply_data = proc { |msg, io| http_parser << msg }
       client.close_write
       req.env['PATH_INFO'] = '/static/xjz_view.js'

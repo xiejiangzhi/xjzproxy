@@ -49,7 +49,7 @@ module Xjz
         data_proc = nil
         # support $root/xxx and src/webviews/xxx
         if path.match?(/^\w/) || path[$root]
-          data_proc = proc { Xjz.get_res(path.delete_prefix($root + '/')) }
+          data_proc = proc { XjzLoader.get_res(path.delete_prefix($root + '/')) }
         end
         Tilt.new(path, TEMPLATE_ARGS[Tilt[path]] || {}, &data_proc)
       end
@@ -67,7 +67,7 @@ module Xjz
           p
         else
           regexp = %r{^src/webviews/#{name}.(#{TEMPLATE_ENGINES.join('|')})$}
-          ::MYRES.find { |k, _v| k.match?(regexp) }&.first
+          XjzLoader.has_res?(regexp)
         end
       end
       return path if path

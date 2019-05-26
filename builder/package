@@ -1,5 +1,6 @@
 #! /usr/bin/env ruby
 
+require 'shellwords'
 require_relative './config'
 require_relative './help'
 
@@ -34,13 +35,6 @@ cmd "cp -pR builder/wrapper  #{pkg_dir}/run"
 gem_ver_name = '2.6.0'
 gem_root_dir = "#{ruby_dir}/lib/ruby/gems/#{gem_ver_name}"
 
-gem_path = Gem.dir
-if gem_path && gem_path["gems/#{gem_ver_name}"] && Dir.exist?(gem_path)
-  target_cache_dir = "#{gem_root_dir}/cache"
-  cmd "rm -rf #{target_cache_dir}"
-  cmd "ln -sf #{gem_path}/cache #{target_cache_dir}"
-end
-
 # install gems
 Bundler.with_clean_env do
   Dir.chdir(app_dir) do
@@ -54,17 +48,19 @@ Dir["#{app_dir}/src/static/xjz_*.js"].each do |path|
 end
 
 # clean gem cache
-cmd "rm #{gem_root_dir}/cache"
+cmd "rm -rf #{gem_root_dir}/cache/*"
+cmd "rm -rf #{gem_root_dir}/rdoc/generator"
+cmd "rm -rf #{gem_root_dir}/extensions/**/{gem_make.out,mkmf.log}"
+cmd "rm -rf #{gem_root_dir}/bundler/gems/*/{gem_make.out,mkmf.log}"
 
-# clean compile tempfiles
+# clean compile tempfiles or invalid files
 gems_dir = "#{gem_root_dir}/gems"
-puts "rm -rf #{gems_dir}/ext/**/*.{o,h,c,hpp,cpp}"
-Dir["#{gems_dir}/*/ext/**/*.{o,h,c,hpp,cpp}"].each do |path|
-  cmd "rm -f #{Shellwords.escape(path)}", quiet: true
-end
+cmd "rm -rf #{gems_dir}/*/ext/*.{o,h,c,hpp,cpp}"
+cmd "rm -rf #{gems_dir}/*/ext/**/*.{o,h,c,hpp,cpp}"
+cmd "rm -rf #{gems_dir}/*/{spec,test,*.md,*.rdoc}"
 
-cmd "rm -rf #{gems_dir}/*/spec"
-cmd "rm -rf #{gems_dir}/*/test"
+# rm xjz_loader packer
+cmd "rm -rf #{gems_dir}/xjz_loader*/lib/xjz_loader/packer.rb"
 
 {
   'x86-linux' => 'linux-x86',
@@ -78,9 +74,7 @@ cmd "rm -rf #{gems_dir}/*/test"
   cmd "rm -rf #{gems_dir}/gems/grpc-tools-1.*/bin/#{dir}"
 end
 
-%w{2.2 2.3 2.4 2.5}.each do |version|
-  cmd "rm -rf #{gems_dir}/gems/grpc-1.*/src/ruby/lib/grpc/#{version}"
-end
+cmd "rm -rf #{gems_dir}/gems/grpc-1.*/src/ruby/lib/grpc/2.{2,3,4,5}"
 
 # config app
 File.write(
