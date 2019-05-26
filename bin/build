@@ -4,6 +4,10 @@ set -ex
 
 root="$(pwd)"
 
+if [[ "$1" == "init_docker" ]]; then
+  ./builder/init_docker
+fi
+
 ./builder/compile
 ./builder/package
 

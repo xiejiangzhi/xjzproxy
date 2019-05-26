@@ -1,0 +1,11 @@
+#! /usr/bin/env bash
+
+set -ex
+
+root="$(pwd)"
+
+docker run -ti --rm \
+  -v $root:/app \
+  -v $HOME/Documents/Ruby-Binary:/root/Documents/Ruby-Binary \
+  -w /app \
+  ruby:2.6.3 /app/bin/build init_docker
