@@ -13,12 +13,13 @@ module Xjz
       @page_manager = WebUI::PageManager.new
       @running = false
       @websocket = nil
+      @url = "http://#{ip}:#{port}"
     end
 
     def start
       return true if @running
       if wait_server_ready
-        window.open("http://#{ip}:#{port}")
+        window.open(@url)
         @running = true
         true
       else
@@ -47,7 +48,7 @@ module Xjz
     private
 
     def wait_server_ready
-      res = Net::HTTP.get_response(URI.parse("http://#{ip}:#{port}/status"))
+      res = Net::HTTP.get_response(URI.parse("#{@url}/status"))
       res.code.to_i == 200
     rescue Net::OpenTimeout
       false

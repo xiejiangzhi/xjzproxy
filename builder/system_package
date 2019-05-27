@@ -3,23 +3,54 @@
 require_relative './config'
 require_relative './help'
 
-def build_osx_app(pkg_dir)
-  pname = "XJZProxy.app"
-  app_dir = "#{pkg_dir}/#{pname}"
-  cmd "cp -r #{$releases_dir}/#{pname} #{app_dir}"
-  cmd "cp -r #{pkg_dir}/lib #{app_dir}/Contents/MacOS/lib"
-  cmd "cp -r #{pkg_dir}/run #{app_dir}/Contents/MacOS/XJZProxy"
+ICON_PATH = $config['icon_path']
+APP_NAME = $config['app_name']
+
+def build_osx_app(release_dir)
+  cmd "go get github.com/machinebox/appify"
+
+  app_dir = "#{release_dir}/#{APP_NAME}.app"
+  Dir.chdir(release_dir) do
+    cmd "appify -icon #{ICON_PATH} -name #{APP_NAME} -author \"Jon Xie\" #{release_dir}/run"
+    cmd "cp -r #{release_dir}/lib #{app_dir}/Contents/MacOS/lib"
+  end
 end
 
-def build_debian_pkg(dir)
+def build_debian_pkg(release_dir)
+  deb_dir = "#{release_dir}/pkg"
+  deb_app_dir = "#{deb_dir}/usr/local/etc/#{APP_NAME}"
+  $config['.linux_path'] = "/usr/local/etc/#{APP_NAME}/run"
+  desktop_body = load_erb(File.join($releases_dir, 'template.desktop'))
+  control_body = load_erb(File.join($releases_dir, 'debian_control'))
+
+  Dir.chdir(release_dir) do
+    launcher_dir = File.join(deb_dir, "/usr/share/applications/")
+    cmd "mkdir -p #{deb_app_dir} #{launcher_dir} #{deb_dir}/DEBIAN"
+    cmd "cp -r #{release_dir}/lib #{deb_app_dir}/lib"
+    cmd "cp -r #{release_dir}/run #{deb_app_dir}/run"
+    cmd "cp -r #{$releases_dir}/icon.png #{deb_app_dir}/icon.png"
+    File.write("#{launcher_dir}/#{APP_NAME}.desktop", desktop_body)
+    File.write("#{deb_dir}/DEBIAN/control", control_body)
+    deb_name = "#{APP_NAME}-#{$config['app_version']}-amd64.deb"
+    cmd "docker run -ti --rm -v #{release_dir}:/app ubuntu:16.04 dpkg-deb -b /app/pkg #{deb_name}"
+  end
 end
 
-$config['platforms'].each do |platform|
+platforms = ARGV.first ? [ARGV.fisrt] : nil
+platforms ||= %w{darwin-x86_64 linux-x86_64}
+
+platforms.each do |platform|
   dirname = [platform, $config['app_version']].join('-')
-  pkg_dir = File.join($releases_dir, dirname)
+  release_dir = File.join($releases_dir, dirname)
+  unless Dir.exist?(release_dir)
+    puts "Not found release dir #{release_dir.inspect}"
+    next
+  end
 
   case platform
-  when /^osx/ then build_osx_app(pkg_dir)
-  when /linux/ then build_debian_pkg(pkg_dir)
+  when /^darwin/ then build_osx_app(release_dir)
+  when /^linux/ then build_debian_pkg(release_dir)
+  else
+    raise "Invalid platform #{platform.inspect}"
   end
 end

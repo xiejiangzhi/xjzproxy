@@ -4,4 +4,6 @@ app_version: 0.1.4
 ruby_version: <%= File.read('./.ruby-version') %>
 packages_dir: <%= File.join(Dir.home, 'Documents/Ruby-Binary') %>
 online_verify_url: https://l.xjz.pw/v
-# online_verify_url: http://localhost:8080/v
+
+# build package
+icon_path: <%= File.expand_path('../releases/icon.png', __FILE__) %>

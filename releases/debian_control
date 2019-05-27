@@ -1,0 +1,7 @@
+Package: <%= $config['app_name'] %>
+Version: <%= $config['app_version'] %>
+Section: base
+Priority: optional
+Architecture: amd64
+Maintainer: Jon.Xie <xiejiangzhi@gmail.com>
+Description: <%= $config['app_name'] %>

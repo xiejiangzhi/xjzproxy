@@ -26,6 +26,7 @@ xjzapidoc.md
 /releases/linux-*
 /releases/darwin-*
 /releases/windows-*
+/releases/icon-*.png
 
 # compile
 /data

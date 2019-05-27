@@ -35,12 +35,12 @@ else
 end
 
 at_exit do
+  webui.window.close
   server.stop
 end
 
 begin
   main_thread.join
-  server.stop
 rescue Interrupt
   puts "\nBye!"
 end
