@@ -5,4 +5,4 @@ Terminal=false
 Exec=<%= $config['.linux_path'] %>/run
 Name=<%= $config['app_name'] %>
 Comment=<%= $config['app_desc'] || $config['app_name'] %>
-Icon=<%= $config['.linux_path'] %>/lib/icon.png
+Icon=<%= $config['.linux_path'] %>/lib/app/icon.png

@@ -2,6 +2,3 @@
 
 gem install xjz_loader --source http://192.168.0.108:8809/private
 
-sed -i "s/deb.debian.org/mirrors.ustc.edu.cn/g" /etc/apt/sources.list
-apt-get update && apt-get install -y rsync
-

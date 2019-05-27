@@ -54,7 +54,12 @@ module XjzLoader
         if File.exist?(path)
           File.read(path)
         else
-          Logger[:auto].error { "Not found res #{path}" }
+          err = "Not found res #{path}"
+          if defined?(Xjz::Logger)
+            Xjz::Logger[:auto].error { err }
+          else
+            puts err
+          end
           nil
         end
       end

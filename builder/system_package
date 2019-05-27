@@ -3,7 +3,8 @@
 require_relative './config'
 require_relative './help'
 
-ICON_PATH = $config['icon_path']
+ICON_SVG = File.join($root, 'icon.svg')
+ICON_PNG = File.join($root, 'icon.png')
 APP_NAME = $config['app_name']
 
 def build_osx_app(release_dir)
@@ -11,7 +12,7 @@ def build_osx_app(release_dir)
 
   app_dir = "#{release_dir}/#{APP_NAME}.app"
   Dir.chdir(release_dir) do
-    cmd "appify -icon #{ICON_PATH} -name #{APP_NAME} -author \"Jon Xie\" #{release_dir}/run"
+    cmd "appify -icon #{ICON_PNG} -name #{APP_NAME} -author \"Jon Xie\" #{release_dir}/run"
     cmd "cp -r #{release_dir}/lib #{app_dir}/Contents/MacOS/lib"
   end
 end
@@ -19,7 +20,7 @@ end
 def build_debian_pkg(release_dir)
   deb_dir = "#{release_dir}/pkg"
   deb_app_dir = "#{deb_dir}/usr/local/etc/#{APP_NAME}"
-  $config['.linux_path'] = "/usr/local/etc/#{APP_NAME}/run"
+  $config['.linux_path'] = "/usr/local/etc/#{APP_NAME}"
   desktop_body = load_erb(File.join($releases_dir, 'template.desktop'))
   control_body = load_erb(File.join($releases_dir, 'debian_control'))
 
@@ -28,29 +29,32 @@ def build_debian_pkg(release_dir)
     cmd "mkdir -p #{deb_app_dir} #{launcher_dir} #{deb_dir}/DEBIAN"
     cmd "cp -r #{release_dir}/lib #{deb_app_dir}/lib"
     cmd "cp -r #{release_dir}/run #{deb_app_dir}/run"
-    cmd "cp -r #{$releases_dir}/icon.png #{deb_app_dir}/icon.png"
     File.write("#{launcher_dir}/#{APP_NAME}.desktop", desktop_body)
     File.write("#{deb_dir}/DEBIAN/control", control_body)
     deb_name = "#{APP_NAME}-#{$config['app_version']}-amd64.deb"
-    cmd "docker run -ti --rm -v #{release_dir}:/app ubuntu:16.04 dpkg-deb -b /app/pkg #{deb_name}"
+    cmd "docker run -ti --rm -v #{release_dir}:/app -w /app ubuntu:16.04 dpkg-deb -b /app/pkg #{deb_name}"
   end
 end
 
-platforms = ARGV.first ? [ARGV.fisrt] : nil
+platforms = ARGV.first ? [ARGV.first] : nil
 platforms ||= %w{darwin-x86_64 linux-x86_64}
 
 platforms.each do |platform|
   dirname = [platform, $config['app_version']].join('-')
   release_dir = File.join($releases_dir, dirname)
-  unless Dir.exist?(release_dir)
+  unless File.exist?(File.join(release_dir, 'lib/app/boot'))
     puts "Not found release dir #{release_dir.inspect}"
     next
   end
+
+  puts "==== Build #{platform} package ===="
 
   case platform
   when /^darwin/ then build_osx_app(release_dir)
   when /^linux/ then build_debian_pkg(release_dir)
   else
-    raise "Invalid platform #{platform.inspect}"
+    puts "Invalid platform #{platform.inspect}"
   end
+
+  puts "==== Finish #{platform} ====\n\n"
 end

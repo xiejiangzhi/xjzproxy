@@ -4,8 +4,15 @@ set -ex
 
 root="$(pwd)"
 
+image_name="ruby:xjz_builder"
+image=$(docker image ls $image_name -q)
+
+if [[ -z "$image" ]]; then
+  docker build $root/builder -t $image_name
+fi
+
 docker run -ti --rm \
   -v $root:/app \
   -v $HOME/Documents/Ruby-Binary:/root/Documents/Ruby-Binary \
   -w /app \
-  ruby:2.6.3 /app/bin/build init_docker
+  $image_name /app/bin/build init_docker

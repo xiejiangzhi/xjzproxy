@@ -35,8 +35,10 @@ xjzapidoc.md
 /.rubocop.yml
 /vendor
 .DS_Store
+/.bundle
 
 /src
 /*.rb
 /licenses.csv
 /licenses
+
