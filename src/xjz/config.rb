@@ -6,13 +6,10 @@ module Xjz
     attr_reader :path
 
     USER_DIR = ENV['XJZPROXY_USER_DIR'] || "#{Dir.home}/.xjzproxy"
-    USER_PATH = File.join(USER_DIR, 'config.yml')
     LICENSE_PATH = File.join(USER_DIR, 'license.lcs')
     PUBLIC_KEY = File.read(ENV['XJZPROXY_PUBKEY_PATH'] || File.join($root, 'config/app.pub'))
 
     SCHEMA = {
-      root_ca_path: String,
-      key_path: String,
       proxy_timeout: Integer,
       proxy_port: Integer,
       alpn_protocols: [[String]],
@@ -95,11 +92,8 @@ module Xjz
 
     def user_data
       @user_data ||= begin
-        if File.exist?(USER_PATH)
-          YAML.load_file(USER_PATH) rescue {}
-        else
-          {}
-        end
+        r = read_user_file('config.yml') || '---'
+        (YAML.load(r) || {}) rescue {}
       end
     end
 
@@ -114,8 +108,8 @@ module Xjz
 
     def valid_license(path = LICENSE_PATH)
       return nil unless File.exist?(path)
-      key = OpenSSL::PKey::RSA.new(PUBLIC_KEY)
       lcs = File.read(path)
+      key = OpenSSL::PKey::RSA.new(PUBLIC_KEY)
       r = key.public_decrypt(lcs) rescue nil
       id, edition, ctime, etime, *_flags = r.to_s.split(',')
       et = etime.to_s.to_f > 0 ? Time.at(etime.to_f) : nil
@@ -133,11 +127,32 @@ module Xjz
     end
 
     def save
-      if init_dir USER_DIR
-        File.write(USER_PATH, changed_to_yaml)
+      write_user_file('config.yml', changed_to_yaml)
+    end
+
+    def read_user_file(filename)
+      path = File.join(USER_DIR, filename)
+      if File.exist?(path)
+        File.read(path)
+      else
+        nil
+      end
+    end
+
+    def write_user_file(filename, data)
+      path = File.join(USER_DIR, filename)
+      if init_dir(USER_DIR)
+        File.write(path, data)
+        true
       else
         Logger[:auto].error { "Failed to mkdir dir #{USER_DIR}" }
+        false
       end
+    end
+
+    def clean_user_file(filename)
+      path = File.join(USER_DIR, filename)
+      FileUtils.rm_rf(path)
     end
 
     private

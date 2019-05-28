@@ -17,7 +17,6 @@ RSpec.describe Xjz::Config do
     expect(config.data).to eql(
       "alpn_protocols" => ["h2", "http/1.1"],
       "host_whitelist" => ['xjz.com'],
-      "key_path" => "tmp/key.pem",
       "logger_level" => { "default" => "debug", 'io' => 'info' },
       "max_threads" => 4,
       "projects" => ["./spec/files/project.yml"],
@@ -25,7 +24,6 @@ RSpec.describe Xjz::Config do
       "proxy_port" => 59898,
       "proxy_timeout" => 1,
       "proxy_mode" => "whitelist",
-      "root_ca_path" => "tmp/root_ca.pem",
       "template_dir" => "./spec/files/webviews",
       "webview_debug" => false,
       "ui_window" => true,
@@ -182,6 +180,19 @@ RSpec.describe Xjz::Config do
 
       expect($config.data.values_at(*%w{.user_id .edition .license_ts .license_ex})).to \
         eql([nil, nil, nil, nil])
+    end
+  end
+
+  describe 'read/write/clean user file' do
+    it 'write/read should working' do
+      expect($config.write_user_file('a', 'hello')).to eql(true)
+      expect($config.read_user_file('a')).to eql('hello')
+    end
+
+    it 'write/clean/read should working' do
+      expect($config.write_user_file('a', 'hello')).to eql(true)
+      $config.clean_user_file('a')
+      expect($config.read_user_file('a')).to eql(nil)
     end
   end
 end

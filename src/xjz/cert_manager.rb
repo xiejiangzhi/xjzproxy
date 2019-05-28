@@ -3,17 +3,19 @@ require 'fileutils'
 
 module Xjz
   class CertManager
+    CA_FNAME = 'root_ca.pem'
+    KEY_FNAME = 'key.pem'
+
     def initialize
-      @ca_path = File.join($root, $config['root_ca_path'])
-      @key_path = File.join($root, $config['key_path'])
+      @key = nil
       @root_ca = nil
     end
 
     def pkey
-      @pkey ||= if File.exist?(@key_path)
-        OpenSSL::PKey::RSA.new File.read(@key_path)
+      @pkey ||= if key = $config.read_user_file(KEY_FNAME)
+        OpenSSL::PKey::RSA.new key
       else
-        OpenSSL::PKey::RSA.new(2048).tap { |key| File.write(@key_path, key.to_pem) }
+        OpenSSL::PKey::RSA.new(2048).tap { |key| $config.write_user_file(KEY_FNAME, key.to_pem) }
       end
     end
 
@@ -22,8 +24,8 @@ module Xjz
     end
 
     def reset!
-      FileUtils.rm_rf(@ca_path)
-      FileUtils.rm_rf(@key_path)
+      $config.clean_user_file(CA_FNAME)
+      $config.clean_user_file(KEY_FNAME)
       @pkey = nil
       @root_ca = nil
     end
@@ -31,7 +33,8 @@ module Xjz
     def root_ca
       return @root_ca if @root_ca
 
-      @root_ca = OpenSSL::X509::Certificate.new(File.read(@ca_path)) if File.exist?(@ca_path)
+      ca = $config.read_user_file(CA_FNAME)
+      @root_ca = OpenSSL::X509::Certificate.new(ca) if ca
       @root_ca ||= begin
         cert = create_cert(pkey, $app_name) do |c, ef|
           c.serial = 1
@@ -47,7 +50,7 @@ module Xjz
           c.add_extension(ef.create_extension("nsComment", "#{$app_name} Generated Certificate"))
         end
 
-        File.write(@ca_path, cert.to_pem)
+        $config.write_user_file(CA_FNAME, cert.to_pem)
         cert
       end
     end

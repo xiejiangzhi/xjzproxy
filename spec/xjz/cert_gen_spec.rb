@@ -1,7 +1,10 @@
 RSpec.describe Xjz::CertManager do
+  let(:key_fname) { Xjz::CertManager::KEY_FNAME }
+  let(:ca_fname) { Xjz::CertManager::CA_FNAME }
+
   describe '#pkey' do
     before :each do
-      FileUtils.rm_rf(File.join($root, $config['key_path']))
+      $config.clean_user_file(key_fname)
     end
 
     it 'should return RSA private key' do
@@ -15,7 +18,7 @@ RSpec.describe Xjz::CertManager do
       cg2 = Xjz::CertManager.new
       expect(cg1.pkey.to_pem).to eql(cg2.pkey.to_pem)
       key = OpenSSL::PKey::RSA.new(2048)
-      File.write($config['key_path'], key.to_pem)
+      $config.write_user_file(key_fname, key.to_pem)
       cg3 = Xjz::CertManager.new
       expect(cg3.pkey.to_pem).to_not eql(cg2.pkey.to_pem)
       expect(cg3.pkey.to_pem).to eql(key.to_pem)
@@ -24,13 +27,13 @@ RSpec.describe Xjz::CertManager do
 
   describe '#root_ca' do
     before :each do
-      FileUtils.rm_rf(File.join($root, $config['root_ca_path']))
+      $config.clean_user_file(Xjz::CertManager::CA_FNAME)
     end
 
     it 'should create root ca' do
       ca = subject.root_ca
       pkey = subject.pkey
-      expect(File.read($config['root_ca_path'])).to eql(ca.to_pem)
+      expect($config.read_user_file(ca_fname)).to eql(ca.to_pem)
 
       expect(ca.serial.to_i).to eql(1)
       expect(ca.version).to eql(2)
@@ -61,7 +64,7 @@ RSpec.describe Xjz::CertManager do
       ca.subject = OpenSSL::X509::Name.parse("/CN=asdf/O=asdf")
       ca.sign(pkey, OpenSSL::Digest::SHA256.new)
       expect(ca.to_pem).to_not eql(old_pem)
-      File.write($config['root_ca_path'], ca.to_pem)
+      $config.write_user_file(ca_fname, ca.to_pem)
 
       new_ca = Xjz::CertManager.new.root_ca
       expect(new_ca.to_pem).to eql(ca.to_pem)
@@ -97,8 +100,8 @@ RSpec.describe Xjz::CertManager do
 
   describe '#reset!' do
     it 'should remove cache file and instance variables' do
-      expect(FileUtils).to receive(:rm_rf).with(File.join($root, $config['key_path']))
-      expect(FileUtils).to receive(:rm_rf).with(File.join($root, $config['root_ca_path']))
+      expect($config).to receive(:clean_user_file).with(ca_fname)
+      expect($config).to receive(:clean_user_file).with(key_fname)
 
       subject.pkey
       subject.root_ca

@@ -12,7 +12,7 @@ gem 'xjz_loader', '~> 0.1.5', require: false, source: 'http://192.168.0.108:8809
 gem 'faraday', '~> 0.15.4'
 gem 'net-http-persistent', '~> 3.0.1', require: 'net/http/persistent'
 gem 'http_parser.rb', '~> 0.6.0', require: 'http_parser'
-gem 'http-2', '~> 0.10.1', require: 'http/2', source: 'http://192.168.0.108:8809/private'
+gem 'http-2', '~> 0.10.2', require: 'http/2', source: 'http://192.168.0.108:8809/private'
 gem 'google-protobuf', '~> 3.7.0'
 gem 'grpc', '~> 1.19.0'
 gem 'grpc-tools', '~> 1.19.0'

@@ -1,8 +1,6 @@
 ---
 
 default: &default
-  root_ca_path: config/root_ca.pem
-  key_path: config/key.pem
   proxy_timeout: 60 # seconds
   proxy_port: 9898
   alpn_protocols:
@@ -56,8 +54,6 @@ dev:
 
 test:
   <<: *default
-  root_ca_path: tmp/root_ca.pem
-  key_path: tmp/key.pem
   proxy_timeout: 1
   proxy_port: 59898
   max_threads: 4

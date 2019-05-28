@@ -11,7 +11,7 @@ RSpec.describe Xjz::WebUI::Browser do
 
     it 'should set debug flag', stub_config: true do
       $config['webview_debug'] = true
-      expect(subject.app.options).to eql(debug: true)
+      expect(subject.app.options).to eql(debug: true, title: $app_name)
     end
   end
 end

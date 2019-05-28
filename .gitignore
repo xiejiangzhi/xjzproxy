@@ -7,6 +7,7 @@ config/*.pem
 
 /spec/examples.txt
 /spec/files/app_home/config.yml
+/spec/files/app_home/*.pem
 
 *.swp
 *.log

@@ -43,7 +43,7 @@ GEM
       googleapis-common-protos-types (~> 1.0.0)
     grpc-tools (1.19.0)
     hashdiff (0.3.9)
-    http-2 (0.10.1)
+    http-2 (0.10.2)
     http_parser.rb (0.6.0)
     i18n (1.6.0)
       concurrent-ruby (~> 1.0)
@@ -139,7 +139,7 @@ DEPENDENCIES
   google-protobuf (~> 3.7.0)
   grpc (~> 1.19.0)
   grpc-tools (~> 1.19.0)
-  http-2 (~> 0.10.1)!
+  http-2 (~> 0.10.2)!
   http_parser.rb (~> 0.6.0)
   net-http-persistent (~> 3.0.1)
   pry

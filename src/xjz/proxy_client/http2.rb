@@ -1,5 +1,3 @@
-require 'set'
-
 module Xjz
   class ProxyClient::HTTP2
     attr_reader :client, :host, :port, :use_ssl, :upgrade
