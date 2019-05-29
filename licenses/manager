@@ -60,6 +60,7 @@ if path = options[:g]
     path += '.lcs' unless path.end_with?('.lcs')
     File.write(path, l)
   else
+    puts options.inspect
     $stderr.puts "id and edition is required"
     exit 1
   end

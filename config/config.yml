@@ -9,7 +9,7 @@ default: &default
   max_threads: 1024
   logger_level:
     default: info
-  home_url: https://xjz.pw
+  home_url: https://xjzproxy.xjz.pw
 
   # template_dir: /path/to/templates
 

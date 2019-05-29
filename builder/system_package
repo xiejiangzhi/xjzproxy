@@ -12,6 +12,7 @@ def build_osx_app(release_dir)
 
   app_dir = "#{release_dir}/#{APP_NAME}.app"
   Dir.chdir(release_dir) do
+    cmd "rm -rf #{app_dir}"
     cmd "appify -icon #{ICON_PNG} -name #{APP_NAME} -author \"Jon Xie\" #{release_dir}/run"
     cmd "cp -r #{release_dir}/lib #{app_dir}/Contents/MacOS/lib"
   end
@@ -23,6 +24,7 @@ def build_debian_pkg(release_dir)
   $config['.linux_path'] = "/usr/local/etc/#{APP_NAME}"
   desktop_body = load_erb(File.join($releases_dir, 'template.desktop'))
   control_body = load_erb(File.join($releases_dir, 'debian_control'))
+  cmd "rm -rf #{deb_dir} #{release_dir}/*.deb"
 
   Dir.chdir(release_dir) do
     launcher_dir = File.join(deb_dir, "/usr/share/applications/")
@@ -32,12 +34,13 @@ def build_debian_pkg(release_dir)
     File.write("#{launcher_dir}/#{APP_NAME}.desktop", desktop_body)
     File.write("#{deb_dir}/DEBIAN/control", control_body)
     deb_name = "#{APP_NAME}-#{$config['app_version']}-amd64.deb"
-    cmd "docker run -ti --rm -v #{release_dir}:/app -w /app ubuntu:16.04 dpkg-deb -b /app/pkg #{deb_name}"
+    cmd "docker run -ti --rm -v #{release_dir}:/app -w /app ubuntu:16.04 dpkg-deb -v -b /app/pkg #{deb_name}"
   end
 end
 
 platforms = ARGV.first ? [ARGV.first] : nil
-platforms ||= %w{darwin-x86_64 linux-x86_64}
+pl = Gem::Platform.local
+platforms ||= [[pl.os, pl.cpu].join('-')]
 
 platforms.each do |platform|
   dirname = [platform, $config['app_version']].join('-')

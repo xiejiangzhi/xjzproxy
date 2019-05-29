@@ -1,0 +1,4 @@
+#! /bin/bash
+mkdir -p pro
+./manager -g pro/$1.lcs -i $1 -e pro
+./manager -c pro/$1.lcs

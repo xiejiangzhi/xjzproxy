@@ -1,0 +1,4 @@
+#! /bin/bash
+mkdir -p std
+./manager -g std/$1.lcs -i $1 -e standard
+./manager -c std/$1.lcs
