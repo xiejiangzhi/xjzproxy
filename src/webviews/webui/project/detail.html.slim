@@ -35,11 +35,14 @@
           html << " />"
         end
 
-      .custom-control.custom-switch
-        - id = "project_status_switch-#{ap.object_id}"
-        - xid = "project.status_switch.#{ap.object_id}"
-        - checked = ap.data['.enabled'] != false
-        input.custom-control-input type="checkbox" checked=checked id=id xjz-id=xid
-        label.custom-control-label for=id Enable Project
+      .row.px-3
+        .custom-control.custom-switch
+          - id = "project_status_switch-#{ap.object_id}"
+          - xid = "project.status_switch.#{ap.object_id}"
+          - checked = ap.data['.enabled'] != false
+          input.custom-control-input type="checkbox" checked=checked id=id xjz-id=xid
+          label.custom-control-label for=id Enable Project
+        .ml-auto
+          button.btn.btn-primary xjz-id='project.export.html.#{ap.object_id}' Export Document
 
       == doc_html

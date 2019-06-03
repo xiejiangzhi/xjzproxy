@@ -13,7 +13,8 @@ config/*.pem
 *.log
 
 .xjzapi
-xjzapidoc.md
+xjzproxy-doc.md
+xjzproxy-doc.html
 
 # C extensions
 /ext/**/*.bundle

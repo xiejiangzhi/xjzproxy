@@ -8,8 +8,7 @@ module Xjz
     namespace 'project' do
       event(/^detail_tab\.(?<ap_id>\d+)\.click$/) do
         session[:project_focus_toc] = true
-        ap_id = match_data['ap_id'].to_i
-        ap = $config['.api_projects'].find { |obj| obj.object_id == ap_id }
+        ap = find_by_ap_id(match_data['ap_id'])
 
         send_msg(
           'el.html',
@@ -33,8 +32,7 @@ module Xjz
       end
 
       event(/^status_switch\.(?<ap_id>\d+)\.change$/) do
-        ap_id = match_data['ap_id'].to_i
-        ap = $config['.api_projects'].find { |obj| obj.object_id == ap_id }
+        ap = find_by_ap_id(match_data['ap_id'])
         ap.data['.enabled'] = !!data['value']
         if session[:project_focus_toc] == false
           send_msg(
@@ -46,11 +44,33 @@ module Xjz
       end
 
       event(/^(?<ap_id>\d+)\.choose_api_res\.(?<api_index>\d+)\.change$/) do
-        ap_id = match_data['ap_id'].to_i
-        ap = $config['.api_projects'].find { |obj| obj.object_id == ap_id }
+        ap = find_by_ap_id(match_data['ap_id'])
         api_index = match_data['api_index'].to_i
         api = ap.data['apis'][api_index]
         api['response']['.default'] = data[:value]
+      end
+
+      namespace 'export' do
+        event(/^html\.(?<ap_id>\d+)\.click$/) do
+          ap = find_by_ap_id(match_data['ap_id'])
+          filename = 'xjzproxy-doc.html'
+          path = File.join(ap.repo_dir, filename)
+          html = render(
+            'webui/project/export.html',
+            title: ap.data['project']['title'] || File.basename(ap.repo_path),
+            body: ap.cache[:doc_html]
+          )
+
+          File.write(path, html)
+          send_msg(
+            'alert',
+            message: "Successfully export document " +
+              "<strong>#{filename}</strong> to the current project directory"
+          )
+        rescue => e
+          Logger[:auto].error { e.log_inspect }
+          send_msg('alert', type: :error, message: "Failed to export document")
+        end
       end
     end
 

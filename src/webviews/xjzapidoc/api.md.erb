@@ -14,7 +14,7 @@
 
 **<%= icon_tag('share') %>Request**
 
-```
+```nginx
 <%= api['method'].to_s.upcase %> <%= api['path'] %>
 ```
 
@@ -51,7 +51,7 @@ HTTP Body
 Example
 
 % if String === res['data']
-```
+```plaintext
 <%= res['data'] %>
 ```
 % else

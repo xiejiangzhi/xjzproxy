@@ -48,5 +48,10 @@ module Xjz
         html: render('webui/project/detail.html', ap: ap)
       )
     end
+
+    def find_by_ap_id(id)
+      ap_id = id.to_i
+      $config['.api_projects'].find { |obj| obj.object_id == ap_id }
+    end
   end
 end

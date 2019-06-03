@@ -96,6 +96,10 @@ module Xjz
       Dir["#{dir_path}/**/*.{yml,yaml}"]
     end
 
+    def repo_dir
+      data['project']['.dir']
+    end
+
     private
 
     def load_dir(dir_path)

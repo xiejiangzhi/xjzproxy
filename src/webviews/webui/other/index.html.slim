@@ -12,15 +12,13 @@ ruby:
           'trial' => {
             price: 'free',
             items: <<-LS.lines.map(&:strip)
-              Proxy feature
-              Allow one API Project
-              Allow up to 128 APIs
+              Support one API Project
+              Support up to 128 APIs
             LS
           },
           'standard' => {
             price: '$32',
             items: <<-LS.lines.map(&:strip)
-              Free features
               Unlimited API Projects
               Support up to 512 APIs
               Support GRPC project
@@ -29,7 +27,6 @@ ruby:
           'pro' => {
             price: '$64',
             items: <<-LS.lines.map(&:strip)
-              Standard features
               Unlimited APIs
             LS
           }

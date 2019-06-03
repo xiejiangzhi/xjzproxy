@@ -28,6 +28,20 @@ module Xjz
       "data:#{type};base64,#{base64_encode(str)}"
     end
 
+    def base64_url_for_static(filename)
+      path = File.join($root, 'src/static', filename)
+      str = XjzLoader.get_res(path)
+      if str
+        type = case filename
+        when /.css$/ then 'text/css'
+        when /.js$/ then 'text/javascript'
+        end
+        base64_url(str, type)
+      else
+        Logger[:auto].error { "Not found static res #{filename}" }
+      end
+    end
+
     def max_reqs_in_sec(rts, seconds)
       max = 0
       rt_times = rts.map { |rt| rt.start_at }

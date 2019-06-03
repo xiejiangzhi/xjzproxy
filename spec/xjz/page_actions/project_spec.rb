@@ -52,6 +52,21 @@ RSpec.describe 'project', webpage: true do
     }.to change { api['response']['.default'] }.to('xxx')
   end
 
+  it 'export.html.xxx.click should export html document' do
+    export_path = File.join(ap.repo_dir, 'xjzproxy-doc.html')
+    `rm -rf #{export_path}`
+
+    expect_runner_send_msg([
+      'alert',
+      message: "Successfully export document " +
+        "<strong>xjzproxy-doc.html</strong> to the current project directory"
+    ])
+
+    expect {
+      emit_msg("project.export.html.#{ap.object_id}.click")
+    }.to change { File.exist?(export_path) }.to(true)
+  end
+
   describe 'server.' do
     it 'project.del should remove a project', stub_config: true do
       expect_runner_send_msg(['el.remove', selector: "#project_tab_#{ap.object_id}"])
