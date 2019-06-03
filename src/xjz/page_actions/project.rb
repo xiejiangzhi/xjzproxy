@@ -50,6 +50,30 @@ module Xjz
         api['response']['.default'] = data[:value]
       end
 
+      event(/^opendir\.(?<ap_id>\d+)\.click$/) do
+        ap = find_by_ap_id(match_data['ap_id'])
+        dir = ap.repo_dir
+        opened = false
+
+        case Gem::Platform.local.os
+        when 'darwin'
+          Kernel.system("open #{dir}")
+          opened = true
+        else
+          %w{xdg-open}.each do |cmd|
+            next unless Kernel.system("which #{cmd}")
+            Kernel.system("#{cmd} #{dir}")
+            opened = true
+            break
+          end
+        end
+
+        unless opened
+          Logger[:auto].error { "Failed to open dir #{dir}" }
+          send_msg('alert', type: :error, message: "Failed to open dir #{dir}")
+        end
+      end
+
       namespace 'export' do
         event(/^html\.(?<ap_id>\d+)\.click$/) do
           ap = find_by_ap_id(match_data['ap_id'])
@@ -65,7 +89,7 @@ module Xjz
           send_msg(
             'alert',
             message: "Successfully export document " +
-              "<strong>#{filename}</strong> to the current project directory"
+              "<strong>#{filename}</strong> to the current project directory."
           )
         rescue => e
           Logger[:auto].error { e.log_inspect }

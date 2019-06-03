@@ -29,7 +29,7 @@ module Xjz
     end
 
     def base64_url_for_static(filename)
-      path = File.join($root, 'src/static', filename)
+      path = File.join('src/static', filename)
       str = XjzLoader.get_res(path)
       if str
         type = case filename

@@ -59,12 +59,33 @@ RSpec.describe 'project', webpage: true do
     expect_runner_send_msg([
       'alert',
       message: "Successfully export document " +
-        "<strong>xjzproxy-doc.html</strong> to the current project directory"
+        "<strong>xjzproxy-doc.html</strong> to the current project directory."
     ])
 
     expect {
       emit_msg("project.export.html.#{ap.object_id}.click")
     }.to change { File.exist?(export_path) }.to(true)
+  end
+
+  describe 'opendir.xxx.click' do
+    it 'should call open folder cmd' do
+      expect(Kernel).to receive(:system).with("open #{ap.repo_dir}")
+      emit_msg("project.opendir.#{ap.object_id}.click")
+    end
+
+    it 'should call open folder with xdg-open cmd on linux' do
+      allow(Gem::Platform.local).to receive(:os).and_return('linux')
+      expect(Kernel).to receive(:system).with("which xdg-open").and_return(true)
+      expect(Kernel).to receive(:system).with("xdg-open #{ap.repo_dir}")
+      emit_msg("project.opendir.#{ap.object_id}.click")
+    end
+
+    it 'should send error msg when failed to open dir' do
+      allow(Gem::Platform.local).to receive(:os).and_return('linux')
+      expect(Kernel).to receive(:system).with("which xdg-open").and_return(false)
+      expect_runner_send_msg(['alert', type: :error, message: "Failed to open dir #{ap.repo_dir}"])
+      emit_msg("project.opendir.#{ap.object_id}.click")
+    end
   end
 
   describe 'server.' do

@@ -75,7 +75,7 @@ module Xjz
     end
 
     def total_proxy_conns
-      proxy_thread_pool.total_active_workers
+      proxy_thread_pool&.total_active_workers || 0
     end
 
     private
