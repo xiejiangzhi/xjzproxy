@@ -6,7 +6,7 @@ RSpec.describe 'other', webpage: true do
 
   describe 'other.open_buy_page' do
     it 'should open url' do
-      expect(Kernel).to receive(:system).with("open https://xjz.pw").and_return(true)
+      expect(Kernel).to receive(:system).with("open https://xjzproxy.xjz.pw").and_return(true)
       expect_runner.to_not receive(:send_msg)
       emit_msg('other.open_buy_page.click')
     end
@@ -15,7 +15,7 @@ RSpec.describe 'other', webpage: true do
       expect(Gem::Platform.local).to receive(:os).and_return('linux')
       expect(Kernel).to receive(:system).with('which xdg-open').and_return(false)
       expect(Kernel).to receive(:system).with('which firefox').and_return(true)
-      expect(Kernel).to receive(:system).with("firefox https://xjz.pw").and_return(true)
+      expect(Kernel).to receive(:system).with("firefox https://xjzproxy.xjz.pw").and_return(true)
       expect_runner.to_not receive(:send_msg)
       emit_msg('other.open_buy_page.click')
     end

@@ -27,7 +27,7 @@ RSpec.describe Xjz::Config do
       "template_dir" => "./spec/files/webviews",
       "webview_debug" => false,
       "ui_window" => true,
-      "home_url" => 'https://xjz.pw',
+      "home_url" => 'https://xjzproxy.xjz.pw',
       ".user_id" => "xjz",
       ".edition" => "standard",
       ".license_ts" => Time.at(1557830400.5155),
@@ -35,7 +35,7 @@ RSpec.describe Xjz::Config do
     )
   end
 
-  describe '#load_projects', log: false do
+  describe '#load_projects', log: false, stub_config: true do
     let(:pd) { config['projects_dir'] }
 
     before :each do
@@ -49,7 +49,7 @@ RSpec.describe Xjz::Config do
     end
 
     it '#load_projects should return formatted private data' do
-      config['.edition'] = 'pro'
+      $config['.edition'] = 'pro'
       expect {
         config.load_projects
       }.to change { config.data['.api_projects'] }.to(kind_of(Array))
@@ -59,16 +59,12 @@ RSpec.describe Xjz::Config do
       )
     end
 
-    it '#load_projects should return first project if current is not pro edition' do
-      config['.edition'] = 'standard'
+    it '#load_projects should return 1 projects if current is free edition' do
+      $config['.edition'] = nil
 
       expect {
         config.load_projects
-      }.to change { config.data['.api_projects'] }.to(kind_of(Array))
-
-      expect(config.data['.api_projects'].map(&:repo_path)).to eql(
-        config.data['projects']
-      )
+      }.to change { config.data['.api_projects']&.length || 0 }.to(1)
     end
   end
 
@@ -193,6 +189,51 @@ RSpec.describe Xjz::Config do
       expect($config.write_user_file('a', 'hello')).to eql(true)
       $config.clean_user_file('a')
       expect($config.read_user_file('a')).to eql(nil)
+    end
+  end
+
+  describe '#projects_check', stub_config: true do
+    let(:ap1) { double(:ap, data: { 'apis' => [] }, errors: []) }
+    let(:ap2) { double(:ap, data: { 'apis' => [] }, errors: []) }
+    let(:ap3) { double(:ap, data: { 'apis' => [] }, errors: []) }
+
+    it 'should remove apis if apis count over free edition' do
+      $config['.edition'] = nil
+      [ap1, ap2, ap3].each do |ap|
+        allow(ap).to receive(:data).and_return('apis' => [{}] * 100)
+        allow(ap).to receive(:raw_data).and_return(ap.data)
+      end
+
+      config['.api_projects'] = [ap1, ap2, ap3]
+      expect {
+        config.projects_check
+      }.to change { config['.api_projects'].sum { |ap| ap.data['apis'].count } }.to(128)
+    end
+
+    it 'should remove apis if apis count over standard edition' do
+      $config['.edition'] = 'standard'
+      [ap1, ap2, ap3].each do |ap|
+        allow(ap).to receive(:data).and_return('apis' => [{}] * 200)
+        allow(ap).to receive(:raw_data).and_return(ap.data)
+      end
+
+      config['.api_projects'] = [ap1, ap2, ap3]
+      expect {
+        config.projects_check
+      }.to change { config['.api_projects'].sum { |ap| ap.data['apis'].count } }.to(512)
+    end
+
+    it 'should not remove apis for pro edition' do
+      $config['.edition'] = 'pro'
+      [ap1, ap2, ap3].each do |ap|
+        allow(ap).to receive(:data).and_return('apis' => [{}] * 200)
+        allow(ap).to receive(:raw_data).and_return(ap.data)
+      end
+
+      config['.api_projects'] = [ap1, ap2, ap3]
+      expect {
+        config.projects_check
+      }.to_not change { config['.api_projects'].sum { |ap| ap.data['apis'].count } }
     end
   end
 end

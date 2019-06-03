@@ -12,7 +12,7 @@
             
   #history_detail.col-9.offset-3
     - if Xjz::Tracker.instance.history.length == 0
-      | Has Not Any Request
+      strong Has no any request
     - elsif rt = session[:current_rt]
       = render 'webui/history/detail.html', request_tracker: rt
 

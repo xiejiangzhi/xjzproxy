@@ -10,6 +10,7 @@ module Xjz
           html: render('webui/project/doc_tab.html', ap: ap)
         )
         send_msg('alert', message: "Added project #{File.basename(ap.repo_path)}")
+        $config.projects_check
       end
     end
 

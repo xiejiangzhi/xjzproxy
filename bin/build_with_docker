@@ -16,3 +16,6 @@ docker run -ti --rm \
   -v $HOME/Documents/Ruby-Binary:/root/Documents/Ruby-Binary \
   -w /app \
   $image_name /app/bin/build init_docker
+
+./builder/system_package linux-x86_64
+

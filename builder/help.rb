@@ -1,6 +1,9 @@
-def cmd(str, quiet: false)
+def cmd(str, quiet: false, err_stop: true)
   puts "$ #{str}" unless quiet
-  exit 1 unless Kernel.system(str)
+  unless Kernel.system(str)
+    puts "[ERROR] Failed to run #{str}"
+    exit 1 if err_stop
+  end
 end
 
 def mix_str(name, sl = 3, ll = 50, r = 5)

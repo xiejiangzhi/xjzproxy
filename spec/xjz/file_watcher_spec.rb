@@ -39,27 +39,35 @@ RSpec.describe Xjz::FileWatcher, stub_config: true do
       $config['.api_projects'] = []
       pdir = "#{dir}/p1"
       pdir2 = "#{dir}/p2"
-      expect($config.shared_data.app.webui).to receive(:emit_message) \
-        .with('project.add', path: pdir).and_call_original
-      expect($config.shared_data.app.webui).to receive(:emit_message) \
-        .with('project.add', path: pdir2).and_call_original
+      pdir3 = "#{dir}/p3"
+      webui = $config.shared_data.app.webui
+      expect(webui).to receive(:emit_message).with('project.add', path: pdir).and_call_original
+      expect(webui).to receive(:emit_message).with('project.add', path: pdir2).and_call_original
+      expect(webui).to receive(:emit_message).with('project.add', path: pdir3).and_call_original
       `mkdir #{pdir}; touch #{pdir}/a.yml`
       `mkdir #{pdir2}; touch #{pdir2}/a.yml`
+      `mkdir #{pdir3}; touch #{pdir3}/b.yml`
       sleep 0.2
     end
 
-    it 'should not add project if projects > 0 & edition is not pro' do
-      $config['.edition'] = 'standard'
+    it 'should not add project for free edition if projects > 0' do
+      $config['.edition'] = nil
       $config['.api_projects'] = []
       pdir = "#{dir}/p1"
       pdir2 = "#{dir}/p2"
-      p = double('path', '==' => nil)
-      allow(p).to receive('==') { |v| [pdir, pdir2].include?(v) }
-      expect($config.shared_data.app.webui).to receive(:emit_message) \
-        .with('project.add', path: p).and_call_original
+      dirs = [pdir, pdir2]
+
+      allow($config.shared_data.app.webui).to receive(:emit_message) do |e, path: nil|
+        expect(e).to eql('project.add')
+        dirs.delete(path)
+        $config['.api_projects'] << double('ap', repo_path: path)
+      end
+
       `mkdir #{pdir}; touch #{pdir}/a.yml`
       `mkdir #{pdir2}; touch #{pdir2}/a.yml`
       sleep 0.2
+      expect($config['.api_projects'].count).to eql(1)
+      expect(dirs.length).to eql(1)
     end
 
     it 'should reload project when update project dir' do

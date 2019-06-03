@@ -52,8 +52,8 @@ module Xjz
     end
 
     def load_projects
-      aps = format_projects(projects_paths)
-      data['.api_projects'] = (data['.edition'] == Xjz::PRO_ED) ? aps : aps[0..0]
+      data['.api_projects'] = format_projects(projects_paths)
+      projects_check
     end
 
     def shared_data
@@ -155,6 +155,29 @@ module Xjz
       FileUtils.rm_rf(path)
     end
 
+    # check api count
+    def projects_check
+      apis_count = 0
+
+      data['.api_projects'].each do |ap|
+        apis_count += (ap.errors.present? ? 0 : (ap.data['apis'] || []).count)
+
+        keep_len = nil
+        if (Xjz.APP_EDITION.blank? && apis_count > (99 + 29))
+          keep_len = ap.data['apis'].length - (apis_count - 99 - 29)
+          keep_len = 0 if keep_len < 0
+        elsif (Xjz.APP_EDITION == 'standard' && apis_count > (502 + 10))
+          keep_len = ap.data['apis'].length - (apis_count - 502 - 10)
+          keep_len = 0 if keep_len < 0
+        end
+
+        if keep_len
+          ap.raw_data['apis'] = ap.raw_data['apis'][0...keep_len]
+          ap.data['apis'] = ap.data['apis'][0...keep_len]
+        end
+      end
+    end
+
     private
 
     def init_dir(dir)
@@ -162,7 +185,7 @@ module Xjz
         FileUtils.mkdir_p(dir)
       end
       true
-    rescue Errno::ENOTSUP, Errno::EPERM
+    rescue Errno::ENOTSUP, Errno::EPERM, Errno::EEXIST
       false
     end
 
@@ -186,15 +209,18 @@ module Xjz
       end
     end
 
-    def format_projects(v)
-      return [] unless v
-      v.map do |p|
-        ap = Xjz::ApiProject.new(p)
+    def format_projects(paths)
+      return [] unless paths
+      paths.map do |path|
+        ap = Xjz::ApiProject.new(path)
         if (errs = ap.errors).present?
-          Xjz::Logger[:auto].error { "Failed to load project '#{p}'\n#{errs.join("\n")}" }
+          Xjz::Logger[:auto].error { "Failed to load project '#{path}'\n#{errs.join("\n")}" }
         end
 
         ap.data # try to parse
+
+        # don't parse more for free edition
+        return [ap] unless Xjz.APP_EDITION
         ap
       rescue => e
         Xjz::Logger[:auto].error { e.log_inspect }

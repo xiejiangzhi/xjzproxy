@@ -19,6 +19,8 @@ Xjz::Logger[:auto].info do
   "license id: #{$config['.user_id']}, flags #{$config['.license']}"
 end
 
+Process.setproctitle($app_name)
+
 server = $config.shared_data.app.server = Xjz::Server.new
 server.start
 

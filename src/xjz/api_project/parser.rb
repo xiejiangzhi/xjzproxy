@@ -84,7 +84,6 @@ module Xjz
         expand_api['.path_regexp'] = Regexp.new('\A' + expand_api['path'] + '(\.\w+)?\Z')
         expand_api['.index'] = i
         env['apis'] << expand_api
-        break if Xjz.APP_EDITION.blank? && i >= (3 + 7 - 1)
       end
     end
 

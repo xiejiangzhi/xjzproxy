@@ -28,6 +28,8 @@ module Xjz
         $config.shared_data.app.webui.emit_message('tracker.new_request', rt: rt)
       end
     end
+
+
   end
 
   class RequestTracker

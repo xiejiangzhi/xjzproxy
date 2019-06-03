@@ -15,6 +15,9 @@ def build_osx_app(release_dir)
     cmd "rm -rf #{app_dir}"
     cmd "appify -icon #{ICON_PNG} -name #{APP_NAME} -author \"Jon Xie\" #{release_dir}/run"
     cmd "cp -r #{release_dir}/lib #{app_dir}/Contents/MacOS/lib"
+    target_dmg_name = "#{APP_NAME}-#{$config['app_version']}.dmg"
+    cmd "create-dmg #{app_dir} || true"
+    cmd "mv #{release_dir}/#{APP_NAME}\\ 1.0.dmg #{release_dir}/#{target_dmg_name}"
   end
 end
 

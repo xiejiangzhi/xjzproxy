@@ -24,7 +24,7 @@ module Xjz
 
     def find_api_project(req)
       aps = $config['.api_projects']
-      (Xjz.APP_EDITION == Xjz::PRO_ED ? aps : aps[0..0]).find do |ap|
+      (Xjz.APP_EDITION ? aps : aps[0..0]).find do |ap|
         ap.match_host?(req.host)
       end.tap do |r|
         Logger[:auto].debug { "Find api project by #{req.host}: #{r&.repo_path.inspect}" }

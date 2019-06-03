@@ -2,6 +2,7 @@ module Xjz
   WebUI::ActionRouter.register :project do
     event 'f_project_tab.click' do
       session[:current_tab] = :project
+      $config.projects_check
     end
 
     namespace 'project' do

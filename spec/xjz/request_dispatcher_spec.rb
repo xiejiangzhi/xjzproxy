@@ -150,7 +150,7 @@ RSpec.describe Xjz::RequestDispatcher, stub_config: true do
     end
 
     it 'should find api_project by host' do
-      $config['.edition'] = 'pro'
+      $config['.edition'] = 'standard'
       ap = $config['.api_projects'][0]
       ap2 = Xjz::ApiProject.new(File.join($root, 'spec/files/grpc.yml'))
       $config['.api_projects'] << ap2
@@ -164,8 +164,8 @@ RSpec.describe Xjz::RequestDispatcher, stub_config: true do
     end
 
     describe 'app edition' do
-      it 'should return first project if not pro version' do
-        $config['.edition'] = 'standard'
+      it 'should return first project for free edition' do
+        $config['.edition'] = nil
         ap = $config['.api_projects'][0]
         ap2 = Xjz::ApiProject.new(File.join($root, 'spec/files/grpc.yml'))
         $config['.api_projects'] << ap2

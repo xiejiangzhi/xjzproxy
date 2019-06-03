@@ -13,23 +13,24 @@ ruby:
             price: 'free',
             items: <<-LS.lines.map(&:strip)
               Proxy feature
-              Only allow one API Project
-              Only allow 10 API
+              Allow one API Project
+              Allow up to 128 APIs
             LS
           },
           'standard' => {
             price: '$32',
             items: <<-LS.lines.map(&:strip)
               Free features
-              Unlimited APIs
-              Allow GRPC project
+              Unlimited API Projects
+              Support up to 512 APIs
+              Support GRPC project
             LS
           },
           'pro' => {
             price: '$64',
             items: <<-LS.lines.map(&:strip)
               Standard features
-              Unlimited API projects
+              Unlimited APIs
             LS
           }
         }
