@@ -31,9 +31,16 @@ module Xjz
         )
       end
 
-      event(/^status_switch\.(?<ap_id>\d+)\.change$/) do
+      event(/^mode\.(?<ap_id>\d+)\.change$/) do
         ap = find_by_ap_id(match_data['ap_id'])
-        ap.data['.enabled'] = !!data['value']
+        ap.data['.mode'] = data[:value]
+        case data[:value]
+        when 'watch', 'mock'
+          ap.data['.enabled'] = true
+        else
+          ap.data['.enabled'] = false
+        end
+
         if session[:project_focus_toc] == false
           send_msg(
             'el.replace',

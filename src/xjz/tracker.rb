@@ -123,7 +123,7 @@ module Xjz
             [:res_headers, succ_desc['headers'], Hash[res.h2_headers], allow_extend: true],
           ]
 
-          if res.body_hash.blank? && res.body.strip !~ /^[\[\{]/
+          if res.body_hash.blank? && res.body.to_s.strip !~ /\A[\[\{]/
             pairs << [:res_body, succ_desc['data'], res.body]
           else
             pairs << [:res_body, succ_desc['data'], res.body_hash]

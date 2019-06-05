@@ -36,12 +36,27 @@
         end
 
       .row.px-3
-        .custom-control.custom-switch
-          - id = "project_status_switch-#{ap.object_id}"
-          - xid = "project.status_switch.#{ap.object_id}"
-          - checked = ap.data['.enabled'] != false
-          input.custom-control-input type="checkbox" checked=checked id=id xjz-id=xid
-          label.custom-control-label for=id Enable Project
+        .col-5.multiple-switch
+          ruby:
+            statuses = {
+              disable: "Forward request only, don't save history",
+              watch: "Parse request/response. And compare it to the document definition",
+              mock: "Parse request and mock response. Also compare it to the document definition"
+            }.stringify_keys!
+
+          .row
+            - statuses.each do |name, desc|
+              - id = "project_mode_switch-#{ap.object_id}-#{name}"
+              - xid = "project.mode.#{ap.object_id}"
+              - checked = ap.data['.mode'] || 'mock'
+              label.col-4.text-center for=id title=desc data-toggle='tooltip'
+                input[
+                  type="radio" id=id xjz-id=xid value=name
+                  name="project_mode-#{ap.object_id}" checked=(ap.data['.mode'] == name)
+                ]
+                br
+                = name.titleize
+
         .ml-auto
           button.btn.btn-primary xjz-id='project.export.html.#{ap.object_id}' Export Document
           button.btn.btn-info.ml-1 xjz-id='project.opendir.#{ap.object_id}' Show Folder

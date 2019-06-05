@@ -66,8 +66,9 @@ module Xjz
           d = data.strip
           case d
           when '' then :empty
-          when /^[\{\[].*[\}\]]$/ then :json
-          when /^<.*>$/ then :xml
+          when /\A[\{\[].*[\}\]]\z/m then :json
+          when /\A<.*\/html>\z/im then :text
+          when /\A<.*>\z/m then :xml
           when /=/ then :url
           end
         end

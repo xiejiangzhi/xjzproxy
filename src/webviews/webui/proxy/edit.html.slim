@@ -1,6 +1,8 @@
 - proxy_mode = $config['proxy_mode']
 .row.form-group
-  label.col-3.col-form-label Proxy Mode
+  label.col-3.col-form-label
+    | Proxy Mode
+    i.fas.fa-question-circle.ml-1 title="All will handle any request. Whitelist will handle request that are declared in projects or whitelist" data-toggle='tooltip'
   .col-9
     - %w{all whitelist}.each do |mode|
       - name = "proxy_mode_#{mode}"
@@ -20,7 +22,9 @@
     textarea.form-control rows='4' xjz-id='proxy.host_whitelist' = $config['host_whitelist'].join("\n")
 
 .row.form-group
-  label.col-3.col-form-label ALPN Protocols
+  label.col-3.col-form-label
+    | ALPN Protocols
+    i.fas.fa-question-circle.ml-1 title='Tell client which protocols are supported. Client can still use the undeclared protocol and will be processed correctly' data-toggle='tooltip'
   .col-9
     - [['http/1.1', 'HTTP/1.1'], ['h2', 'HTTP2']].each do |protocol, title|
       - is_open = $config['alpn_protocols'].include?(protocol)

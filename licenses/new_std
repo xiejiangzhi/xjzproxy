@@ -1,4 +1,8 @@
-#! /bin/bash
-mkdir -p std
-./manager -g std/$1.lcs -i $1 -e standard
-./manager -c std/$1.lcs
+#! /usr/bin/env ruby
+
+id = ARGV.first
+fname = id.split('@').first
+
+`mkdir -p std`
+`./manager -g std/#{fname}.lcs -i #{id} -e standard`
+`./manager -c std/#{fname}.lcs`

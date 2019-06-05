@@ -24,7 +24,7 @@ module Xjz
     # Return nil if don't hijack
     # Return a response if hijack req
     def hack_req(req)
-      return if data['.enabled'] == false
+      return if data['.enabled'] == false || data['.mode'] == 'watch'
       res = if grpc
         grpc.res_desc(req.path)
       else
@@ -78,12 +78,15 @@ module Xjz
 
     def reload(force: false, interval: 5)
       if @last_reload_at.nil? || (Time.now - @last_reload_at) >= interval
+        tmp_enabled = data['.enabled']
+        tmp_mode = data['.mode']
         @grpc = nil
         @data = nil
         @errors = nil
         @raw_data = nil
         @cache.clear
-        data
+        data['.enabled'] = tmp_enabled
+        data['.mode'] = tmp_mode
         Logger[:auto].info { "Reload project #{repo_path}" }
         @last_reload_at = Time.now
         true

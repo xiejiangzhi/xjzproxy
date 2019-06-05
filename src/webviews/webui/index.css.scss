@@ -82,3 +82,14 @@
   -webkit-animation-duration: 0.3s;
   animation-duration: 0.3s;
 }
+
+.multiple-switch label:not(:first-child):before {
+  content: ' ';
+  width: 96px;
+  height: 1px;
+  display: block;
+  position: absolute;
+  top: 10px;
+  left: -49px;
+  border-top: 4px solid #17a2b8;
+}

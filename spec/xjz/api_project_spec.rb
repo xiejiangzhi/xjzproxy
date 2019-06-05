@@ -92,6 +92,28 @@ RSpec.describe Xjz::ApiProject do
       expect(r).to be_nil
     end
 
+    it 'should return nil if ap[.mode] == watch' do
+      data = ap.data.deep_dup
+      allow(ap).to receive(:data).and_return(data)
+      data['.mode'] = 'watch'
+
+      r = ap.hack_req(Xjz::Request.new(
+        'PATH_INFO' => '/api/v1/users', 'REQUEST_METHOD' => 'GET'
+      ))
+      expect(r).to be_nil
+    end
+
+    it 'should return res if ap[.mode] == mock' do
+      data = ap.data.deep_dup
+      allow(ap).to receive(:data).and_return(data)
+      data['.mode'] = 'mock'
+
+      r = ap.hack_req(Xjz::Request.new(
+        'PATH_INFO' => '/api/v1/users', 'REQUEST_METHOD' => 'GET'
+      ))
+      expect(r).to_not be_nil
+    end
+
     it 'should return a response for grpc request' do
       ap = Xjz::ApiProject.new(grpc_poj_path)
       r = ap.hack_req(Xjz::Request.new(
@@ -210,20 +232,23 @@ RSpec.describe Xjz::ApiProject do
   describe '#reload' do
     it 'should reload data' do
       [ap.data, ap.raw_data, ap.grpc, ap.errors]
-      expect(ap).to receive(:data).and_return('xxx')
+      expect(Xjz::ApiProject::Parser).to receive(:parse).and_return({})
+      expect(ap).to receive(:raw_data).and_return({})
       travel_to(Time.now + 5)
       ap.cache[:a] = 123
+
+      data = { '.enabled' => nil, '.mode' => nil }
 
       expect {
         ap.reload
       }.to change {
         ap.instance_eval { [@data, @raw_data, @grpc, @errors, @cache] }
-      }.to([nil, nil, nil, nil, {}])
+      }.to([data, nil, nil, nil, {}])
     end
 
     it 'should not reload data for new project' do
       [ap.data, ap.raw_data, ap.grpc, ap.errors]
-      expect(ap).to_not receive(:data)
+      expect(Xjz::ApiProject::Parser).to_not receive(:parse)
 
       expect {
         ap.reload
@@ -234,7 +259,7 @@ RSpec.describe Xjz::ApiProject do
 
     it 'should reload data once if reload interval too short' do
       [ap.data, ap.raw_data, ap.grpc, ap.errors]
-      expect(ap).to receive(:data).and_return('xxx')
+      expect(Xjz::ApiProject::Parser).to receive(:parse).and_return({})
       travel_to(Time.now + 5)
 
       expect {
@@ -248,7 +273,7 @@ RSpec.describe Xjz::ApiProject do
 
     it 'should reload data again if reload interval > default value' do
       [ap.data, ap.raw_data, ap.grpc, ap.errors]
-      expect(ap).to receive(:data).and_return('xxx').twice
+      expect(Xjz::ApiProject::Parser).to receive(:parse).and_return({}).twice
       travel_to(Time.now + 5)
 
       expect {

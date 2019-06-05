@@ -23,25 +23,35 @@ RSpec.describe 'project', webpage: true do
     emit_msg("project.show_list.click")
   end
 
-  it 'status_switch.xxx.change should update project status' do
+  it 'mode.xxx.change should update project mode' do
     expect_runner.to_not receive(:render)
     expect {
-      emit_msg("project.status_switch.#{ap.object_id}.change", value: nil)
-    }.to change { ap.data['.enabled'] }.to(false)
+      expect {
+        emit_msg("project.mode.#{ap.object_id}.change", value: 'disable')
+      }.to change { ap.data['.enabled'] }.to(false)
+    }.to change { ap.data['.mode'] }.to('disable')
 
     expect {
-      emit_msg("project.status_switch.#{ap.object_id}.change", value: true)
-    }.to change { ap.data['.enabled'] }.to(true)
+      expect {
+        emit_msg("project.mode.#{ap.object_id}.change", value: 'watch')
+      }.to change { ap.data['.enabled'] }.to(true)
+    }.to change { ap.data['.mode'] }.to('watch')
+
+    expect {
+      expect {
+        emit_msg("project.mode.#{ap.object_id}.change", value: 'mock')
+      }.to_not change { ap.data['.enabled'] }
+    }.to change { ap.data['.mode'] }.to('mock')
   end
 
-  it 'status_switch.xxx.change should update doc tab when focus tab' do
+  it 'mode.xxx.change should update doc tab when focus tab' do
     session[:project_focus_toc] = false
     expect_runner_render(['webui/project/doc_tab.html', ap: ap], :original)
     expect_runner_send_msg([
       'el.replace', selector: "#project_tab_#{ap.object_id}", html: kind_of(String)
     ])
     expect {
-      emit_msg("project.status_switch.#{ap.object_id}.change", value: nil)
+      emit_msg("project.mode.#{ap.object_id}.change", value: 'disable')
     }.to change { ap.data['.enabled'] }.to(false)
   end
 
