@@ -121,8 +121,13 @@ module Xjz
           pairs += [
             [:code, succ_desc['http_code'] || 200, res.code],
             [:res_headers, succ_desc['headers'], Hash[res.h2_headers], allow_extend: true],
-            [:res_body, succ_desc['data'], res.body_hash]
           ]
+
+          if res.body_hash.blank? && res.body.strip !~ /^[\[\{]/
+            pairs << [:res_body, succ_desc['data'], res.body]
+          else
+            pairs << [:res_body, succ_desc['data'], res.body_hash]
+          end
         end
 
         pairs.each_with_object({}) do |data, r|

@@ -5,7 +5,14 @@ ruby:
   ap = rt.api_project
   api_type, api_desc = rt.api_desc
 
+  valid_tabs = {
+    headers: true,
+    res: !res&.body.to_s.empty?,
+    api: api_desc.present?
+  }
+
   @current_tab = session[:history_detail_tab] || 'headers'
+  @current_tab = 'headers' unless valid_tabs[@current_tab.to_sym]
   def nav_link(id)
     cls = 'nav-link'
     cls << ' active' if id.to_s == @current_tab
@@ -77,7 +84,7 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
         pre.bg-light
           code.text-break = escape_html(req.body)
 
-  - unless res&.body.to_s.empty?
+  - if valid_tabs[:res]
     *tab_pane(:res)
       - case res.content_type
       - when /image\//
@@ -94,7 +101,7 @@ ul.nav.nav-tabs.sticky-top.pt-1.bg-white[
       - else
         a href=base64_url(res.decoded_body, res.content_type) Download
 
-  - if api_desc.present?
+  - if valid_tabs[:api]
     *tab_pane(:api)
       ruby:
         desc_mapping = {

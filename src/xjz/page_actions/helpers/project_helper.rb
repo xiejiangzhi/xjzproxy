@@ -30,7 +30,7 @@ module Xjz
         selector: "#project_tab_#{ap.object_id}",
         html: render('webui/project/doc_tab.html', ap: ap)
       )
-      show_project(ap) if ap == session[:current_project]
+      show_project(ap, toc: true) if ap == session[:current_project]
       send_msg('alert', message: "Updated project #{File.basename(ap.repo_path)}")
     end
 

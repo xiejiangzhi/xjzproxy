@@ -77,3 +77,8 @@
   &.note-info { border-left-color: #5bc0de; }
   &.note-warning { border-left-color: #f0ad4e; }
 }
+
+.animated.super-fast {
+  -webkit-animation-duration: 0.3s;
+  animation-duration: 0.3s;
+}

@@ -24,7 +24,7 @@
 
   function initAniCallback($el) {
     if ($el[0].xjz_ani_cb_inited) { return }
-    $el.addClass('animated faster');
+    $el.addClass('animated');
     $el.on('animationend', function() {
       var cb = $el[0].xjz_ani_cb;
       if (typeof(cb) == 'function') { cb(); }

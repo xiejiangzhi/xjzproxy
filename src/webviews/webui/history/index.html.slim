@@ -11,7 +11,7 @@
     #history_rt_list_group.list-group.list-group-flush role='tablist'
       = render 'webui/history/rt_list.html'
             
-  #history_detail.col-9.offset-3.animated.fadeInDown.faster data-ani-in='fadeInDown' data-ani-out='fadeOutUp'
+  #history_detail.col-9.offset-3.animated.fadeInRight.super-fast data-ani-in='fadeInRight' data-ani-out='fadeOutUp'
     - if Xjz::Tracker.instance.history.length == 0
       strong Has no any request
     - elsif rt = session[:current_rt]
