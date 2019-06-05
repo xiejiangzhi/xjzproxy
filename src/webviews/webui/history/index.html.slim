@@ -1,8 +1,9 @@
 .row
   - h_header = 56 
   - offset = h_header.to_s + 'px'
-  .col-3.border-right.px-0.fixed-top[
+  .col-3.border-right.px-0.fixed-top.animated.bounceInLeft.faster[
     style="height: calc(100vh - #{offset}); overflow-y: auto; overflow-x: hidden; top: #{offset}; z-index: 999"
+    data-ani-in='bounceInLeft' data-ani-out='bounceOutLeft'
   ]
     = render 'webui/history/filter.html'
 
@@ -10,7 +11,7 @@
     #history_rt_list_group.list-group.list-group-flush role='tablist'
       = render 'webui/history/rt_list.html'
             
-  #history_detail.col-9.offset-3
+  #history_detail.col-9.offset-3.animated.fadeInDown.faster data-ani-in='fadeInDown' data-ani-out='fadeOutUp'
     - if Xjz::Tracker.instance.history.length == 0
       strong Has no any request
     - elsif rt = session[:current_rt]

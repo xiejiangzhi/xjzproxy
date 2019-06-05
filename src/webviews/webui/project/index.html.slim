@@ -2,15 +2,16 @@
   - h_header = '56px'
   - current_ap = session[:current_project]
 
-  #project_left.col-3.border-right.px-0.sticky-top[
+  #project_left.col-3.border-right.px-0.sticky-top.animated.bounceInLeft.faster[
     style="height: calc(100vh - #{h_header}); overflow-y: auto; overflow-x: hidden; top: #{h_header}; z-index: 999;"
+    data-ani-in='bounceInLeft' data-ani-out='bounceOutLeft' 
   ]
     - if current_ap
       = render 'webui/project/detail_toc.html', ap: current_ap
     - else
       = render 'webui/project/tab_list.html', ap: current_ap
 
-  #project_detail.col-9
+  #project_detail.col-9.animated.bounceInRight.faster data-ani-in='bounceInRight' data-ani-out='bounceOutRight' 
     - if current_ap
       = render 'webui/project/detail.html', ap: current_ap
     - elsif $config['.api_projects'].blank?

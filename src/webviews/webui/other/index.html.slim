@@ -3,7 +3,7 @@ ruby:
   tex = $config['.license_ex'] if ver != 'trial'
   ver = 'trial' if tex && Time.now >= tex
 
-.row.justify-content-center
+.row.justify-content-center.animated.flipInY
   .col-10 style='padding-top: 6rem;'
     .row
       ruby: 

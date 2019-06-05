@@ -8,7 +8,74 @@
     this.ws.on('message', function(type, data) { that.onMessage(type, data) });
     this.$container = $(container);
   }
-  
+
+  function notify(text, type, delay) {
+    return new window.Noty({
+      text: text,
+      type: type || 'info',
+      theme: 'bootstrap-v4',
+      timeout: delay || 5000,
+      layout: 'bottomRight'
+    }).show()
+  }
+
+  var ANI_IN_CSS = 'ani-in';
+  var ANI_OUT_CSS = 'ani-out';
+
+  function initAniCallback($el) {
+    if ($el[0].xjz_ani_cb_inited) { return }
+    $el.addClass('animated faster');
+    $el.on('animationend', function() {
+      var cb = $el[0].xjz_ani_cb;
+      if (typeof(cb) == 'function') { cb(); }
+    })
+    console.log('init ani cb');
+    $el[0].xjz_ani_cb_inited = true;
+  }
+
+  function removeAniCls($el) {
+    var el = $el[0];
+    if (el.xjz_ani_cls) {
+      $el.removeClass(el.xjz_ani_cls);
+    }
+  }
+
+  function addAniCls($el, css_cls) {
+    var el = $el[0];
+    removeAniCls($el);
+    $el.addClass(css_cls);
+    el.xjz_ani_cls = css_cls;
+  }
+
+  function aniOut($el, callback) {
+    var el = $el[0];
+    el.xjz_ani_cb = callback;
+    initAniCallback($el);
+    addAniCls($el, $el.data(ANI_OUT_CSS) || 'bounceOutLeft');
+  }
+
+  function aniIn($el, callback) {
+    var el = $el[0];
+    el.xjz_ani_cb = callback;
+    initAniCallback($el);
+    addAniCls($el, $el.data(ANI_IN_CSS) || 'bounceInRight');
+  }
+
+  function aniOutIn($el, callback) {
+    aniOut($el, function() {
+      callback();
+      aniIn($el);
+    });
+  }
+
+  function autoAni($el, ani_fn, callback) {
+    if ($el.data(ANI_IN_CSS) || $el.data(ANI_OUT_CSS)) {
+      ani_fn($el, callback);
+    } else {
+      if (typeof(callback) == 'function') { callback(); }
+    }
+  }
+
   XjzView.prototype = {
     onError: function() {
       window.close()
@@ -29,18 +96,20 @@
       switch (type) {
       case 'el.append':
         $el.append($html);
+        autoAni($html, aniIn);
         break;
       case 'el.after':
         $el.after($html);
+        autoAni($html, aniIn);
         break;
       case 'el.html':
-        $el.html($html || '');
+        autoAni($el, aniOutIn, function() { $el.html($html || ''); });
         break;
       case 'el.replace':
-        $el.replaceWith($html);
+        autoAni($el, aniOutIn, function() { $el.replaceWith($html); });
         break;
       case 'el.remove':
-        $el.remove();
+        autoAni($el, aniOut, function() { $el.remove(); })
         break;
       case 'el.set_attr':
         switch (data.attr) {
@@ -57,7 +126,7 @@
         }
         break;
       case 'alert':
-        this.notify(data.message, data.type)
+        notify(data.message, data.type)
         break;
       case 'hello':
         break;
@@ -142,7 +211,7 @@
 
       this.$container.on('click', '[xjz-notify]', function(evt) {
         var $el = $(evt.currentTarget)
-        that.notify($el.attr('xjz-notify'), $el.data('notify-type'))
+        notify($el.attr('xjz-notify'), $el.data('notify-type'))
       })
 
       this.$container.on('click', '[data-toggle=deep-list]', function(evt) {
@@ -199,15 +268,7 @@
       }
     },
 
-    notify: function(text, type, delay) {
-      new window.Noty({
-        text: text,
-        type: type || 'info',
-        theme: 'bootstrap-v4',
-        timeout: delay || 5000,
-        layout: 'bottomRight'
-      }).show()
-    }
+    
   }
 
   window.XjzView = XjzView;
