@@ -22,7 +22,7 @@ module Xjz
           server.stop_proxy
         end
 
-        send_msg('el.html', selector: '#f_proxy', html: render('webui/proxy/index.html'))
+        send_msg('el.replace', selector: '#f_proxy_body', html: render('webui/proxy/index.html'))
         proxy_status = render('webui/proxy/_status_text.html',)
         send_msg('el.replace', selector: '#navbar_proxy_status_text', html: proxy_status)
       end

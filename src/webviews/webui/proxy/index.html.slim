@@ -1,5 +1,7 @@
-.row.justify-content-center
-  .col-10.py-4.animated.rotateInUpLeft.faster
+.row.justify-content-center.animated.rotateInUpLeft.faster#f_proxy_body[
+  data-ani-in='rotateInUpLeft' data-ani-out='rotateOutUpLeft'
+]
+  .col-10.py-4
 
     - if proxy_run?
       = render 'webui/proxy/status.html'

@@ -43,6 +43,7 @@
               watch: "Parse request/response. And compare it to the document definition",
               mock: "Parse request and mock response. Also compare it to the document definition"
             }.stringify_keys!
+            current_mode = ap.data['.mode'] || 'mock'
 
           .row
             - statuses.each do |name, desc|
@@ -52,7 +53,7 @@
               label.col-4.text-center for=id title=desc data-toggle='tooltip'
                 input[
                   type="radio" id=id xjz-id=xid value=name
-                  name="project_mode-#{ap.object_id}" checked=(ap.data['.mode'] == name)
+                  name="project_mode-#{ap.object_id}" checked=(current_mode == name)
                 ]
                 br
                 = name.titleize

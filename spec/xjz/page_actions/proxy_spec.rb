@@ -5,7 +5,7 @@ RSpec.describe 'proxy', webpage: true, stub_config: true do
     expect(server).to receive(:start_proxy)
     expect_runner_render(["webui/proxy/index.html"], :original)
     expect_runner_render(["webui/proxy/_status_text.html"], :original)
-    expect_runner_send_msg(['el.html', selector: '#f_proxy', html: kind_of(String)])
+    expect_runner_send_msg(['el.replace', selector: '#f_proxy_body', html: kind_of(String)])
     expect_runner_send_msg([
       'el.replace', selector: '#navbar_proxy_status_text', html: kind_of(String)
     ])
@@ -29,7 +29,7 @@ RSpec.describe 'proxy', webpage: true, stub_config: true do
     expect(server).to receive(:stop_proxy)
     expect_runner_render(["webui/proxy/index.html"], :original)
     expect_runner_render(["webui/proxy/_status_text.html"], :original)
-    expect_runner_send_msg(['el.html', selector: '#f_proxy', html: kind_of(String)])
+    expect_runner_send_msg(['el.replace', selector: '#f_proxy_body', html: kind_of(String)])
     expect_runner_send_msg([
       'el.replace', selector: '#navbar_proxy_status_text', html: kind_of(String)
     ])

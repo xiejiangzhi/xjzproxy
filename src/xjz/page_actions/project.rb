@@ -3,6 +3,8 @@ module Xjz
     event 'f_project_tab.click' do
       session[:current_tab] = :project
       $config.projects_check
+      session[:current_project] ||= ($config['.api_projects'] || []).first
+      session[:project_focus_toc] = true
     end
 
     namespace 'project' do
