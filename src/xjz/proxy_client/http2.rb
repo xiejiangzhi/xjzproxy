@@ -107,6 +107,7 @@ module Xjz
       end
     rescue SocketError, Errno::ETIMEDOUT, Errno::EHOSTUNREACH, Errno::ECONNREFUSED => e
       Logger[:auto].error { e.message }
+      @closed = true
       nil
     end
 

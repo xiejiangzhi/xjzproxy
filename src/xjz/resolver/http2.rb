@@ -27,7 +27,9 @@ module Xjz
 
       IOHelper.forward_streams(
         { @user_conn => WriterIO.new(resolver_server) },
-        stop_wait_cb: proc { @proxy_client&.closed? }
+        stop_wait_cb: proc {
+          @proxy_client&.closed? && !api_project&.mock_mode?
+        }
       )
       proxy_client.wait_finish
     ensure
@@ -58,7 +60,7 @@ module Xjz
       # end
 
       conn.on(:stream) do |stream|
-        if proxy_client.closed?
+        if proxy_client.closed? && !api_project&.mock_mode?
           conn.goaway
         else
           perform_stream(stream)

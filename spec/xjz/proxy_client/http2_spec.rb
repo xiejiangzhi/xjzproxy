@@ -272,5 +272,11 @@ RSpec.describe Xjz::ProxyClient::HTTP2 do
       allow(subject).to receive(:remote_sock).and_return(a)
       expect(subject.closed?).to eql(true)
     end
+
+    it 'should return false and do not retry if raise error' do
+      expect(Socket).to receive(:tcp).and_raise(SocketError, 'err')
+      expect(subject.closed?).to eql(true)
+      expect(subject.closed?).to eql(true)
+    end
   end
 end

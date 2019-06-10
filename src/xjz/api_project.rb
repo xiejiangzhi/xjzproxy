@@ -23,7 +23,7 @@ module Xjz
     # Return nil if don't hijack
     # Return a response if hijack req
     def hack_req(req)
-      return if data['.enabled'] == false || data['.mode'] == 'watch'
+      return if data['.enabled'] == false || !mock_mode?
       res = if grpc
         grpc.res_desc(req.path)
       else
@@ -110,6 +110,10 @@ module Xjz
 
     def repo_dir
       data['project']['.dir']
+    end
+
+    def mock_mode?
+      data['.mode'] == 'mock' || data['.mode'].blank?
     end
 
     private

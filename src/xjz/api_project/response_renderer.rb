@@ -3,12 +3,13 @@ require 'csv'
 
 module Xjz
   class ApiProject::ResponseRenderer
+    SPLIT_STR = "([\s,;]|$)"
     CONTENT_TYPES = {
-      json: 'application/json',
-      xml: 'application/xml',
-      csv: 'text/csv',
-      grpc: /\Aapplication\/grpc(\-web)?(\+(proto|json))?\Z/,
-      text: /\Atext\/\w+/,
+      json: /\Aapplication\/json#{SPLIT_STR}/i,
+      xml: /\Aapplication\/xml#{SPLIT_STR}/i,
+      csv: /\Atext\/csv#{SPLIT_STR}/i,
+      grpc: /\Aapplication\/grpc(\-web)?(\+(proto|json))?#{SPLIT_STR}/i,
+      text: /\Atext\/[\w-]+#{SPLIT_STR}/i,
     }
     VALID_TYPES = CONTENT_TYPES.values
 
@@ -26,10 +27,9 @@ module Xjz
 
       headers = render_headers(res_desc['headers'])
       ct = HTTPHelper.get_header(headers, 'content-type')
-      unless ct
-        ct = get_accept_type(req, res_desc['data'])
-        HTTPHelper.set_header(headers, 'content-type', ct)
-      end
+      ct = get_accept_type(req, res_desc['data']) if ct.blank?
+      ct += '; charset=utf-8' unless ct.match?(/;\s*charset/)
+      HTTPHelper.set_header(headers, 'content-type', ct)
 
       if CONTENT_TYPES[:grpc] === ct && api_project.grpc&.find_rpc(req.path).blank?
         Logger[:auto].error { "Not found rpc service for #{req.path}" }

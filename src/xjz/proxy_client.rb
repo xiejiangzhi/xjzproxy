@@ -54,7 +54,7 @@ module Xjz
         Logger[:auto].info do
           suffix = res.conn_close? ? ' - close' : ''
           " < #{res.code} #{res.body.to_s.bytesize} bytes #{suffix}"
-        end
+        end if res
       ensure
         res ? tracker.finish(res) : tracker.error('error') if tracker
       end

@@ -14,7 +14,7 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
         expect(r).to be_a(Xjz::Response)
         expect(r.code).to eql(201)
         expect(r.body).to eql('hello')
-        expect(r.h1_headers).to eql([['content-type', 'text/plain'], ['content-length', '5']])
+        expect(r.h1_headers).to eql([['content-type', 'text/plain; charset=utf-8'], ['content-length', '5']])
       end
 
       it 'should return a response for a hash' do
@@ -34,7 +34,7 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
         expect(r).to be_a(Xjz::Response)
         expect(r.code).to eql(201)
         expect(r.body).to eql("{\"id\":123,\"name\":\"name\",\"other\":123}")
-        expect(r.h1_headers).to eql([['content-type', 'application/json'], ['content-length', '36']])
+        expect(r.h1_headers).to eql([['content-type', 'application/json; charset=utf-8'], ['content-length', '36']])
       end
 
       it 'should return a json response for a hash if accpet type is text' do
@@ -55,7 +55,7 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
         expect(r).to be_a(Xjz::Response)
         expect(r.code).to eql(201)
         expect(r.body).to eql("{\"id\":123,\"name\":\"name\",\"other\":123}")
-        expect(r.h1_headers).to eql([['content-type', 'text/html'], ['content-length', '36']])
+        expect(r.h1_headers).to eql([['content-type', 'text/html; charset=utf-8'], ['content-length', '36']])
       end
 
       it 'should return a response for a array' do
@@ -70,7 +70,7 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
         expect(r).to be_a(Xjz::Response)
         expect(r.code).to eql(201)
         expect(r.body).to eql("[123,\"name\",123]")
-        expect(r.h1_headers).to eql([['content-type', 'application/json'], ['content-length', '16']])
+        expect(r.h1_headers).to eql([['content-type', 'application/json; charset=utf-8'], ['content-length', '16']])
       end
 
       it 'should return a response for grpc request' do
@@ -99,7 +99,7 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
           bb: 'str'
         )
         expect(r.h1_headers).to eql([
-          ["content-type", "application/grpc"],
+          ["content-type", "application/grpc; charset=utf-8"],
           ["content-length", (type == :NORMAL) ? '24' : "26"]
         ])
       end
@@ -117,7 +117,7 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
         expect(r.code).to eql(201)
         expect(r.body).to eql('"hello"')
         expect(r.h1_headers).to eql([
-          ['content-type', 'application/json'], ['content-length', '7']
+          ['content-type', 'application/json; charset=utf-8'], ['content-length', '7']
         ])
       end
 
@@ -128,7 +128,7 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
         r = subject.render(req, {
           http_code: 201,
           desc: 'asdf',
-          headers: { 'content-type' => 'application/xml' },
+          headers: { 'content-type' => 'application/xml; charset=utf-8' },
           data: {
             id: default_types['integer'],
             name: default_types['name'],
@@ -147,7 +147,7 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
         XML
         )
         expect(r.h1_headers).to eql([
-          ['content-type', 'application/xml'], ['content-length', '140']
+          ['content-type', 'application/xml; charset=utf-8'], ['content-length', '140']
         ])
       end
 
@@ -164,7 +164,7 @@ RSpec.describe Xjz::ApiProject::ResponseRenderer do
         expect(r).to be_a(Xjz::Response)
         expect(r.code).to eql(201)
         expect(r.body).to eql("123,name,123\n1,2,3\n")
-        expect(r.h1_headers).to eql([['content-type', 'text/csv'], ['content-length', '19']])
+        expect(r.h1_headers).to eql([['content-type', 'text/csv; charset=utf-8'], ['content-length', '19']])
       end
     end
   end

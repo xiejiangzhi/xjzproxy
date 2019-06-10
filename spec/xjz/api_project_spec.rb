@@ -40,7 +40,9 @@ RSpec.describe Xjz::ApiProject do
         ],
         "total" => 123
       )
-      expect(r.h1_headers).to eql([["content-type", "application/json"], ["content-length", "539"]])
+      expect(r.h1_headers).to eql([
+        ["content-type", "application/json; charset=utf-8"], ["content-length", "539"]
+      ])
     end
 
     it 'should generate response for specified res name' do
@@ -59,7 +61,9 @@ RSpec.describe Xjz::ApiProject do
       expect(r).to be_a(Xjz::Response)
       expect(r.code).to eql(400)
       expect(JSON.parse(r.body)).to eql("code" => 1, "msg" => 'Invalid token')
-      expect(r.h1_headers).to eql([["content-type", "application/json"], ["content-length", "32"]])
+      expect(r.h1_headers).to eql([
+        ["content-type", "application/json; charset=utf-8"], ["content-length", "32"]
+      ])
     end
 
     it 'should return nil for a invalid req' do
@@ -126,7 +130,7 @@ RSpec.describe Xjz::ApiProject do
       ))
       expect(r.code).to eql(400)
       expect(r.h1_headers).to eql([
-        ["a", "aaa"], ["content-type", "application/grpc"], ["content-length", "35"]
+        ["a", "aaa"], ["content-type", "application/grpc; charset=utf-8"], ["content-length", "35"]
       ])
       expect(r.body).to eql("\x00\x00\x00\x00\x1E\n\nhello gRPC\x12\x02\b\x17\x1A\x01a\x1A\x01b*\x06data b")
     end
