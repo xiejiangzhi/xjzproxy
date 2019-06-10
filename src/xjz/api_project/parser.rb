@@ -13,6 +13,8 @@ module Xjz
     OPTS_FIELD = /^(\.[\w-]+)+$/
     EXPAND_HASH_FLAG = '.*'
 
+    class Error < StandardError; end
+
     def parse(raw_data)
       %w{project types partials responses plugins apis}.each_with_object(
         'types' => ApiProject::DataType.default_types.dup
@@ -153,7 +155,7 @@ module Xjz
       env_name = REF_NAMES_MAPPING[type]
       if env_name
         val = (env[env_name] || {})[name]
-        raise "Not found variable '#{var}'" unless val
+        raise Error.new("Not found variable '#{var}'") unless val
         return val if oper.nil?
 
         if oper == '*'
@@ -161,14 +163,14 @@ module Xjz
         elsif env_name == 'types' && oper == 'args'
           ApiProject::DataType.new(val.raw_data.merge('args' => args))
         else
-          raise "Invalid variable #{var}"
+          raise Error.new("Invalid variable #{var}")
         end
       elsif type == '.f'
         path = File.join(env['project']['.dir'], name)
         if File.exist?(path)
           File.read(path)
         else
-          raise "Not found file #{path}"
+          raise Error.new("Not found file #{path}")
         end
       end
     end
@@ -185,7 +187,7 @@ module Xjz
           true
         end
       end
-      raise "Circular dependencies." if r.empty?
+      raise Error.new("Circular dependencies.") if r.empty?
       r + sort_by_dependents!(data, ref_prefix, keys)
     end
 

@@ -1,3 +1,7 @@
 #### <%= icon_tag('list-alt') + toc_id(name.titleize, [:type]) %>
 
-<%= render 'xjzapidoc/_data.md', data: type %>
+% r =  render('xjzapidoc/data_desc.md', data: type) do |k, type, opts, val|
+%   val = Regexp.new(val) if k == 'regexp' && type.blank?
+%   [k, type, opts, val]
+% end 
+<%= r %>

@@ -22,7 +22,7 @@
 % if api[name].present?
 **<%= icon_tag('hashtag') +  name.titleize %>**
 
-<%= render 'xjzapidoc/_data.md', data: api[name] %>
+<%= render 'xjzapidoc/fields.md', data: api[name] %>
 % end
 % end
 
@@ -41,12 +41,13 @@ HTTP Code: `<%= res['http_code'] || 200 %>`
 % if display_res['headers']
 HTTP Headers
 
-<%= render 'xjzapidoc/_data.md', data: display_res['headers'] %>
+<%= render 'xjzapidoc/fields.md', data: display_res['headers'] %>
 % end
 
 HTTP Body
 
-<%= render 'xjzapidoc/_data.md', data: display_res['data'] %>
+% if display_res['data'].present?
+<%= render 'xjzapidoc/fields.md', data: display_res['data'] %>
 
 Example
 
@@ -59,6 +60,11 @@ Example
 <%= render_project_data('apis', [api['.index'], name]) %>
 ```
 % end # data is string
+% else
+
+None 
+
+% end # data present
 % end # is ref link
 % end # each res
 

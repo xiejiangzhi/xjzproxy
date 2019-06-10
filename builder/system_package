@@ -46,7 +46,7 @@ pl = Gem::Platform.local
 platforms ||= [[pl.os, pl.cpu].join('-')]
 
 platforms.each do |platform|
-  dirname = [platform, $config['app_version']].join('-')
+  dirname = platform
   release_dir = File.join($releases_dir, dirname)
   unless File.exist?(File.join(release_dir, 'lib/app/boot'))
     puts "Not found release dir #{release_dir.inspect}"

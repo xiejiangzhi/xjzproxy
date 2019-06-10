@@ -97,7 +97,6 @@ XjzProxy
 
 ### V4
 
-- [ ] Multiple host for a project
 - [ ] Generate string from regexp
 
 

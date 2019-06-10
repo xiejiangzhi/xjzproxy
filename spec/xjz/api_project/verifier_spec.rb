@@ -26,20 +26,20 @@ RSpec.describe Xjz::ApiProject::Verifier do
       d['responses']['123'] = { b: 2 }
       d['plugins'] << { b: 2 }
       expect(subject.verify(d)).to eql([
-        { full_path: "Hash[\"responses\"][\"123\"][\"http_code\"]", message: "present" },
-        { full_path: "Hash[\"responses\"][\"123\"][\"data\"]", message: "present" },
-        { full_path: "Hash[\"types\"][\"xxx\"][\"items\"]", message: "a/an NilClass" },
-        { full_path: "Hash[\"types\"][\"xxx\"][\"items\"]", message: "a/an Array" },
+        { full_path: "Data[\"responses\"][\"123\"][\"http_code\"]", message: "present" },
+        { full_path: "Data[\"responses\"][\"123\"][\"data\"]", message: "present" },
+        { full_path: "Data[\"types\"][\"xxx\"][\"items\"]", message: "a/an NilClass" },
+        { full_path: "Data[\"types\"][\"xxx\"][\"items\"]", message: "a/an Array" },
         {
-          full_path: "Hash[\"types\"][\"xxx\"][\"items\"]",
+          full_path: "Data[\"types\"][\"xxx\"][\"items\"]",
           message: "one of absent (marked as :optional), a/an NilClass, a/an Array"
         },
-        { full_path: "Hash[\"plugins\"][3][\"title\"]", message: "present" },
-        { full_path: "Hash[\"plugins\"][3][\"labels\"]", message: "present" },
-        { full_path: "Hash[\"apis\"][2][\"title\"]", message: "present" },
-        { full_path: "Hash[\"apis\"][2][\"method\"]", message: "present" },
-        { full_path: "Hash[\"apis\"][2][\"path\"]", message: "present" },
-        { full_path: "Hash[\"apis\"][2][\"response\"]", message: "present" }
+        { full_path: "Data[\"plugins\"][3][\"title\"]", message: "present" },
+        { full_path: "Data[\"plugins\"][3][\"labels\"]", message: "present" },
+        { full_path: "Data[\"apis\"][2][\"title\"]", message: "present" },
+        { full_path: "Data[\"apis\"][2][\"method\"]", message: "present" },
+        { full_path: "Data[\"apis\"][2][\"path\"]", message: "present" },
+        { full_path: "Data[\"apis\"][2][\"response\"]", message: "present" }
       ])
     end
   end

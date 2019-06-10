@@ -77,7 +77,7 @@ module Xjz
       def inspect; @key; end
     end
 
-    def verify(raw_data, path = 'Hash')
+    def verify(raw_data, path = 'Data')
       errors = valid_hash(raw_data, RAW_DATA_SCHEMA)
       [
         ['responses', RESPONSE_SCHEMA],
@@ -102,7 +102,7 @@ module Xjz
 
     private
 
-    def valid_hash(hash, schema, key = 'Hash')
+    def valid_hash(hash, schema, key = 'Data')
       errors = []
       ClassyHash.validate(hash, schema,
         errors: errors,

@@ -13,6 +13,8 @@ module Xjz
 
     CACHE_FILENAME = 'protos.yml'
 
+    class Error < StandardError; end
+
     # options:
     #   dir:
     #   protoc_args:
@@ -34,10 +36,7 @@ module Xjz
     def parse
       return grpc_module if grpc_module
 
-      unless File.directory?(protos_path)
-        Logger[:auto].error { "Not found gRPC folder #{protos_path}" }
-        return
-      end
+      raise Error.new("Not found gRPC folder #{protos_path}") unless File.directory?(protos_path)
 
       files = generate_rb_files
       save_cache_data!
@@ -64,7 +63,7 @@ module Xjz
       base_cmd = PROTOC_CMD % {
         out_path: Shellwords.escape(output_path),
         lib_path: Shellwords.escape(protos_path),
-        protoc_args: options[:protoc_args]
+        protoc_args: options['protoc_args']
       }
       files = []
       options['proto_files'].each do |matcher|
@@ -94,10 +93,10 @@ module Xjz
       ]
       out_files.each { |opath| FileUtils.rm_f(opath) }
 
+      Logger[:auto].info { "GRPC compile #{cmd}" }
       out, err, status = Open3.capture3(cmd)
       if status.exitstatus != 0
-        Logger[:auto].error { "Error of #{cmd}: #{err.presence || out}" }
-        return nil
+        raise Error.new("Failed to execute `#{cmd}` #{err.presence || out}")
       elsif err.present?
         Logger[:auto].warn { "#{path}: #{err.presence || out}" }
       end

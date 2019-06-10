@@ -12,10 +12,13 @@
         strong.row.text-danger Errors
         - errors.each do |err|
           .row.text-danger
-            .col-6 = err[:full_path]
-            .col-6
-              | is not 
-              = err[:message]
+            - if String === err
+              .col-12 = err
+            - else
+              .col-6 = err[:full_path]
+              .col-6
+                | is not 
+                = err[:message]
     - else
       ruby:
         ap.cache[:doc_markdown] ||= Xjz::ApiProject::DocRenderer.new(ap).render('md', header: false)

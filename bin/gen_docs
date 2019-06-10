@@ -6,7 +6,7 @@ require_relative '../app'
 
 $config['.api_projects'].each do |ap|
   next if ap.errors.present?
-  path = File.join(ap.repo_dir, 'xjzapidoc.md')
+  path = File.join(ap.repo_dir, 'xjzproxy-doc.md')
   File.write(path, Xjz::ApiProject::DocRenderer.new(ap).render)
   puts "Generated #{ap.repo_path} to #{path}"
 end

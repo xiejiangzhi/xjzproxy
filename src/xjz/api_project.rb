@@ -16,9 +16,8 @@ module Xjz
 
     def match_host?(host)
       return false if data['.enabled'] == false
-      r = data['project']['.host_regexp']
-      return true if r && r.match?(host)
-      false
+      r = (data['project'] || {})['.host_regexp']
+      r && r.match?(host)
     end
 
     # Return nil if don't hijack
@@ -53,17 +52,27 @@ module Xjz
     end
 
     def errors
-      @errors ||= Verifier.verify(raw_data, repo_path) || []
+      @errors ||= begin
+        (Verifier.verify(raw_data, repo_path) || []).tap do |v|
+          @errors = v
+          data # load data and check again
+        end
+      end
     end
 
     def grpc
-      return unless data['project']['.grpc_module']
+      return unless (data['project'] || {})['.grpc_module']
       return unless Xjz.APP_EDITION
       @grpc ||= ApiProject::GRPC.new(self)
     end
 
     def data
-      @data ||= Parser.parse(raw_data)
+      @data ||= begin
+        Parser.parse(raw_data)
+      rescue Parser::Error, GRPCParser::Error => e
+        (@errors ||= []) << e.message
+        {}
+      end
     end
 
     def raw_data
@@ -125,6 +134,9 @@ module Xjz
       erb.filename = file_path
       fdata = YAML.load(erb.result, filename: file_path)
       fdata.is_a?(Hash) ? fdata : {}
+    rescue Psych::SyntaxError => e
+      (@errors ||= []) << e.message
+      {}
     end
   end
 end

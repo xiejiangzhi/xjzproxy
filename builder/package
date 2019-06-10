@@ -7,7 +7,7 @@ require_relative './help'
 pl = Gem::Platform.local
 platform = [pl.os, pl.cpu].join('-')
 
-dirname = [platform, $config['app_version']].join('-')
+dirname = platform
 pkg_dir = File.join($releases_dir, dirname)
 app_dir = "#{pkg_dir}/lib/app"
 ruby_dir = "#{pkg_dir}/lib/ruby"

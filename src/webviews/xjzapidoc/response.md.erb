@@ -7,21 +7,27 @@ HTTP Code: **<%= response['http_code'] || 200 %>**
 % if response['headers']
 HTTP Headers
 
-<%= render 'xjzapidoc/_data.md', data: response['headers'] %>
+<%= render 'xjzapidoc/fields.md', data: response['headers'] %>
 % end
 
 HTTP Body
 
-<%= render 'xjzapidoc/_data.md', data: response['data'] %>
+% if response['data'].present?
+<%= render 'xjzapidoc/fields.md', data: response['data'] %>
 
 Example
 
-% if String === response['data']
+%   if String === response['data']
 ```plaintext
 <%= response['data'] %>
 ```
-% else
+%   else
 ```json
 <%= render_project_data('responses', name) %>
 ```
+%   end
+% else
+
+None
+
 % end

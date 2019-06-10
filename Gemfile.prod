@@ -16,7 +16,7 @@ gem 'http-2', '~> 0.10.2', require: 'http/2', source: 'http://192.168.0.108:8809
 gem 'google-protobuf', '~> 3.7.0'
 gem 'grpc', '~> 1.19.0'
 gem 'grpc-tools', '~> 1.19.0'
-gem 'regexp-examples', '~> 1.4.4'
+gem 'regexp-examples', '~> 1.4.4.1'
 
 gem 'classy_hash', '~> 0.2.1'
 gem 'faker', "~> 1.9.3"

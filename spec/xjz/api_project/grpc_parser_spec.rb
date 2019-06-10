@@ -27,7 +27,7 @@ RSpec.describe Xjz::ApiProject::GRPCParser do
     end
 
     it 'should use protoc_args' do
-      subject = described_class.new(dir, 'dir' => './project_protobufs', protoc_args: '-xxx=asdf')
+      subject = described_class.new(dir, 'dir' => './project_protobufs', 'protoc_args' => '-xxx=asdf')
       %w{hello2.proto dir/messages.proto hello.proto}.each do |file|
         expect(subject).to receive(:generate_pbfiles).with(
           "bundle exec grpc_tools_ruby_protoc --ruby_out=#{File.join($root, 'spec/files/.xjzapi/protos')}" +
