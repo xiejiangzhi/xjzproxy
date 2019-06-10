@@ -5,6 +5,6 @@ partials:
     posts: ".p/post * 3"
     ".posts.desc": a list of post
   post:
-    id: ".t/integer"
+    id: ".t/myid"
     title: a post title
     body: ".t/text"

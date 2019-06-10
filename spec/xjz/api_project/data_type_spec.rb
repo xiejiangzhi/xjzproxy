@@ -1,7 +1,7 @@
 RSpec.describe Xjz::ApiProject::DataType do
   let(:types) { described_class.default_types }
 
-  describe 'generate' do
+  describe '#generate' do
     it 'should return data by items' do
       subject = described_class.new('items' => 123)
       expect(subject.generate).to eql(123)
@@ -53,9 +53,19 @@ RSpec.describe Xjz::ApiProject::DataType do
       subject = types['name']
       expect(subject.generate).to be_a(String)
     end
+
+    it 'should generate by regexp' do
+      regexp_str = '://xjz\.pw/[\w-]*'
+      subject = described_class.new('regexp' => regexp_str, 'prefix' => 'https')
+      regexp = Regexp.new(regexp_str)
+      r = 5.times.map { subject.generate }.uniq
+      expect(r).to_not eql(1)
+      r.each { |v| expect(v).to be_match(regexp) }
+      expect(r.first[0..4]).to eql('https')
+    end
   end
 
-  describe 'verify' do
+  describe '#verify' do
     it 'should verify by val class' do
       expect(types['integer'].verify(123)).to eql(true)
       expect(types['integer'].verify('123')).to eql(false)
@@ -72,6 +82,23 @@ RSpec.describe Xjz::ApiProject::DataType do
       expect(subject.verify(3)).to eql(false)
       expect(subject.verify(4)).to eql(true)
       expect(subject.verify('4')).to eql(false)
+    end
+
+    it 'should verify by regexp' do
+      subject = described_class.new('regexp' => 'go+d$')
+      expect(subject.verify('god')).to eql(true)
+      expect(subject.verify('good')).to eql(true)
+      expect(subject.verify('goood')).to eql(true)
+      expect(subject.verify('123god')).to eql(true)
+      expect(subject.verify('goaod')).to eql(false)
+      expect(subject.verify('god123')).to eql(false)
+    end
+  end
+
+  describe 'other' do
+    it 'should allow redefine default type' do
+      subject = described_class.new('type' => 'integer', 'items' => [1, 2, 3])
+      5.times { expect(subject.generate).to be_between(1, 3) }
     end
   end
 end

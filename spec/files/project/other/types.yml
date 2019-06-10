@@ -9,3 +9,6 @@ types:
     items:
     - "/path/to/%{i}.png"
     prefix: https://xxx.com
+  myid:
+    regexp: "[a-z]{3}-[a-z]{3}"
+    prefix: MID-

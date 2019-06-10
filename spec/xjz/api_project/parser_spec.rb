@@ -26,13 +26,13 @@ RSpec.describe Xjz::ApiProject::Parser do
         "id" => types['integer'],
         "nickname" => types['string'],
         "posts" => [{
+          "id" => types['myid'],
           "body" => types['text'],
-          "id" => types['integer'],
           "title" => "a post title"
         }] * 3
       )
       expect(partials['post']).to eql(
-        'id' => types['integer'],
+        'id' => types['myid'],
         'body' => types['text'],
         'title' => 'a post title'
       )

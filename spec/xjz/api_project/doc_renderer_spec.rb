@@ -106,7 +106,9 @@ RSpec.describe Xjz::ApiProject::DocRenderer do
 
     it '#render_data should render json data of current project for apis' do
       types = subject.project.data['types']
+      mid = 'MID-abc-def'
       allow(types['integer']).to receive(:generate).and_return(123)
+      allow(types['myid']).to receive(:generate).and_return(mid)
       allow(types['string']).to receive(:generate).and_return('ssstring')
       allow(types['avatar']).to receive(:generate).and_return('https://xxx.com/path/to/1.png')
       allow(types['text']).to receive(:generate).and_return('some text')
@@ -118,17 +120,17 @@ RSpec.describe Xjz::ApiProject::DocRenderer do
           "avatar": "https://xxx.com/path/to/1.png",
           "posts": [
             {
-              "id": 123,
+              "id": "#{mid}",
               "title": "a post title",
               "body": "some text"
             },
             {
-              "id": 123,
+              "id": "#{mid}",
               "title": "a post title",
               "body": "some text"
             },
             {
-              "id": 123,
+              "id": "#{mid}",
               "title": "a post title",
               "body": "some text"
             }

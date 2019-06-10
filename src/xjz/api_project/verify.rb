@@ -7,6 +7,7 @@ module Xjz
 
     TYPE_SCHEMA = {
       items: [:optional, NilClass, Array],
+      regexp: [:optional, NilClass, String],
       prefix: [:optional, NilClass, String, Array],
       suffix: [:optional, NilClass, String, Array],
       script: [:optional, NilClass, String]

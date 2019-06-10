@@ -7,7 +7,9 @@ RSpec.describe Xjz::ApiProject do
   describe '#hack_req' do
     it 'should generate response for a valid req' do
       dts = ap.data['types']
+      mid = 'MID-aaa-bbb'
       allow(dts['integer']).to receive(:generate).and_return(123)
+      allow(dts['myid']).to receive(:generate).and_return(mid)
       allow(dts['text']).to receive(:generate).and_return('some text')
       allow(dts['string']).to receive(:generate).and_return('asdf')
       allow(dts['avatar']).to receive(:generate).and_return('http://a.com/a.png')
@@ -22,23 +24,23 @@ RSpec.describe Xjz::ApiProject do
           {
             "avatar" => "http://a.com/a.png", "id" => 123, "nickname" => "asdf",
             "posts" => [
-              { "body" => "some text", "id" => 123, "title" => "a post title" },
-              { "body" => "some text", "id" => 123, "title" => "a post title" },
-              { "body" => "some text", "id" => 123, "title" => "a post title" }
+              { "body" => "some text", "id" => mid, "title" => "a post title" },
+              { "body" => "some text", "id" => mid, "title" => "a post title" },
+              { "body" => "some text", "id" => mid, "title" => "a post title" }
             ]
           },
           {
             "avatar" => "http://a.com/a.png", "id" => 123, "nickname" => "asdf",
             "posts" => [
-              { "body" => "some text", "id" => 123, "title" => "a post title" },
-              { "body" => "some text", "id" => 123, "title" => "a post title" },
-              { "body" => "some text", "id" => 123, "title" => "a post title" }
+              { "body" => "some text", "id" => mid, "title" => "a post title" },
+              { "body" => "some text", "id" => mid, "title" => "a post title" },
+              { "body" => "some text", "id" => mid, "title" => "a post title" }
             ]
           }
         ],
         "total" => 123
       )
-      expect(r.h1_headers).to eql([["content-type", "application/json"], ["content-length", "479"]])
+      expect(r.h1_headers).to eql([["content-type", "application/json"], ["content-length", "539"]])
     end
 
     it 'should generate response for specified res name' do
