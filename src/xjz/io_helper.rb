@@ -17,7 +17,7 @@ module Xjz
       else
         false
       end
-    rescue IO::EAGAINWaitReadable, Errno::EINTR, OpenSSL::SSL::SSLErrorWaitReadable
+    rescue IO::EAGAINWaitReadable, Errno::EINTR, OpenSSL::SSL::SSLErrorWaitReadable, IO::EWOULDBLOCKWaitReadable
       true
     rescue Errno::ECONNRESET, EOFError, Errno::ETIMEDOUT
       false

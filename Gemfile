@@ -15,7 +15,7 @@ group :development do
   gem 'webmock', '~> 3.5.1'
   gem 'super_diff'
 
-  gem 'rubocop', '~> 0.65.0'
+  gem 'rubocop', '~> 0.71.0'
 end
 
 group :license_server do
