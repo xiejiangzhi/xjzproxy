@@ -31,9 +31,13 @@ module Xjz
 
     def new_client
       Faraday.new do |f|
-        f.adapter :net_http_persistent, pool_size: 3 do |http|
-          http.idle_timeout = 100
-          http.retry_change_requests = true
+        if Gem.win_platform?
+          f.adapter Faraday.default_adapter
+        else
+          f.adapter :net_http_persistent, pool_size: 3 do |http|
+            http.idle_timeout = 100
+            http.retry_change_requests = true
+          end
         end
       end
     end

@@ -6,8 +6,11 @@ module Xjz
         opened = false
 
         case Gem::Platform.local.os
-        when 'darwin'
+        when /darwin/i
           Kernel.system("open #{url}")
+          opened = true
+        when /mingw/i
+          Kernel.system("start #{url}")
           opened = true
         else
           %w{xdg-open firefox google-chrome}.each do |cmd|

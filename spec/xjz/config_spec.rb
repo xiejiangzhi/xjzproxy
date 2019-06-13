@@ -1,16 +1,16 @@
 RSpec.describe Xjz::Config do
   let(:config) { Xjz::Config.new($config.path) }
-  let(:user_dir) { File.join($root, 'tmp/user_idr') }
+  let(:user_dir) { File.join($root, 'tmp', 'user_idr') }
   let(:user_path) { File.join(user_dir, 'config.yml') }
 
   before :each do
-    `rm -rf #{user_dir}`
+    FileUtils.rm_rf(user_dir)
     stub_const('Xjz::Config::USER_DIR', user_dir)
     stub_const('Xjz::Config::USER_PATH', user_path)
   end
 
   after clean_user_dir: true do
-    `rm -rf #{user_dir}`
+    FileUtils.rm_rf user_dir
   end
 
   it '#data should return formatted data' do
@@ -41,14 +41,15 @@ RSpec.describe Xjz::Config do
     before :each do
       config['projects_dir'] = File.join($root, "tmp/projects_dir_test")
       `rm -rf #{pd}/*`
-      `mkdir #{pd}/a; touch #{pd}/a/a.yml`
+      FileUtils.mkdir_p("#{pd}/a")
+      `touch #{pd}/a/a.yml`
     end
 
     after :each do
       `rm -rf #{pd}/*`
     end
 
-    it '#load_projects should return formatted private data' do
+    it '#load_projects should return formatted private data', stub_config: true do
       $config['.edition'] = 'pro'
       expect {
         config.load_projects
@@ -59,7 +60,7 @@ RSpec.describe Xjz::Config do
       )
     end
 
-    it '#load_projects should return 1 projects if current is free edition' do
+    it '#load_projects should return 1 projects if current is free edition', stub_config: true do
       $config['.edition'] = nil
 
       expect {
@@ -121,7 +122,7 @@ RSpec.describe Xjz::Config do
 
   describe '#update_license' do
     let(:lpath) { File.join(user_dir, 'license.lcs') }
-    let(:path) { "/tmp/xjzproxy.lcs" }
+    let(:path) { File.join($root, "tmp/xjzproxy.lcs") }
 
     before :each do
       `rm -rf #{user_dir} #{lpath} #{path}`
@@ -132,7 +133,10 @@ RSpec.describe Xjz::Config do
     end
 
     it 'should update license info' do
-      `licenses/manager -g #{path} -i xid -e pro`
+      `ruby licenses/manager -g #{path} -i xid -e pro`
+
+      kpath = File.join($root, 'licenses', 'license_key.pub')
+      stub_const('Xjz::Config::PUBLIC_KEY', File.read(kpath))
 
       expect {
         expect {
@@ -159,16 +163,18 @@ RSpec.describe Xjz::Config do
         eql([nil, nil, nil, nil])
     end
 
-    it 'should not update license and return false if license is invalid' do
-      `rm -rf #{path} #{lpath}`
-      `licenses/manager -g #{path} -i xid -e pro -t 12`
+    it 'should not update license and return false if license is invalid', stub_config: true do
+      kpath = File.join($root, 'licenses', 'license_key.pub')
+      stub_const('Xjz::Config::PUBLIC_KEY', File.read(kpath))
+      [path, lpath].each { |p| FileUtils.rm_rf(p) }
+      `ruby licenses/manager -g #{path} -i xid -e pro -t 12`
 
       expect($config.update_license(path)).to eql(true)
       expect(File.exist?(lpath)).to eql(true)
       expect($config.data.values_at(*%w{.user_id .edition .license_ts .license_ex})).to_not \
         eql([nil, nil, nil, nil])
 
-      `rm -rf #{path} #{lpath}`
+      [path, lpath].each { |p| FileUtils.rm_rf(p) }
       travel_to(Time.now + 13)
       allow($config).to receive(:data).and_return({})
       expect($config.update_license(path)).to eql(false)

@@ -1,4 +1,6 @@
 RSpec.describe Xjz::IOHelper do
+  let(:buffer_size) { Gem.win_platform? ? 32770 : 65536 }
+
   describe '.read_nonblock' do
     let(:dst) { StringIO.new('') }
 
@@ -33,8 +35,8 @@ RSpec.describe Xjz::IOHelper do
       data = 'a' * 65540
       rd, wr = IO.pipe
       subject.write_nonblock(wr, data)
-      expect(rd.read_nonblock(100000).length).to eql(65536)
-      expect(data).to eql('a' * 4)
+      expect(rd.read_nonblock(100000).length).to eql(buffer_size)
+      expect(data).to eql('a' * (65540 - buffer_size))
     end
 
     it 'should not cut data but call callback if give a callback' do
@@ -42,9 +44,9 @@ RSpec.describe Xjz::IOHelper do
       rd, wr = IO.pipe
       args = []
       subject.write_nonblock(wr, data) { |len| args << len }
-      expect(rd.read_nonblock(100000).length).to eql(65536)
+      expect(rd.read_nonblock(100000).length).to eql(buffer_size)
       expect(data).to eql('a' * 65540)
-      expect(args).to eql([65536])
+      expect(args).to eql([buffer_size])
     end
   end
 

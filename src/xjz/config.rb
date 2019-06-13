@@ -5,9 +5,11 @@ module Xjz
   class Config
     attr_reader :path
 
-    USER_DIR = ENV['XJZPROXY_USER_DIR'] || "#{Dir.home}/.xjzproxy"
+    USER_DIR = ENV['XJZPROXY_USER_DIR'] || File.join(Dir.home, '.xjzproxy')
     LICENSE_PATH = File.join(USER_DIR, 'license.lcs')
-    PUBLIC_KEY = File.read(ENV['XJZPROXY_PUBKEY_PATH'] || File.join($root, 'config/app.pub'))
+    PUBLIC_KEY = File.read(
+      ENV['XJZPROXY_PUBKEY_PATH'] || File.join($root, 'config', 'app.pub')
+    )
 
     SCHEMA = {
       proxy_timeout: Integer,
@@ -108,9 +110,13 @@ module Xjz
 
     def valid_license(path = LICENSE_PATH)
       return nil unless File.exist?(path)
-      lcs = File.read(path)
+      lcs = File.open(path, 'rb') { |f| f.read }
       key = OpenSSL::PKey::RSA.new(PUBLIC_KEY)
-      r = key.public_decrypt(lcs) rescue nil
+      r = begin
+        key.public_decrypt(lcs)
+      rescue OpenSSL::PKey::RSAError
+        nil
+      end
       id, edition, ctime, etime, *_flags = r.to_s.split(',')
       et = etime.to_s.to_f > 0 ? Time.at(etime.to_f) : nil
       return nil unless id && (et.nil? || Time.now < et)

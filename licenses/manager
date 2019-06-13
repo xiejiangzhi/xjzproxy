@@ -58,7 +58,7 @@ if path = options[:g]
       options[:id], options[:e], flags: options[:flags] || [], expire_in: options[:t]
     )
     path += '.lcs' unless path.end_with?('.lcs')
-    File.write(path, l)
+    File.open(path, 'wb') { |f| f.write(l) }
   else
     puts options.inspect
     $stderr.puts "id and edition is required"
