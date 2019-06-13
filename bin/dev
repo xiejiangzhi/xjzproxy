@@ -1,5 +1,4 @@
 #! /usr/bin/env bash
 
 dir="$(dirname $0)"
-BUNDLE_GEMFILE="$dir/../Gemfile" APP_ENV=dev $dir/../boot.rb
-
+BUNDLE_GEMFILE="$dir/../Gemfile" APP_ENV=dev ruby $dir/../boot.rb --jit

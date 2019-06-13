@@ -15,6 +15,7 @@ config/*.pem
 .xjzapi
 xjzproxy-doc.md
 xjzproxy-doc.html
+/boot.cmd
 
 # C extensions
 /ext/**/*.bundle
@@ -27,7 +28,7 @@ xjzproxy-doc.html
 
 /releases/linux-*
 /releases/darwin-*
-/releases/windows-*
+/releases/mingw32-*
 /releases/icon-*.png
 
 # compile

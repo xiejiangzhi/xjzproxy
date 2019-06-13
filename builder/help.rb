@@ -1,7 +1,9 @@
 def cmd(str, quiet: false, err_stop: true)
-  puts "$ #{str}" unless quiet
-  unless Kernel.system(str)
-    puts "[ERROR] Failed to run #{str}"
+  sys_str = str.gsub(/C:\/[\w\/-]+\/home/, '/home')
+  puts "$ #{sys_str}" unless quiet
+  unless Kernel.system(sys_str)
+    puts "[ERROR] Failed to run #{sys_str}"
+    puts `env`
     exit 1 if err_stop
   end
 end

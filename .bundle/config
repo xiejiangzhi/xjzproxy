@@ -1,0 +1,4 @@
+---
+BUNDLE_PATH: "C:/Ruby26-x64/msys64/home/xiejiangzhi/Code/xjzproxy/releases/mingw32-x64/lib/ruby/lib/ruby/gems/2.6.0"
+BUNDLE_JOBS: "4"
+BUNDLE_WITHOUT: "development:test"

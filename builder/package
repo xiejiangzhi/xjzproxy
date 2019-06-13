@@ -1,5 +1,6 @@
 #! /usr/bin/env ruby
 
+require 'fileutils'
 require 'shellwords'
 require_relative './config'
 require_relative './help'
@@ -21,7 +22,7 @@ end
 puts "Building #{dirname}"
 
 # init folders
-cmd "mkdir -p #{app_dir}"
+FileUtils.mkdir_p app_dir
 
 ruby_installed = Dir.exist?(File.join(ruby_dir, 'bin'))
 app_installed = Dir.exist?(File.join(app_dir, 'boot'))
@@ -36,7 +37,11 @@ unless app_installed
   cmd "rsync -rtl --delete-before --exclude-from=.buildignore ./ #{app_dir}"
   cmd "cp -pR Gemfile.prod #{app_dir}/Gemfile"
   cmd "cp -pR Gemfile.lock #{app_dir}/Gemfile.lock"
-  cmd "cp -pR builder/wrapper  #{pkg_dir}/run"
+  if Gem.win_platform?
+    cmd "cp -pR builder/wrapper.cmd  #{pkg_dir}/run.cmd"
+  else
+    cmd "cp -pR builder/wrapper  #{pkg_dir}/run"
+  end
 end
 
 gem_ver_name = '2.6.0'
@@ -45,7 +50,15 @@ gem_root_dir = "#{ruby_dir}/lib/ruby/gems/#{gem_ver_name}"
 # install gems
 Bundler.with_clean_env do
   Dir.chdir(app_dir) do
-    cmd "BUNDLE_IGNORE_CONFIG=1 #{ruby_dir}/bin/bundle install --without development test -j 4"
+    if Gem.win_platform?
+      gem_path = `#{ruby_dir}/bin/gem.cmd env gemdir`
+      path = "--path #{gem_path}"
+      cmd "BUNDLE_IGNORE_CONFIG=1 bundle install --without development #{path}"
+      cmd "rm -rf .bundle"
+    else
+      bin = "#{ruby_dir}/bin/bundle"
+      cmd "BUNDLE_IGNORE_CONFIG=1 #{bin} install --without development test -j 4"
+    end
   end
 end
 

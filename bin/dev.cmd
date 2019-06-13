@@ -1,3 +1,5 @@
-@set BUNDLE_GEMFILE="%~dp0/../Gemfile"
-@set APP_ENV=dev 
-@start ruby boot.rb
+cd %~dp0/..
+
+@set BUNDLE_GEMFILE=%CD%/Gemfile
+@set APP_ENV=dev
+@start /D %CD% ruby boot.rb

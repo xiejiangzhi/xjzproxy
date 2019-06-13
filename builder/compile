@@ -105,11 +105,7 @@ Dir.chdir(app_dir) do
 
   Dir[*%w{src/static/**/* src/webviews/**/*}].each do |path|
     next if File.directory?(path)
-    if path =~ /src\/static\/xjz_.+\.js$/
-      $packer.add_data path, Uglifier.compile(File.read(path))
-    else
-      $packer.add_data path, File.read(path)
-    end
+    $packer.add_data path, File.read(path)
   end
   puts "Saved JS and Templates"
 end
