@@ -1,0 +1,23 @@
+id ICON "./icon.ico"
+1 VERSIONINFO
+FILEVERSION     1,0,0,0
+PRODUCTVERSION  1,0,0,0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904E4"
+    BEGIN
+      VALUE "FileDescription", "XJZProxy"
+      VALUE "FileVersion", "1.0"
+      VALUE "InternalName", "XJZProxy"
+      VALUE "LegalCopyright", "Jon.Xie"
+      VALUE "OriginalFilename", "XJZProxy.exe"
+      VALUE "ProductName", "XJZProxy"
+      VALUE "ProductVersion", "1.0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1252
+  END
+END

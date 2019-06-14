@@ -52,16 +52,6 @@ puts "2 ts: #{Time.now - $app_start_at}" if ENV[DEBUG_KEY]
 Bundler.require(*gem_groups)
 puts "3 ts: #{Time.now - $app_start_at}" if ENV[DEBUG_KEY]
 
-Bootsnap.setup(
-  cache_dir: File.join(Dir.home, '.xjzproxy/cache'),
-  development_mode: $app_env == 'dev',
-  load_path_cache: true,
-  autoload_paths_cache: true,
-  disable_trace: true,
-  compile_cache_iseq: false,
-  compile_cache_yaml: false
-)
-
 require 'faker'
 
 require 'yaml'

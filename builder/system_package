@@ -42,22 +42,12 @@ def build_debian_pkg(release_dir)
 end
 
 def build_windows_pkg(release_dir)
-  # deb_app_dir = "#{deb_dir}/usr/local/etc/#{APP_NAME}"
-  # $config['.linux_path'] = "/usr/local/etc/#{APP_NAME}"
-  # desktop_body = load_erb(File.join($releases_dir, 'template.desktop'))
-  # control_body = load_erb(File.join($releases_dir, 'debian_control'))
-  # cmd "rm -rf #{deb_dir} #{release_dir}/*.deb"
-
-  # Dir.chdir(release_dir) do
-  #   launcher_dir = File.join(deb_dir, "/usr/share/applications/")
-  #   cmd "mkdir -p #{deb_app_dir} #{launcher_dir} #{deb_dir}/DEBIAN"
-  #   cmd "cp -r #{release_dir}/lib #{deb_app_dir}/lib"
-  #   cmd "cp -r #{release_dir}/run #{deb_app_dir}/run"
-  #   File.write("#{launcher_dir}/#{APP_NAME}.desktop", desktop_body)
-  #   File.write("#{deb_dir}/DEBIAN/control", control_body)
-  #   deb_name = "#{APP_NAME}-#{$config['app_version']}-amd64.deb"
-  #   cmd "docker run -ti --rm -v #{release_dir}:/app -w /app ubuntu:16.04 dpkg-deb -v -b /app/pkg #{deb_name}"
-  # end
+  Dir.chdir('ext/win') do
+    cmd "make clean"
+    cmd "make"
+  end
+  cmd "cp ext/win/app.exe #{release_dir}/XJZProxy.exe"
+  cmd "rm #{release_dir}/run.cmd"
 end
 
 platforms = ARGV.first ? [ARGV.first] : nil

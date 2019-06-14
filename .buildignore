@@ -13,17 +13,15 @@ config/*.pem
 
 .xjzapi
 xjzapidoc.md
+.ruby-version
 
 # Extensions
-/ext/**/Makefile
-/ext/**/*.o
-/ext/**/*.c
-/ext/**/extconf.rb
-/ext/**/*.go
+/ext
 
 # build
 /releases
 /builder
+build.yml
 
 # other
 /.git*

@@ -22,7 +22,7 @@ xjzproxy-doc.html
 /ext/**/*.so
 /ext/**/Makefile
 /ext/**/*.o
-/ext/webview/webview
+/ext/**/*.exe
 
 # build
 
