@@ -7,6 +7,11 @@ html
 
     title XJZ Proxy
 
+    - if $app_env == 'dev'
+      script type='text/javascript' src="//cdn.bootcss.com/eruda/1.5.2/eruda.min.js"
+      javascript:
+        eruda.init();
+
     script type='text/javascript' src='/static/jquery.min.js'
     script type='text/javascript' src='/static/popper.min.js'
     script type='text/javascript' src='/static/bootstrap.min.js'

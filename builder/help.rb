@@ -3,7 +3,6 @@ def cmd(str, quiet: false, err_stop: true)
   puts "$ #{sys_str}" unless quiet
   unless Kernel.system(sys_str)
     puts "[ERROR] Failed to run #{sys_str}"
-    puts `env`
     exit 1 if err_stop
   end
 end

@@ -4,4 +4,4 @@
 @set BUNDLE_GEMFILE=%SELFDIR%\lib\app\Gemfile
 @set BUNDLE_IGNORE_CONFIG=
 
-@%SELFDIR%\lib\ruby\bin\ruby.exe %SELFDIR%\lib\app\boot
+@start /MIN %SELFDIR%\lib\ruby\bin\ruby.cmd %SELFDIR%\lib\app\boot

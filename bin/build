@@ -10,7 +10,7 @@ fi
 
 ./builder/compile
 ./builder/package
-[[ $(which docker) ]] && ./builder/system_package
+./builder/system_package
 
 echo "Finished all"
 # echo "Run system_package to build package for different system"

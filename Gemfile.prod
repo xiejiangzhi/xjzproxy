@@ -9,7 +9,7 @@ gem 'rack', '~> 2.0.6'
 gem 'concurrent-ruby', '~> 1.1.4'
 gem 'builder', '~> 3.2.3'
 gem 'webview', '~> 0.1.5'
-gem 'xjz_loader', '~> 0.1.5', require: false, source: "#{gem_host}/private"
+gem 'xjz_loader', '~> 0.1.6', require: false, source: "#{gem_host}/private"
 # gem 'xjz_loader', '~> 0.1.5', require: false, path: '../xjz_loader'
 
 gem 'faraday', '~> 0.15.4'
@@ -22,7 +22,8 @@ gem 'http-2', '~> 0.10.1.1', require: 'http/2', source: "#{gem_host}/private"
 gem 'google-protobuf', '~> 3.7.0'
 gem 'grpc', '~> 1.21.0'
 gem 'grpc-tools', '~> 1.19.0'
-gem 'regexp-examples', '~> 1.4.4', github: 'xiejiangzhi/regexp-examples'
+# gem 'regexp-examples', '~> 1.4.4', github: 'xiejiangzhi/regexp-examples'
+gem 'regexp-examples', '~> 1.4.4.1', source: "#{gem_host}/private"
 
 gem 'classy_hash', '~> 0.2.1'
 gem 'faker', "~> 1.9.3"

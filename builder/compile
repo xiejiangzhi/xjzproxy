@@ -111,7 +111,7 @@ Dir.chdir(app_dir) do
 end
 
 out_path = File.join(app_dir, 'data')
-File.write(out_path, $packer.result)
+File.open(out_path, 'wb') { |f| f.write($packer.result) }
 
 puts "Output #{out_path}"
 

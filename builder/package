@@ -5,6 +5,8 @@ require 'shellwords'
 require_relative './config'
 require_relative './help'
 
+$stdout.sync = true
+
 pl = Gem::Platform.local
 platform = [pl.os, pl.cpu].join('-')
 
@@ -50,14 +52,19 @@ gem_root_dir = "#{ruby_dir}/lib/ruby/gems/#{gem_ver_name}"
 # install gems
 Bundler.with_clean_env do
   Dir.chdir(app_dir) do
+    ENV['BUNDLE_IGNORE_CONFIG'] = '1'
+
     if Gem.win_platform?
-      gem_path = `#{ruby_dir}/bin/gem.cmd env gemdir`
-      path = "--path #{gem_path}"
-      cmd "BUNDLE_IGNORE_CONFIG=1 bundle install --without development #{path}"
+      sys_gem_path = `#{ruby_dir}/bin/gem.cmd env gemdir`
+      gem_dir = "./vendor"
+      FileUtils.mkdir_p gem_dir
+      cmd "bundle install --without development test --path #{gem_dir}"
+      # copy dir and attributes, but don't cover exists files
+      cmd "cp -pRn #{gem_dir}/ruby/2.6.0/* #{sys_gem_path}/"
       cmd "rm -rf .bundle"
+      # cmd "#{ruby_dir}/bin/bundle.cmd list"
     else
-      bin = "#{ruby_dir}/bin/bundle"
-      cmd "BUNDLE_IGNORE_CONFIG=1 #{bin} install --without development test -j 4"
+      cmd "#{ruby_dir}/bin/bundle install --without development test -j 4"
     end
   end
 end

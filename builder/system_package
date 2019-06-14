@@ -41,6 +41,25 @@ def build_debian_pkg(release_dir)
   end
 end
 
+def build_windows_pkg(release_dir)
+  # deb_app_dir = "#{deb_dir}/usr/local/etc/#{APP_NAME}"
+  # $config['.linux_path'] = "/usr/local/etc/#{APP_NAME}"
+  # desktop_body = load_erb(File.join($releases_dir, 'template.desktop'))
+  # control_body = load_erb(File.join($releases_dir, 'debian_control'))
+  # cmd "rm -rf #{deb_dir} #{release_dir}/*.deb"
+
+  # Dir.chdir(release_dir) do
+  #   launcher_dir = File.join(deb_dir, "/usr/share/applications/")
+  #   cmd "mkdir -p #{deb_app_dir} #{launcher_dir} #{deb_dir}/DEBIAN"
+  #   cmd "cp -r #{release_dir}/lib #{deb_app_dir}/lib"
+  #   cmd "cp -r #{release_dir}/run #{deb_app_dir}/run"
+  #   File.write("#{launcher_dir}/#{APP_NAME}.desktop", desktop_body)
+  #   File.write("#{deb_dir}/DEBIAN/control", control_body)
+  #   deb_name = "#{APP_NAME}-#{$config['app_version']}-amd64.deb"
+  #   cmd "docker run -ti --rm -v #{release_dir}:/app -w /app ubuntu:16.04 dpkg-deb -v -b /app/pkg #{deb_name}"
+  # end
+end
+
 platforms = ARGV.first ? [ARGV.first] : nil
 pl = Gem::Platform.local
 platforms ||= [[pl.os, pl.cpu].join('-')]
@@ -58,6 +77,7 @@ platforms.each do |platform|
   case platform
   when /^darwin/ then build_osx_app(release_dir)
   when /^linux/ then build_debian_pkg(release_dir)
+  when /^mingw/ then build_windows_pkg(release_dir)
   else
     puts "Invalid platform #{platform.inspect}"
   end
