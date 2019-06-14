@@ -36,8 +36,8 @@ parser = OptionParser.new do |opts|
     options[:c] = path
   end
 
-  opts.on('-tSECONDS', '--time SECONDS', 'Expire in the seconds') do |s|
-    options[:t] = s.to_i
+  opts.on('-tDAYS', '--time DAYS', 'Expire in the seconds') do |ds|
+    options[:t] = ds.to_i * 3600 * 24
   end
 end
 parser.parse!

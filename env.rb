@@ -11,64 +11,76 @@ end
 ENV['RACK_ENV'] = $app_env
 
 $rfts = {}
+DEBUG_KEY = 'XJZ_LOAD_DEBUG'
 
-def require(*args)
-  sts = Time.now
-  Kernel.require(*args)
-ensure
-  fname = args.first
-  fname = fname.split('/gems/').last if fname.match?(/^c:/i)
-  pkg_name = fname.split('/').first
-  ets = Time.now
-  ($rfts[pkg_name] ||= []) << [sts, ets, fname]
-end
-
-def show_rfts
-  $rfts.map do |k, rts|
-    ms = (rts.map { |s, e, _| e - s }.reduce(&:+) * 1000).round(3)
-    [k, rts, ms]
-  end.sort_by(&:last).each do |k, rts, ms|
-    puts "require #{k} - #{rts.size} files, cost #{ms}ms"
-    rts.each do |sts, ets, fname|
-      puts " - #{fname} cost #{((ets - sts) * 1000).round(3)}ms"
-    end
+if ENV[DEBUG_KEY]
+  def require(*args)
+    sts = Time.now
+    Kernel.require(*args)
+  ensure
+    fname = args.first
+    fname = fname.split('/gems/').last if fname.match?(/^(c:|\/u)/i)
+    pkg_name = fname.split('/').first
+    ets = Time.now
+    ($rfts[pkg_name] ||= []) << [sts, ets, fname]
   end
-  arr_rfts = $rfts.values
-  ms = ((arr_rfts[-1][-1][1] - arr_rfts[0][0][0]) * 1000).round(3)
-  puts "total cost #{ms}ms"
+
+  def show_rfts
+    $rfts.map do |k, rts|
+      ms = (rts.map { |s, e, _| e - s }.reduce(&:+) * 1000).round(3)
+      [k, rts, ms]
+    end.sort_by(&:last).each do |k, rts, ms|
+      puts "require #{k} - #{rts.size} files, cost #{ms}ms"
+      # rts.each do |sts, ets, fname|
+      #   puts " - #{fname} cost #{((ets - sts) * 1000).round(3)}ms"
+      # end
+    end
+    arr_rfts = $rfts.values
+    ms = ((arr_rfts[-1][-1][1] - arr_rfts[0][0][0]) * 1000).round(3)
+    puts "total cost #{ms}ms"
+  end
 end
 
-# Kernel.require('bundler')
+puts "1 ts: #{Time.now - $app_start_at}" if ENV[DEBUG_KEY]
 
-puts method(:require).inspect
 
-%w{
-  uri pathname thread fileutils delegate rbconfig shellwords digest
-  forwardable tempfile cgi stringio json timeout base64 time date
-  erb ostruct tmpdir rubygems singleton net/http socket
-}.map do |name|
-  Thread.new { require name }
-end.map(&:join)
 
-show_rfts
-$rfts = {}
-
-puts "0 ts: #{Time.now - $app_start_at}"
-
-puts "1 ts: #{Time.now - $app_start_at}"
 require 'bundler'
 gem_groups = [:default]
 gem_groups << :development unless $app_env == 'prod'
-puts "2 ts: #{Time.now - $app_start_at}"
+puts "2 ts: #{Time.now - $app_start_at}" if ENV[DEBUG_KEY]
 Bundler.require(*gem_groups)
-puts "3 ts: #{Time.now - $app_start_at}"
+puts "3 ts: #{Time.now - $app_start_at}" if ENV[DEBUG_KEY]
+
+Bootsnap.setup(
+  cache_dir: File.join(Dir.home, '.xjzproxy/cache'),
+  development_mode: $app_env == 'dev',
+  load_path_cache: true,
+  autoload_paths_cache: true,
+  disable_trace: true,
+  compile_cache_iseq: false,
+  compile_cache_yaml: false
+)
+
+require 'faker'
 
 require 'yaml'
 require 'objspace'
-require 'active_support/core_ext'
-puts "4 ts: #{Time.now - $app_start_at}"
+require 'active_support/dependencies/autoload'
+require 'active_support/number_helper'
+%w{
+  hash/deep_merge hash/slice hash/indifferent_access hash/conversions
+  array/wrap array/conversions
+  string/output_safety string/strip
+  integer/time numeric/time
+  numeric/bytes
+  object/deep_dup module/introspection
+}.each do |f|
+  require "active_support/core_ext/#{f}"
+end
 
-show_rfts
-exit
+puts "4 ts: #{Time.now - $app_start_at}" if ENV[DEBUG_KEY]
+show_rfts if ENV[DEBUG_KEY]
+exit if ENV[DEBUG_KEY]
 
 I18n.load_path += Dir[File.join($root, 'config/locales/*.{yml,rb}')]

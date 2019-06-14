@@ -1,12 +1,12 @@
 # source 'https://gems.ruby-china.com'
 
-gem_host = 'http://192.168.0.107:8809'
+gem_host = 'http://192.168.0.108:8809'
 source gem_host
 
 # Basic
-gem 'activesupport', '~> 5.2.2', require: 'active_support'
+gem 'activesupport', '~> 5.2.2', require: false
 gem 'rack', '~> 2.0.6'
-gem 'concurrent-ruby', '~> 1.1.4'
+# gem 'concurrent-ruby', '~> 1.1.4'
 gem 'builder', '~> 3.2.3'
 gem 'webview', '~> 0.1.5'
 gem 'xjz_loader', '~> 0.1.6', require: false, source: "#{gem_host}/private"
@@ -26,7 +26,7 @@ gem 'grpc-tools', '~> 1.19.0'
 gem 'regexp-examples', '~> 1.4.4.1', source: "#{gem_host}/private"
 
 gem 'classy_hash', '~> 0.2.1'
-gem 'faker', "~> 1.9.3"
+gem 'faker', "~> 1.9.3", require: false
 
 gem 'filewatcher', '~> 1.1.1'
 
@@ -37,3 +37,4 @@ gem 'websocket', '~> 1.2.8'
 gem 'sassc', '~> 2.0.1'
 gem 'redcarpet', '~> 3.4.0'
 
+gem 'bootsnap', '~> 1.4.1'

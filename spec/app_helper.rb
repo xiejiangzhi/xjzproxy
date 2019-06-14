@@ -9,6 +9,8 @@ Bundler.require(:default, :development)
 
 require 'spec_helper'
 
+$app_start_at = Time.now
+
 ENV['XJZPROXY_USER_DIR'] = File.expand_path('../files/app_home', __FILE__)
 `rm -rf spec/files/app_home/config.yml`
 # ENV['XJZPROXY_PUBKEY_PATH'] = 'xxx'

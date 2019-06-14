@@ -7,6 +7,7 @@ module Xjz
 
     USER_DIR = ENV['XJZPROXY_USER_DIR'] || File.join(Dir.home, '.xjzproxy')
     LICENSE_PATH = File.join(USER_DIR, 'license.lcs')
+    TRIAL_LICENSE_PATH = File.join($root, 'config', 'trial.lcs')
     PUBLIC_KEY = File.read(
       ENV['XJZPROXY_PUBKEY_PATH'] || File.join($root, 'config', 'app.pub')
     )
@@ -79,7 +80,7 @@ module Xjz
         r['host_whitelist'] ||= []
         r['logger_level'] ||= {}
         r['alpn_protocols'] ||= %w{h2 http/1.1}
-        r.merge!(valid_license || {})
+        r.merge!(valid_license || valid_license(TRIAL_LICENSE_PATH) || {})
       end
     end
 

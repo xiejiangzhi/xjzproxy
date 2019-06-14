@@ -36,7 +36,7 @@ RSpec.describe Xjz::FileWatcher, stub_config: true do
 
       [pdir1, pdir2].each { |dir| FileUtils.mkdir(dir) }
       touch ["#{pdir1}/a.yml", "#{pdir1}/b.yml", "#{pdir2}/aa.yml"]
-      sleep 0.1
+      sleep 0.15
       touch ["#{pdir1}/a.yml"]
       FileUtils.rm "#{pdir2}/aa.yml"
       sleep 0.2
