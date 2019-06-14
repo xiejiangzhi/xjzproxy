@@ -65,8 +65,11 @@ module Xjz
         opened = false
 
         case Gem::Platform.local.os
-        when 'darwin'
+        when /darwin/i
           Kernel.system("open #{dir}")
+          opened = true
+        when /mingw/i
+          Kernel.system("start #{dir.tr("/", "\\")}")
           opened = true
         else
           %w{xdg-open}.each do |cmd|

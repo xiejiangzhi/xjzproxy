@@ -17,15 +17,16 @@
   .col-8.px-0
     .input-group.input-group-sm
       ruby:
-        title = "<strong>Syntax: </strong><br />'host-or-path host-or-path field=val field2>val'<br />"
+        title = "<div class='text-left'><strong>Syntax: </strong><br />'host-or-path host-or-path field=val field2>val'<br />"
         title << " <strong>Example: </strong><br />'xjz.pw /api/v1 status>=200 status<400 method=post'<br />"
-        title << " <strong>Operations: </strong><br /> #{escape_html("> >= < <= = != ~(Regexp) !~")}<br />"
-        title << " <strong>Field: </strong>status, method and type(content_type)"
+        title << " <strong>Operations: </strong><br /> #{escape_html("> >= < <= = != ~(Regexp) !~")}<br />\n"
+        title << " <strong>Field: </strong><br />status, method and type(content_type)</div>"
 
       input.ml-2.form-control.d-inline[
         type='text' value=session[:history_filter]&.filters_str
         placeholder='Filter' style='margin-top: 2px;'
-        title=title data-toggle='popover' data-trigger='hover' data-html='true' data-placement='auto'
+        title=title data-toggle='tooltip' data-trigger='hover'
+        data-html='true' data-placement='auto'
         xjz-id='history.filter' xjz-bind='keyup'
       ]
 
