@@ -33,8 +33,10 @@ xjzproxy-doc.html
 
 # compile
 /data
+/loading.html
 
 .DS_Store
 /licenses.csv
 /licenses/license_key
 /licenses/**/*.lcs
+

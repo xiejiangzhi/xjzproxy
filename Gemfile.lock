@@ -131,6 +131,7 @@ DEPENDENCIES
   bloomfilter-rb!
   builder (~> 3.2.3)
   classy_hash (~> 0.2.1)
+  concurrent-ruby (~> 1.1.4)
   faker (~> 1.9.3)
   faraday (~> 0.15.4)
   filewatcher (~> 1.1.1)

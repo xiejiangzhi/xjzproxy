@@ -3,7 +3,8 @@ module Xjz
     attr_reader :app
 
     def initialize
-      @app = Webview::App.new(debug: $config['webview_debug'], title: $app_name)
+      title = "#{$app_name} - #{$app_version}"
+      @app = Webview::App.new(debug: $config['webview_debug'], title: title)
     end
 
     def open(url); app.open(url); end

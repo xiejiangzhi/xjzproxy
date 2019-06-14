@@ -105,7 +105,7 @@ module Xjz
     end
 
     def files(dir_path = repo_path)
-      Dir["#{dir_path}/**/*.{yml,yaml}"]
+      Dir[File.join(dir_path, "**/*.{yml,yaml}")]
     end
 
     def repo_dir

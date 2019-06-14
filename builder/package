@@ -61,6 +61,7 @@ Bundler.with_clean_env do
       cmd "bundle install --without development test --path #{gem_dir}"
       # copy dir and attributes, but don't cover exists files
       cmd "cp -pRn #{gem_dir}/ruby/2.6.0/* #{sys_gem_path}/"
+      cmd "rm -rf #{gem_dir}"
       cmd "rm -rf .bundle"
       # cmd "#{ruby_dir}/bin/bundle.cmd list"
     else

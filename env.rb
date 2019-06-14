@@ -43,12 +43,23 @@ end
 
 puts "1 ts: #{Time.now - $app_start_at}" if ENV[DEBUG_KEY]
 
-
-
 require 'bundler'
 gem_groups = [:default]
 gem_groups << :development unless $app_env == 'prod'
+
+Bundler.setup(*gem_groups)
+
 puts "2 ts: #{Time.now - $app_start_at}" if ENV[DEBUG_KEY]
+
+require 'webview'
+
+if Gem.win_platform?
+  $loading_window = Webview::App.new(
+    width: 600, height: 400, title: "#{$app_name} Loading"
+  )
+  $loading_window.open('file://' + File.join($root, 'loading.html'))
+end
+
 Bundler.require(*gem_groups)
 puts "3 ts: #{Time.now - $app_start_at}" if ENV[DEBUG_KEY]
 

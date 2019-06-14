@@ -2,6 +2,7 @@ $app_name = 'XJZProxy'
 
 # for testing, load this file without $root
 $root ||= File.expand_path('..', __FILE__)
+$app_version = File.read(File.join($root, 'APP_VERSION'))
 
 unless defined?(XjzLoader) && XjzLoader.respond_to?(:load_file)
   require File.expand_path('../src/xjz/loader', __FILE__)
@@ -34,5 +35,5 @@ $config.verify.each do |err|
   Xjz::Logger[:auto].error { err }
 end
 Xjz::Logger[:auto].debug { "Load projects..." }
-$config.load_projects
+Thread.new { $config.load_projects }
 $config.shared_data.app.cert_manager = Xjz::CertManager.new

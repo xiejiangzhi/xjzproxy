@@ -5,6 +5,7 @@ require 'uri'
 require 'xjz_loader/packer'
 require 'openssl'
 require 'uglifier'
+require 'slim'
 
 require_relative './help'
 require_relative './config'
@@ -113,6 +114,14 @@ end
 out_path = File.join(app_dir, 'data')
 File.open(out_path, 'wb') { |f| f.write($packer.result) }
 
-puts "Output #{out_path}"
+puts "Output data #{out_path}"
+
+data = File.read(File.join(app_dir, 'src/webviews/loading.html.slim'))
+template = Slim::Template.new { data }
+File.write(File.join(app_dir, 'loading.html'), template.render)
+puts "Created loading.html"
+
+File.write(File.join(app_dir, 'APP_VERSION'), $config['app_version'])
+puts "Create APP_VERSION"
 
 puts 'Done'
