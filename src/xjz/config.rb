@@ -80,6 +80,7 @@ module Xjz
         r['host_whitelist'] ||= []
         r['logger_level'] ||= {}
         r['alpn_protocols'] ||= %w{h2 http/1.1}
+        r['.api_projects'] = []
         r.merge!(valid_license || valid_license(TRIAL_LICENSE_PATH) || {})
       end
     end
@@ -219,6 +220,7 @@ module Xjz
     def format_projects(paths)
       return [] unless paths
       paths.map do |path|
+        Logger[:auto].info("Load project #{path}")
         ap = Xjz::ApiProject.new(path)
         if (errs = ap.errors).present?
           Xjz::Logger[:auto].error { "Failed to load project '#{path}'\n#{errs.join("\n")}" }

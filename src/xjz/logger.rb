@@ -12,9 +12,9 @@ module Xjz
           name = caller[0].to_s
           name = name.delete_prefix($root + '/') if name[$root]
           name = name.delete_prefix('src/xjz/') if name[/^src\/xjz/]
-          progname = name.split(':', 2).first
+          progname, line, _ = name.split(':', 3)
         end
-        instance[progname]
+        instance["#{progname}:#{line}"]
       end
     end
 
@@ -30,12 +30,12 @@ module Xjz
       'FATAL' => "\e[31m%-5s \e[39m[%s #%s] \e[31m%s -- \e[90m%.3fms %.3fs %s\e[39m\n"
     }
 
-    def initialize(logdev = $stdout)
+    def initialize(logdev = $logdev)
       @logger = ::Logger.new(logdev, level: :debug)
       @logger.formatter = proc do |severity, datetime, progname, msg|
         date = datetime.strftime("%Y-%m-%dT%H:%M:%S")
         ts_diff, ts_cost = time_info
-        format = get_formatter(logdev, severity)
+        format = get_formatter(logdev || $stdout, severity)
         format % [
           severity, date, decode_int(Thread.current.object_id), msg,
           ts_diff, ts_cost, progname

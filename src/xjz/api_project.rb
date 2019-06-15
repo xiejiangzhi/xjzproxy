@@ -68,8 +68,13 @@ module Xjz
 
     def data
       @data ||= begin
+        Logger[:auto].info { "Parse project #{repo_path}" }
         Parser.parse(raw_data)
       rescue Parser::Error, GRPCParser::Error => e
+        (@errors ||= []) << e.message
+        {}
+      rescue => e
+        Logger[:auto].error { e.log_inspect }
         (@errors ||= []) << e.message
         {}
       end

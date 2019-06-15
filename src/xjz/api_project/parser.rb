@@ -22,6 +22,7 @@ module Xjz
         val = raw_data[key]
         r[key] ||= {}
         next unless val
+        Logger[:auto].debug { "Parse #{key}" }
         send("parse_#{key}", val, r)
       end
     end
@@ -167,6 +168,7 @@ module Xjz
         end
       elsif type == '.f'
         path = File.join(env['project']['.dir'], name)
+        Logger[:auto].debug { "Parse .f, read #{path}" }
         if File.exist?(path)
           File.read(path)
         else

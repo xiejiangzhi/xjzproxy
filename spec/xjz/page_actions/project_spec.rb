@@ -79,6 +79,7 @@ RSpec.describe 'project', webpage: true do
 
   describe 'opendir.xxx.click' do
     it 'should call open folder cmd' do
+      allow(Gem::Platform.local).to receive(:os).and_return('darwin')
       expect(Kernel).to receive(:system).with("open #{ap.repo_dir}")
       emit_msg("project.opendir.#{ap.object_id}.click")
     end

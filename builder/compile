@@ -12,7 +12,7 @@ require_relative './config'
 
 app_dir = File.expand_path('../../', __FILE__)
 PUBLIC_KEY = OpenSSL::PKey::RSA.new(
-  File.read(File.join(app_dir, 'licenses/license_key.pub'))
+  File.read(File.join(app_dir, 'config/app.pub'))
 ).to_der
 LICENSE_REGEXP = /Xjz.LICENSE_CHECK\(([\w:'"]+)?\)/
 ONLINE_LICENSE_REGEXP = /Xjz.LICENSE_ONLINE_CHECK/
@@ -23,19 +23,28 @@ $packer = XjzLoader::Packer.new
 def license_checker(edition)
   edition = edition.to_s.tr(':\'"', '').downcase
   code = <<~RUBY.lines.map(&:strip).join(';')
-    lpath = Xjz::Config::LICENSE_PATH
-    $LOADED_FEATURES.delete_if { |path| path['/openssl.'] }
-    stderr = $stderr.dup
-    $stderr.reopen('/dev/null')
-    require 'openssl.so'
-    $stderr.reopen(stderr)
-    k = OpenSSL::PKey::RSA.new(#{mix_str(PUBLIC_KEY, 10, 10000)})
-    id, e, ts, ex = (File.exist?(lpath) ? k.public_decrypt(File.read(lpath)).split(',') : nil) rescue nil
-    $config.data.merge!('.user_id' => id, '.edition' => e)
-    tex = ex.to_f > 0 ? Time.at(ex.to_f) : nil
-    $config.data.merge!('.license_ts' => ts ? Time.at(ts.to_f) : nil, '.license_ex' => tex)
-    te = #{edition.inspect}
-    (id && (te == e || te.empty?) && (tex.nil? || Time.now < tex)) ? true : false rescue false
+    begin
+      lpath = Xjz::Config::LICENSE_PATH
+      lpath = Xjz::Config::TRIAL_LICENSE_PATH unless File.exist?(lpath)
+      Xjz::Logger[:auto].info { lpath }
+      $LOADED_FEATURES.delete_if { |path| path['/openssl.'] }
+      stderr = $stderr.dup
+      $stderr.reopen(File::NULL)
+      require 'openssl.so'
+      $stderr.reopen(stderr)
+      k = OpenSSL::PKey::RSA.new(#{mix_str(PUBLIC_KEY, 10, 10000)})
+      lcs = File.open(lpath, 'rb') { |f| f.read }
+      id, e, ts, ex = k.public_decrypt(lcs).split(',')
+      $config.data.merge!('.user_id' => id, '.edition' => e)
+      tex = ex.to_f > 0 ? Time.at(ex.to_f) : nil
+      $config.data.merge!('.license_ts' => ts ? Time.at(ts.to_f) : nil, '.license_ex' => tex)
+      te = #{edition.inspect}
+      (id && (te == e || te.empty?) && (tex.nil? || Time.now < tex)) ? true : false rescue false
+    rescue Exception => e
+      puts e.log_inspect
+      Xjz::Logger[:auto].error { e.log_inspect } rescue nil
+      false
+    end
   RUBY
   encode_code(code, 20, 60).strip
 end
@@ -44,24 +53,32 @@ def license_online_checker
   uri = URI.parse($config['online_verify_url'])
   code = <<~RUBY.lines.map(&:strip).join(';')
     require 'base64'
-    lpath = Xjz::Config::LICENSE_PATH
-    c = Xjz::ProxyClient::HTTP1.new(#{uri.host.inspect}, #{uri.port}, ssl: true).client
-    cid = (Gem::Platform.local.to_a[0..1] + [Socket.gethostname, Dir.home]).join(',')
-    cid = OpenSSL::Digest::SHA256.hexdigest(cid)
-    l = Base64.strict_encode64(File.read(lpath)) if File.exist?(lpath)
-    if l
-      Thread.new do
-        r = c.post(#{uri.to_s.inspect}) do |req|
-          req.options.timeout = 15
-          req.body = { l: l, id: cid }.to_query
-        end rescue nil
-        json = JSON.parse(r.body) if r&.status == 200
-        if json && !json['valid']
-          $config.data.merge!('.user_id' => nil, '.edition' => nil)
-          $config.data.merge!('.license_ts' => nil, '.license_ex' => nil)
-          FileUtils.rm_rf(lpath)
+    begin
+      lpath = Xjz::Config::LICENSE_PATH
+      lpath = Xjz::Config::TRIAL_LICENSE_PATH unless File.exist?(lpath)
+      c = Xjz::ProxyClient::HTTP1.new(#{uri.host.inspect}, #{uri.port}, ssl: true).client
+      cid = (Gem::Platform.local.to_a[0..1] + [Socket.gethostname, Dir.home]).join(',')
+      cid = OpenSSL::Digest::SHA256.hexdigest(cid)
+      lcs = File.open(lpath, 'rb') { |f| f.read }
+      l = Base64.strict_encode64(lcs) if File.exist?(lpath)
+      if l
+        Thread.new do
+          r = c.post(#{uri.to_s.inspect}) do |req|
+            req.options.timeout = 15
+            req.body = { l: l, id: cid }.to_query
+          end rescue nil
+          json = JSON.parse(r.body) if r&.status == 200
+          if json && !json['valid']
+            $config.data.merge!('.user_id' => nil, '.edition' => nil)
+            $config.data.merge!('.license_ts' => nil, '.license_ex' => nil)
+            FileUtils.rm_rf(lpath)
+          end
         end
       end
+      true
+    rescue Exception => e
+      Xjz::Logger[:auto].error { e.log_inspect } rescue nil
+      false
     end
   RUBY
   encode_code(code, 20, 60).strip
@@ -97,31 +114,37 @@ def compile(path)
   end.join
 end
 
-Dir.chdir(app_dir) do
-  Dir[*%w{*.rb src/xjz/**/*.rb}].each do |path|
-    next if path == 'src/xjz/loader.rb'
-    $packer.add_code path, compile(path)
-  end
-  puts "Finish Compile Ruby Code"
+if ENV['APP_ENV'] == 'test'
+  puts '==BEGIN=='
+  puts eval(ENV['XJZ_TEST_CALL'])
+  puts '==END=='
+else
+  Dir.chdir(app_dir) do
+    Dir[*%w{*.rb src/xjz/**/*.rb}].each do |path|
+      next if path == 'src/xjz/loader.rb'
+      $packer.add_code path, compile(path)
+    end
+    puts "Finish Compile Ruby Code"
 
-  Dir[*%w{src/static/**/* src/webviews/**/*}].each do |path|
-    next if File.directory?(path)
-    $packer.add_data path, File.read(path)
+    Dir[*%w{src/static/**/* src/webviews/**/*}].each do |path|
+      next if File.directory?(path)
+      $packer.add_data path, File.read(path)
+    end
+    puts "Saved JS and Templates"
   end
-  puts "Saved JS and Templates"
+
+  out_path = File.join(app_dir, 'data')
+  File.open(out_path, 'wb') { |f| f.write($packer.result) }
+
+  puts "Output data #{out_path}"
+
+  data = File.read(File.join(app_dir, 'src/webviews/loading.html.slim'))
+  template = Slim::Template.new { data }
+  File.write(File.join(app_dir, 'loading.html'), template.render)
+  puts "Created loading.html"
+
+  File.write(File.join(app_dir, 'APP_VERSION'), $config['app_version'])
+  puts "Create APP_VERSION"
+
+  puts 'Done'
 end
-
-out_path = File.join(app_dir, 'data')
-File.open(out_path, 'wb') { |f| f.write($packer.result) }
-
-puts "Output data #{out_path}"
-
-data = File.read(File.join(app_dir, 'src/webviews/loading.html.slim'))
-template = Slim::Template.new { data }
-File.write(File.join(app_dir, 'loading.html'), template.render)
-puts "Created loading.html"
-
-File.write(File.join(app_dir, 'APP_VERSION'), $config['app_version'])
-puts "Create APP_VERSION"
-
-puts 'Done'

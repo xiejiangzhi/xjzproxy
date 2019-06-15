@@ -53,7 +53,7 @@ puts "2 ts: #{Time.now - $app_start_at}" if ENV[DEBUG_KEY]
 
 require 'webview'
 
-if Gem.win_platform?
+if Gem.win_platform? && $app_env != 'test'
   $loading_window = Webview::App.new(
     width: 600, height: 400, title: "#{$app_name} Loading"
   )

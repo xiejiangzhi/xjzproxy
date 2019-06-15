@@ -31,7 +31,8 @@ RSpec.describe Xjz::Config do
       ".user_id" => "xjz",
       ".edition" => "standard",
       ".license_ts" => Time.at(1557830400.5155),
-      ".license_ex" => Time.at(2557830399.5154896)
+      ".license_ex" => Time.at(2557830399.5154896),
+      ".api_projects" => []
     )
   end
 
