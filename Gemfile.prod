@@ -1,6 +1,6 @@
 # source 'https://gems.ruby-china.com'
 
-gem_host = 'http://192.168.0.107:8809'
+gem_host = 'http://192.168.0.108:8809'
 source gem_host
 
 # Basic

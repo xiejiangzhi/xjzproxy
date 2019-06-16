@@ -12,9 +12,9 @@ module Xjz
           name = caller[0].to_s
           name = name.delete_prefix($root + '/') if name[$root]
           name = name.delete_prefix('src/xjz/') if name[/^src\/xjz/]
-          progname, line, _ = name.split(':', 3)
+          progname = name.split(':', 2).first
         end
-        instance["#{progname}:#{line}"]
+        instance[progname]
       end
     end
 

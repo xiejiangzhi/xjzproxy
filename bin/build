@@ -5,8 +5,10 @@ set -ex
 root="$(pwd)"
 
 if [[ "$1" == "init_docker" ]]; then
-  ./builder/init_docker
+  source ./builder/init_docker
 fi
+
+gem install slim
 
 ./builder/compile
 ./builder/package
