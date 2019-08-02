@@ -1,7 +1,7 @@
-# source 'https://gems.ruby-china.com'
+source 'https://gems.ruby-china.com'
 
-gem_host = 'http://192.168.0.108:8809'
-source gem_host
+# gem_host = 'http://192.168.0.108:8809'
+# source gem_host
 
 # Basic
 gem 'activesupport', '~> 5.2.2', require: false
@@ -9,18 +9,18 @@ gem 'rack', '~> 2.0.6'
 gem 'concurrent-ruby', '~> 1.1.4', require: false
 gem 'builder', '~> 3.2.3'
 gem 'webview', '~> 0.1.6'
-gem 'xjz_loader', '~> 0.1.6', require: false, source: "#{gem_host}/private"
+gem 'xjz_loader', '~> 0.1.6', require: false, git: 'https://github.com/xiejiangzhi/xjz_loader.git'
 
 gem 'faraday', '~> 0.15.4'
 unless Gem.win_platform?
   gem 'net-http-persistent', '~> 3.0.1', require: 'net/http/persistent'
 end
 gem 'http_parser.rb', '~> 0.6.0', require: 'http_parser'
-gem 'http-2', '~> 0.10.1.1', require: 'http/2', source: "#{gem_host}/private"
+gem 'http-2', '~> 0.10.1', require: 'http/2', git: 'https://github.com/xiejiangzhi/http-2.git'
 gem 'google-protobuf', '~> 3.7.0'
 gem 'grpc', '~> 1.21.0'
 gem 'grpc-tools', '~> 1.19.0'
-gem 'regexp-examples', '~> 1.4.4.1', source: "#{gem_host}/private"
+gem 'regexp-examples', '~> 1.5.0', git: "https://github.com/xiejiangzhi/regexp-examples.git"
 
 gem 'classy_hash', '~> 0.2.1'
 gem 'faker', "~> 1.9.3", require: false

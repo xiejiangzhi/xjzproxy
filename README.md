@@ -7,6 +7,31 @@ XjzProxy
 * `proxy_client`: Send request to real remote server
 
 
+## Usage
+
+### Run as developer
+
+Install gems
+
+```
+$ bundle install
+```
+
+Run
+
+```
+$ bin/dev
+# or 
+$ bin/prod
+```
+
+### Build a release version
+
+First, you should build ruby 2.6.3 for your platform. Use https://github.com/xiejiangzhi/traveling-ruby to build it. and Make sure you have install all binary gems that was used in `xjzproxy`.
+
+Then run `bin/build` in the same platform. MacOS can run `bin/build_with_docker` to build a linux platform version.
+
+
 ## TODOs
 
 ### V1 

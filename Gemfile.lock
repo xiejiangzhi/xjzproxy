@@ -5,9 +5,26 @@ GIT
   specs:
     bloomfilter-rb (2.1.2)
 
+GIT
+  remote: https://github.com/xiejiangzhi/http-2.git
+  revision: e0badd4310825cf7f18b3979b23ad592ad7349ea
+  specs:
+    http-2 (0.10.1)
+
+GIT
+  remote: https://github.com/xiejiangzhi/regexp-examples.git
+  revision: 98d562f6bb5c81c4a1f4934a5cf4b118a5cf05d6
+  specs:
+    regexp-examples (1.5.0)
+
+GIT
+  remote: https://github.com/xiejiangzhi/xjz_loader.git
+  revision: 4e8a0ee278388952167f01b0e8f08021e8e8841a
+  specs:
+    xjz_loader (0.1.6)
+
 GEM
-  remote: http://192.168.0.108:8809/
-  remote: http://192.168.0.108:8809/private/
+  remote: https://gems.ruby-china.com/
   specs:
     activesupport (5.2.3)
       concurrent-ruby (~> 1.0, >= 1.0.2)
@@ -48,7 +65,6 @@ GEM
       googleapis-common-protos-types (~> 1.0)
     grpc-tools (1.19.0)
     hashdiff (0.3.9)
-    http-2 (0.10.1.1)
     http_parser.rb (0.6.0)
     i18n (1.6.0)
       concurrent-ruby (~> 1.0)
@@ -76,7 +92,6 @@ GEM
     rainbow (3.0.0)
     rake (12.3.2)
     redcarpet (3.4.0)
-    regexp-examples (1.4.4.1)
     rspec (3.8.0)
       rspec-core (~> 3.8.0)
       rspec-expectations (~> 3.8.0)
@@ -123,7 +138,6 @@ GEM
       hashdiff
     websocket (1.2.8)
     webview (0.1.6)
-    xjz_loader (0.1.6)
 
 PLATFORMS
   ruby
@@ -142,7 +156,7 @@ DEPENDENCIES
   google-protobuf (~> 3.7.0)
   grpc (~> 1.21.0)
   grpc-tools (~> 1.19.0)
-  http-2 (~> 0.10.1.1)!
+  http-2 (~> 0.10.1)!
   http_parser.rb (~> 0.6.0)
   net-http-persistent (~> 3.0.1)
   pry
@@ -151,7 +165,7 @@ DEPENDENCIES
   rack (~> 2.0.6)
   rake
   redcarpet (~> 3.4.0)
-  regexp-examples (~> 1.4.4.1)!
+  regexp-examples (~> 1.5.0)!
   rspec (~> 3.8.0)
   rubocop (~> 0.71.0)
   sassc (~> 2.0.1)
